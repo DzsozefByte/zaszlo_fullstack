@@ -16,6 +16,30 @@ class Zaszlok {
     return result.affectedRows;
   }  
 
+static async getById(id) {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        z.id, 
+        o.orszag AS orszag, 
+        m.meret AS meret, 
+        a.anyag AS anyag
+      FROM zaszlok z
+      JOIN orszagok o ON z.orszagId = o.id
+      JOIN meretek m ON z.meret = m.id
+      JOIN anyagok a ON z.anyag = a.id
+      WHERE z.id = ?
+    `, [id]);
+    return rows[0];
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+
+
+  
 
 };
 

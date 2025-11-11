@@ -5,6 +5,6 @@ const zaszlo = require('../controllers/zaszloController');
 // GET /zaszlok – az összes ország lekérdezése
 router.get('/', zaszlo.getAllZaszlok);
 router.delete('/:id', zaszlo.delete);
-
+router.get('/:id', zaszlo.getById);
 
 module.exports = router;
