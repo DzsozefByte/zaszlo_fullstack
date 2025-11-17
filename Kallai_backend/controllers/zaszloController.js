@@ -39,3 +39,16 @@ exports.getById = async (req, res) => {
         res.status(500).json({ message: 'Hiba történt a zászló lekérése során: ', error: error.message });
     }
 };
+
+exports.filterZaszlok = async (req, res) => {
+    try {
+        const meret = req.query.meret;
+        const anyag = req.query.anyag;
+        const kontinens = req.query.kontinens;
+        const orszag = req.query.orszag;
+        const zaszlok = await Zaszlo.filter(meret, anyag, kontinens, orszag);
+        res.json(zaszlok);
+    } catch (error) {
+        res.status(500).json({ message: 'Hiba történt a zászlók szűrése során: ', error: error.message });
+    }
+};

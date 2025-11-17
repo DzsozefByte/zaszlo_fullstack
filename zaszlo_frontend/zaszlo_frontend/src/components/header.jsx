@@ -2,6 +2,7 @@ import bootstrap from 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import React from 'react';
 import ReactCountryFlag from "react-country-flag";
+import { IoMdCart } from "react-icons/io";
 
 
 
@@ -84,6 +85,9 @@ const Header = () => {
               </ul>
             </li>
           </ul>
+          
+          <IoMdCart />
+
           <form className="d-flex" role="search">
             <input
               className="form-control me-2"
