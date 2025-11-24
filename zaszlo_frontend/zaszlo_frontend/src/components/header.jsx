@@ -28,9 +28,9 @@ const Header = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <Link className="nav-link active fw-medium" aria-current="page" to="/">Kezdőlap</Link>
+              <Link className="nav-link active fw-medium" aria-current="page" to="/">Kezdőlap</Link>              
             </li>
-
+              <Link className="nav-link fw-medium" aria-current="page" to="/kereso">Szűrő</Link>
             {/* Dropdown 1 - Kontinens */}
             <li className="nav-item dropdown">
               <a className="nav-link dropdown-toggle fw-medium" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

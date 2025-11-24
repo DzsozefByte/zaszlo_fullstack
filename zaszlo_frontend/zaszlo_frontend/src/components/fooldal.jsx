@@ -44,7 +44,7 @@ const Fooldal = () => {
                                     {num === 1 ? 'Fedezd fel a világ zászlóit' : num === 2 ? 'Nemzetközi választék' : 'Elegáns és tartós'}
                                 </h3>
                                 <p style={{ color: '#f1f1f1', fontSize: '1rem' }}>
-                                    {num === 1 ? 'Minőségi zászlók minden nemzet számára, közvetlenül Magyarországról.' : num === 2 ? 'Több száz ország zászlója egy helyen – gyűjtőknek és rajongóknak.' : 'Zászlóinkat a legjobb anyagokból készítjük, hogy hosszú ideig kibírják.'}
+                                    {num === 1 ? 'Minőségi zászlók minden nemzet számára, közvetlenül Magyarországról.' : num === 2 ? 'Több mint száz ország zászlója egy helyen – gyűjtőknek és rajongóknak.' : 'Zászlóinkat a legjobb anyagokból készítjük, hogy hosszú ideig kibírják.'}
                                 </p>
                             </Carousel.Caption>
                         </Carousel.Item>
@@ -93,11 +93,16 @@ const Fooldal = () => {
                         </div>
                         <Card.Body style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexGrow: 1 }}>
                             <Card.Title style={{ fontWeight: '600', fontSize: '1.2rem', textAlign: 'center', marginBottom: '1rem' }}>{z.orszag}</Card.Title>
-                            <Button variant="primary" style={{ width: '100%', transition: 'all 0.3s' }}
-                                onMouseOver={e => e.currentTarget.style.backgroundColor = '#0056b3'}
-                                onMouseOut={e => e.currentTarget.style.backgroundColor = '#0d6efd'}>
-                                Részletek
-                            </Button>
+
+                            
+                        <Button
+                            variant="primary"
+                            style={{ width: '100%', transition: 'all 0.3s' }}
+                            onClick={() => window.location.href = `/termek/${encodeURIComponent(z.orszag)}`}
+                        >
+                            Részletek
+                        </Button>
+
                         </Card.Body>
                     </Card>
                 ))}
