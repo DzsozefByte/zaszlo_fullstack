@@ -1,14 +1,17 @@
-/* --- KERESO OLDAL STYLES --- */
-
-.kereso-container {
-    display: flex;
-    min-height: 80vh;
-    padding: 2rem;
-    background-color: #f8f9fa;
-    flex-wrap: wrap;
+.kereso-page-wrapper {
+    min-height: 100vh;
+    background-color: #ffffff;
 }
 
-/* Bal oldali filter panel */
+/* Tartalom terület */
+.content-area {
+    padding: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* Filter panel */
 .filter-panel {
     width: 250px;
     padding: 1rem;
@@ -17,15 +20,21 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     margin-right: 2rem;
     flex-shrink: 0;
+    align-self: flex-start;
 }
 
 .filter-panel h4 {
     margin-bottom: 1rem;
 }
 
-/* Zászló grid */
-.flags-grid {
+/* Flag grid */
+.flags-main-content {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.flags-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.5rem;
@@ -37,6 +46,16 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.flag-card > .card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .flag-card:hover {
@@ -69,17 +88,21 @@
     margin-bottom: 0.5rem;
 }
 
-.flag-info {
-    text-align: center;
-    font-size: 0.9rem;
-    color: #555;
-    margin-bottom: 1rem;
+/* Pagination */
+.pagination-wrapper {
+    margin-top: 2rem;
 }
 
-/* RESPONSIVE */
+/* Responsive */
 @media (max-width: 768px) {
-    .kereso-container {
+    .content-area {
         flex-direction: column;
+        padding: 1rem;
+    }
+
+    .flags-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
     }
 
     .filter-panel {
@@ -88,4 +111,3 @@
         margin-bottom: 2rem;
     }
 }
-

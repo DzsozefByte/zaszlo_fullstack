@@ -6,6 +6,8 @@ import Header from './components/header.jsx';
 import Fooldal from './components/fooldal.jsx';
 import Kereso from './components/kereso.jsx';
 import Termek from './components/termek.jsx';
+import Footer from './components/footer.jsx';
+import Kapcsolat from './components/kapcsolat.jsx';
 
 function App() {
   return (
@@ -15,7 +17,9 @@ function App() {
         <Route path="/" element={<Fooldal />} />
         <Route path="/kereso" element={<Kereso />} />
         <Route path="/termek/:country" element={<Termek />} />
+        <Route path="/kapcsolat" element={<Kapcsolat />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }
