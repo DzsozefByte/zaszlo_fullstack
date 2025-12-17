@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Carousel from 'react-bootstrap/Carousel';
-// bootstrap icons CSS import - ha nincs telepítve, lásd lent (telepítés)
 import 'bootstrap-icons/font/bootstrap-icons.css';
+
+
 import './Fooldal.css'; // Egyedi CSS fájl az oldal stílusához
 
 const FlagSection = ({ title, items, sectionKey }) => {

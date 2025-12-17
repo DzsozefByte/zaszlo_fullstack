@@ -79,6 +79,9 @@ const Header = () => {
 
             <Link className="nav-link fw-medium" aria-current="page" to="/kereso">Szűrő</Link>
 
+            <Link className="nav-link fw-medium" aria-current="page" to="/rolunk">Rólunk</Link>
+
+
             {/* Kontinens dropdown */}
             <li className="nav-item dropdown">
               <a className="nav-link dropdown-toggle fw-medium" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
