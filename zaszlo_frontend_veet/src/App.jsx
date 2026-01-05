@@ -26,6 +26,7 @@ function App() {
           <Route path="/kapcsolat" element={<Kapcsolat />} />
           <Route path="/aszf" element={<Aszf />} />
           <Route path="/rolunk" element={<Rolunk />} />
+          
         </Routes>
         <Footer />
       </Router>

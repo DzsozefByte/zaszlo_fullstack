@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import React, { useState, useEffect, useContext } from 'react';
 import ReactCountryFlag from "react-country-flag";
-import { IoMdCart, IoMdClose } from "react-icons/io";
+import { IoMdCart, IoMdClose, IoMdPerson } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import httpCommon from "../http-common";
 import { KosarContext } from "../context/KosarContext"; // Context importálása
