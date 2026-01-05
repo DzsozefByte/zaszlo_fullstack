@@ -4,11 +4,14 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Carousel from 'react-bootstrap/Carousel';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { useNavigate } from "react-router-dom"; // IMPORTÁLNI KELL!
 
+import './Fooldal.css'; 
 
-import './Fooldal.css'; // Egyedi CSS fájl az oldal stílusához
-
+// A FlagSection komponenst is frissíteni kell a navigációhoz
 const FlagSection = ({ title, items, sectionKey }) => {
+  const navigate = useNavigate(); // Hook inicializálása
+
   const scrollLeft = (id) => {
     const el = document.getElementById(id);
     if (el) el.scrollBy({ left: -300, behavior: "smooth" });
@@ -20,6 +23,11 @@ const FlagSection = ({ title, items, sectionKey }) => {
   };
 
   const sectionId = `sec-${sectionKey}`;
+
+  // Segédfüggvény a navigáláshoz
+  const handleNavigate = (orszag) => {
+    navigate(`/termek/${encodeURIComponent(orszag)}`);
+  };
 
   return (
     <div className="flag-section" style={{ position: 'relative', margin: '2rem 0' }}>
@@ -43,7 +51,9 @@ const FlagSection = ({ title, items, sectionKey }) => {
           <Card
             key={index}
             className="flag-card"
-            onClick={() => window.location.href = `/termek/${encodeURIComponent(z.orszag)}`}
+            // JAVÍTVA: window.location helyett navigate
+            onClick={() => handleNavigate(z.orszag)}
+            style={{ cursor: "pointer" }} // Hogy látszódjon, kattintható
           >
             <div className="flag-img-wrapper">
               <Card.Img
@@ -55,7 +65,14 @@ const FlagSection = ({ title, items, sectionKey }) => {
             </div>
             <Card.Body style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <Card.Title className="flag-title">{z.orszag}</Card.Title>
-              <Button variant="primary" onClick={(e) => { e.stopPropagation(); window.location.href = `/termek/${encodeURIComponent(z.orszag)}`; }}>
+              <Button 
+                variant="primary" 
+                onClick={(e) => { 
+                    e.stopPropagation(); 
+                    // JAVÍTVA: window.location helyett navigate
+                    handleNavigate(z.orszag); 
+                }}
+              >
                 Részletek
               </Button>
             </Card.Body>
@@ -74,7 +91,6 @@ const FlagSection = ({ title, items, sectionKey }) => {
   );
 };
 
-
 const Fooldal = () => {
   const [zaszlok, setZaszlok] = useState([]);
 
@@ -91,7 +107,6 @@ const Fooldal = () => {
     fetchData();
   }, []);
 
-  // kategóriák 
   const popularCountries = ["Magyarország", "Németország", "Franciaország", "Olaszország", "Egyesült Államok", "Egyesült Királyság", "Spanyolország", "Kanada", "Japán"];
   const euCountries = [
     "Ausztria","Belgium","Bulgária","Ciprus","Csehország","Dánia","Észtország","Finnország","Franciaország",

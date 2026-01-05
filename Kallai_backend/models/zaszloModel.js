@@ -70,7 +70,4 @@ static async filter(meret, anyag, kontinens, orszag) {
 
 }
 
-
-
-
 module.exports = Zaszlok;

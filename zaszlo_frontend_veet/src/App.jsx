@@ -10,23 +10,26 @@ import Footer from './components/footer.jsx';
 import Kapcsolat from './components/kapcsolat.jsx';
 import Aszf from './components/aszf.jsx';
 import Rolunk from './components/rolunk.jsx';
-
-
+import Kosar from './components/Kosar.jsx'; // ÚJ IMPORT
+import { KosarProvider } from './context/KosarContext.jsx'; // ÚJ IMPORT
 
 function App() {
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Fooldal />} />
-        <Route path="/kereso" element={<Kereso />} />
-        <Route path="/termek/:country" element={<Termek />} />
-        <Route path="/kapcsolat" element={<Kapcsolat />} />
-        <Route path="/aszf" element={<Aszf />} />
-        <Route path="/rolunk" element={<Rolunk />} />
-      </Routes>
-      <Footer />
-    </Router>
+    <KosarProvider> {/* Itt kezdődik a provider */}
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Fooldal />} />
+          <Route path="/kereso" element={<Kereso />} />
+          <Route path="/termek/:country" element={<Termek />} />
+          <Route path="/kosar" element={<Kosar />} /> {/* ÚJ ROUTE */}
+          <Route path="/kapcsolat" element={<Kapcsolat />} />
+          <Route path="/aszf" element={<Aszf />} />
+          <Route path="/rolunk" element={<Rolunk />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </KosarProvider> /* Itt záródik */
   );
 }
 

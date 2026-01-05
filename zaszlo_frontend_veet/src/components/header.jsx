@@ -1,17 +1,24 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import ReactCountryFlag from "react-country-flag";
-import { IoMdCart } from "react-icons/io";
+import { IoMdCart, IoMdClose } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import httpCommon from "../http-common";
+import { KosarContext } from "../context/KosarContext"; // Context importálása
 
 const Header = () => {
   const [searchText, setSearchText] = useState("");
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
-  // Autocomplete keresés
+  // Context behúzása: Itt érjük el a kosár adatait és a nyitott állapotot
+  const { kosar, vegosszeg, isMiniCartOpen, setIsMiniCartOpen, torlesKosarbol } = useContext(KosarContext);
+
+  // Összes darabszám kiszámolása a piros badge-hez
+  const osszesDb = kosar.reduce((acc, item) => acc + item.db, 0);
+
+  // Autocomplete keresés logika
   useEffect(() => {
     const load = async () => {
       if (searchText.length < 2) {
@@ -22,9 +29,7 @@ const Header = () => {
       try {
         const res = await httpCommon.get(`/zaszlok/search?orszag=${searchText}`);
         const list = Array.isArray(res.data) ? res.data : [res.data];
-
         const unique = Array.from(new Map(list.map(z => [z.orszag, z])).values());
-
         setResults(unique);
       } catch {
         setResults([]);
@@ -35,7 +40,6 @@ const Header = () => {
     return () => clearTimeout(timer);
   }, [searchText]);
 
-  // Eredményre kattintás → átirányítás
   const goTo = (country) => {
     setSearchText("");
     setResults([]);
@@ -88,44 +92,108 @@ const Header = () => {
                 Kontinens
               </a>
               <ul className="dropdown-menu shadow-sm">
-                <li>
-                  <Link className="dropdown-item" to="/kereso?continent=Európa">
-                    <ReactCountryFlag countryCode="EU" svg /> Európa
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/kereso?continent=Amerika">
-                    <ReactCountryFlag countryCode="US" svg /> Amerika
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/kereso?continent=Ázsia">
-                    <ReactCountryFlag countryCode="CN" svg /> Ázsia
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/kereso?continent=Afrika">
-                    <ReactCountryFlag countryCode="ZA" svg /> Afrika
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/kereso?continent=Óceánia">
-                    <ReactCountryFlag countryCode="AU" svg /> Óceánia
-                  </Link>
-                </li>
+                <li><Link className="dropdown-item" to="/kereso?continent=Európa"><ReactCountryFlag countryCode="EU" svg /> Európa</Link></li>
+                <li><Link className="dropdown-item" to="/kereso?continent=Amerika"><ReactCountryFlag countryCode="US" svg /> Amerika</Link></li>
+                <li><Link className="dropdown-item" to="/kereso?continent=Ázsia"><ReactCountryFlag countryCode="CN" svg /> Ázsia</Link></li>
+                <li><Link className="dropdown-item" to="/kereso?continent=Afrika"><ReactCountryFlag countryCode="ZA" svg /> Afrika</Link></li>
+                <li><Link className="dropdown-item" to="/kereso?continent=Óceánia"><ReactCountryFlag countryCode="AU" svg /> Óceánia</Link></li>
               </ul>
             </li>
           </ul>
 
-          {/* Kosár ikon */}
+          {/* --- MINI KOSÁR LOGIKA KEZDETE --- */}
           <div className="me-3 position-relative">
-            <IoMdCart size={28} style={{ cursor: 'pointer' }} />
-            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-              0
-            </span>
-          </div>
+             {/* Ikon kattintásra nyit/zár */}
+            <div 
+                style={{ cursor: 'pointer' }} 
+                onClick={() => setIsMiniCartOpen(!isMiniCartOpen)}
+            >
+                <IoMdCart size={28} />
+                {osszesDb > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {osszesDb}
+                    </span>
+                )}
+            </div>
 
-          {/* --- Autocomplete Search --- */}
+            {/* A tényleges felugró ablak */}
+            {isMiniCartOpen && (
+                <div 
+                    className="card shadow position-absolute end-0 mt-3 bg-white" 
+                    style={{ width: "320px", zIndex: 1050, border: "1px solid rgba(0,0,0,0.1)" }}
+                >
+                    {/* Mini Kosár Fejléc */}
+                    <div className="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
+                        <h6 className="m-0 fw-bold">Kosár ({osszesDb})</h6>
+                        <button className="btn btn-sm btn-light rounded-circle" onClick={() => setIsMiniCartOpen(false)}>
+                            <IoMdClose size={16}/>
+                        </button>
+                    </div>
+
+                    {/* Mini Kosár Tartalom */}
+                    <div className="card-body p-0" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                        {kosar.length === 0 ? (
+                            <div className="text-center p-4 text-muted">
+                                <p className="mb-0">A kosarad jelenleg üres.</p>
+                            </div>
+                        ) : (
+                            <ul className="list-group list-group-flush">
+                                {kosar.map((item) => (
+                                    <li key={`${item.id}-${item.meret}-${item.anyag}`} className="list-group-item d-flex gap-2 align-items-center">
+                                        <img 
+                                            src={item.kep} 
+                                            alt={item.orszag} 
+                                            style={{ width: "40px", height: "auto", borderRadius: "4px" }} 
+                                        />
+                                        <div className="flex-grow-1" style={{ lineHeight: "1.2" }}>
+                                            <div className="fw-bold small">{item.orszag} zászló</div>
+                                            <small className="text-muted d-block" style={{fontSize: "0.8rem"}}>
+                                                {item.meret}, {item.anyag}
+                                            </small>
+                                            <div className="small fw-semibold text-primary">
+                                                {item.db} db x {item.ar.toLocaleString()} Ft
+                                            </div>
+                                        </div>
+                                        <button 
+                                            className="btn btn-link text-danger p-0" 
+                                            title="Törlés"
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Hogy ne záródjon be a klikk miatt
+                                                torlesKosarbol(item.id, item.meret, item.anyag);
+                                            }}
+                                        >
+                                            <IoMdClose size={18} />
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* Mini Kosár Lábléc */}
+                    {kosar.length > 0 && (
+                        <div className="card-footer bg-light p-3">
+                            <div className="d-flex justify-content-between fw-bold mb-3">
+                                <span>Összesen:</span>
+                                <span>{vegosszeg.toLocaleString()} Ft</span>
+                            </div>
+                            <button 
+                                className="btn btn-primary w-100" 
+                                onClick={() => {
+                                    setIsMiniCartOpen(false);
+                                    navigate("/kosar");
+                                }}
+                            >
+                                Kosár megtekintése
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+          </div>
+          {/* --- MINI KOSÁR LOGIKA VÉGE --- */}
+
+          {/* Autocomplete Search Input */}
           <div className="position-relative" style={{ width: "250px" }}>
             <input
               className="form-control rounded-pill"
@@ -163,6 +231,14 @@ const Header = () => {
         }
         .dropdown-menu {
           border-radius: 0.5rem;
+        }
+        /* Gördítősáv testreszabása a mini kosárhoz */
+        .card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card-body::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
         }
       `}</style>
     </nav>

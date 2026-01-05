@@ -8,5 +8,4 @@ router.get('/search', zaszlo.filterZaszlok);
 router.delete('/:id', zaszlo.delete);
 router.get('/:id', zaszlo.getById);
 
-
 module.exports = router;
