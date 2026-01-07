@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import httpCommon from '../http-common.js';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    nev: '',
     email: '',
-    password: '',
-    confirmPassword: ''
+    jelszo: '',
+    confirmJelszo: ''
   });
-
+const [error, setError] = useState("")
   const handleChange = (e) => {
     setFormData({...formData, [e.target.id]: e.target.value});
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Itt lesz később a regisztráció logika
-    console.log("Regisztrációs adatok:", formData);
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!formData.nev || !formData.email || !formData.jelszo) {
+  setError("Kérlek tölts ki minden mezőt!");
+  return;
+}
+
+  try {
+    await httpCommon.post(
+      "/auth/register",
+      { nev: formData.nev, email: formData.email, jelszo: formData.jelszo },
+      { withCredentials: true } 
+    );
+    alert("Sikeres regisztráció!");
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    setError(err.response?.data?.message || "Hiba a regisztráció során");
+  }
+};
 
   return (
     <div className="container py-5">
@@ -30,13 +46,13 @@ const Register = () => {
               <form onSubmit={handleSubmit}>
                 {/* Név */}
                 <div className="mb-3">
-                  <label htmlFor="name" className="form-label fw-medium">Teljes név</label>
+                  <label htmlFor="nev" className="form-label fw-medium">Teljes név</label>
                   <input 
                     type="text" 
                     className="form-control form-control-lg" 
-                    id="name" 
+                    id="nev" 
                     placeholder="Kovács János"
-                    value={formData.name}
+                    value={formData.nev}
                     onChange={handleChange}
                     required 
                   />
@@ -63,21 +79,21 @@ const Register = () => {
                     <input 
                       type="password" 
                       className="form-control form-control-lg" 
-                      id="password" 
+                      id="jelszo" 
                       placeholder="********"
-                      value={formData.password}
+                      value={formData.jelszo}
                       onChange={handleChange}
                       required 
                     />
                   </div>
                   <div className="col-md-6 mb-3">
-                    <label htmlFor="confirmPassword" className="form-label fw-medium">Jelszó megerősítése</label>
+                    <label htmlFor="confirmJelszo" className="form-label fw-medium">Jelszó megerősítése</label>
                     <input 
                       type="password" 
                       className="form-control form-control-lg" 
-                      id="confirmPassword" 
+                      id="confirmJelszo" 
                       placeholder="********"
-                      value={formData.confirmPassword}
+                      value={formData.confirmJelszo}
                       onChange={handleChange}
                       required 
                     />

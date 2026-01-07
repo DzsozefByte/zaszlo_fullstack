@@ -17,6 +17,14 @@ class Vevo {
     const [rows] = await db.query('SELECT * FROM vevo WHERE email = ?', [email]);
     return rows[0];
   }
+  static async getById(id) {
+  const [rows] = await db.query(
+    'SELECT id, nev, email, jogosultsag FROM vevo WHERE id = ?',
+    [id]
+  );
+  return rows[0];
 }
+}
+
 
 module.exports = Vevo;

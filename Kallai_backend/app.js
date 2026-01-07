@@ -13,7 +13,10 @@ var app = express();
 
 var corsOptions = {
     "credentials": true,
-    origin: '*',
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:8081',
+    ],
 
 }
 app.use(cors(corsOptions));
@@ -25,7 +28,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/auth', usersRouter);
 
 var zaszlokRouter = require('./routes/zaszlok');
 app.use('/zaszlok', zaszlokRouter);

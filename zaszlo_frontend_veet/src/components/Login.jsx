@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import httpCommon from '../http-common.js';
 
-const Login = () => {
+const Login = ({ setAccesstoken }) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [jelszo, setJelszo] = useState('');
+  const [error, setError] = useState("")
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Itt lesz később a bejelentkezés logika
-    console.log("Login adatok:", email, password);
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await httpCommon.post(
+      "/auth/login",
+      { email, jelszo },
+      { withCredentials: true } 
+    )
+    setAccesstoken(res.data.accessToken);
+    
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    setError(err.response?.data?.message || "Hiba a bejelentkezéskor");
+  }
+};
+
 
   return (
     <div className="container py-5">
@@ -42,8 +56,8 @@ const Login = () => {
                     className="form-control form-control-lg" 
                     id="password" 
                     placeholder="********"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={jelszo}
+                    onChange={(e) => setJelszo(e.target.value)}
                     required 
                   />
                 </div>

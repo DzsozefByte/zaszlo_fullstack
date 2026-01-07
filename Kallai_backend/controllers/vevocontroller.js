@@ -52,7 +52,7 @@ exports.login = async (req, res, next) => {
 
     // Access token (rövid élettartamú)
     const accessToken = jwt.sign(
-      { id: user.id, nev: user.nev, email: user.email, szerep: user.szerep },
+      { id: user.id, nev: user.nev, email: user.email, szerep: user.jogosultsag },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN } // pl. 1h
     );
@@ -98,7 +98,7 @@ exports.refreshToken = (req, res) => {
 
     // Új access token generálása
     const newAccessToken = jwt.sign(
-      { id: decoded.id, email: decoded.email, szerep: decoded.szerep },
+      { id: decoded.id, email: decoded.email},
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
