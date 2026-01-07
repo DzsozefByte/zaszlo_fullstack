@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 class Vevo {
   // Regisztráció: új rekord beszúrása
-  static async create(userData) {
+  static async register(userData) {
     const { nev, email, jelszo } = userData;
     // A többi mező (lakcim, adoszam) null marad alapértelmezetten
     const [result] = await db.query(

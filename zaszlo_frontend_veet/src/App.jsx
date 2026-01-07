@@ -10,27 +10,33 @@ import Footer from './components/footer.jsx';
 import Kapcsolat from './components/kapcsolat.jsx';
 import Aszf from './components/aszf.jsx';
 import Rolunk from './components/rolunk.jsx';
-import Kosar from './components/Kosar.jsx'; // ÚJ IMPORT
-import { KosarProvider } from './context/KosarContext.jsx'; // ÚJ IMPORT
+import Kosar from './components/Kosar.jsx';
+import Login from './components/Login.jsx'; // ÚJ
+import Register from './components/Register.jsx'; // ÚJ
+import { KosarProvider } from './context/KosarContext.jsx';
 
 function App() {
   return (
-    <KosarProvider> {/* Itt kezdődik a provider */}
+    <KosarProvider>
       <Router>
         <Header />
         <Routes>
           <Route path="/" element={<Fooldal />} />
           <Route path="/kereso" element={<Kereso />} />
           <Route path="/termek/:country" element={<Termek />} />
-          <Route path="/kosar" element={<Kosar />} /> {/* ÚJ ROUTE */}
+          <Route path="/kosar" element={<Kosar />} />
           <Route path="/kapcsolat" element={<Kapcsolat />} />
           <Route path="/aszf" element={<Aszf />} />
           <Route path="/rolunk" element={<Rolunk />} />
           
+          {/* ÚJ ROUTE-OK */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
         </Routes>
         <Footer />
       </Router>
-    </KosarProvider> /* Itt záródik */
+    </KosarProvider>
   );
 }
 

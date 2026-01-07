@@ -52,3 +52,5 @@ exports.filterZaszlok = async (req, res) => {
         res.status(500).json({ message: 'Hiba történt a zászlók szűrése során: ', error: error.message });
     }
 };
+
+

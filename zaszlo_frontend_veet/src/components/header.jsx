@@ -5,20 +5,17 @@ import ReactCountryFlag from "react-country-flag";
 import { IoMdCart, IoMdClose, IoMdPerson } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import httpCommon from "../http-common";
-import { KosarContext } from "../context/KosarContext"; // Context importálása
+import { KosarContext } from "../context/KosarContext";
 
 const Header = () => {
   const [searchText, setSearchText] = useState("");
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
-  // Context behúzása: Itt érjük el a kosár adatait és a nyitott állapotot
   const { kosar, vegosszeg, isMiniCartOpen, setIsMiniCartOpen, torlesKosarbol } = useContext(KosarContext);
 
-  // Összes darabszám kiszámolása a piros badge-hez
   const osszesDb = kosar.reduce((acc, item) => acc + item.db, 0);
 
-  // Autocomplete keresés logika
   useEffect(() => {
     const load = async () => {
       if (searchText.length < 2) {
@@ -76,15 +73,11 @@ const Header = () => {
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-
             <li className="nav-item">
               <Link className="nav-link active fw-medium" aria-current="page" to="/">Kezdőlap</Link>
             </li>
-
             <Link className="nav-link fw-medium" aria-current="page" to="/kereso">Szűrő</Link>
-
             <Link className="nav-link fw-medium" aria-current="page" to="/rolunk">Rólunk</Link>
-
 
             {/* Kontinens dropdown */}
             <li className="nav-item dropdown">
@@ -101,130 +94,144 @@ const Header = () => {
             </li>
           </ul>
 
-          {/* --- MINI KOSÁR LOGIKA KEZDETE --- */}
-          <div className="me-3 position-relative">
-             {/* Ikon kattintásra nyit/zár */}
-            <div 
-                style={{ cursor: 'pointer' }} 
-                onClick={() => setIsMiniCartOpen(!isMiniCartOpen)}
-            >
-                <IoMdCart size={28} />
-                {osszesDb > 0 && (
-                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {osszesDb}
-                    </span>
-                )}
+          {/* JOBB OLDALI IKONOK KONTÉNER */}
+          <div className="d-flex align-items-center">
+
+            {/* --- USER / BEJELENTKEZÉS DROPDOWN --- */}
+            <div className="nav-item dropdown me-3">
+              <a 
+                className="nav-link d-flex align-items-center text-dark" 
+                href="#" 
+                role="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false"
+              >
+                <IoMdPerson size={28} />
+              </a>
+              <ul className="dropdown-menu dropdown-menu-end shadow-sm" style={{ minWidth: "200px" }}>
+                 {/* Később ide jöhet feltétel: ha be van lépve, akkor "Profil", "Kilépés" */}
+                <li><h6 className="dropdown-header">Fiók</h6></li>
+                <li><Link className="dropdown-item" to="/login">Bejelentkezés</Link></li>
+                <li><Link className="dropdown-item" to="/register">Regisztráció</Link></li>
+              </ul>
             </div>
 
-            {/* A tényleges felugró ablak */}
-            {isMiniCartOpen && (
+            {/* --- MINI KOSÁR --- */}
+            <div className="me-3 position-relative">
+              <div 
+                style={{ cursor: 'pointer' }} 
+                onClick={() => setIsMiniCartOpen(!isMiniCartOpen)}
+              >
+                <IoMdCart size={28} />
+                {osszesDb > 0 && (
+                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {osszesDb}
+                  </span>
+                )}
+              </div>
+
+              {isMiniCartOpen && (
                 <div 
-                    className="card shadow position-absolute end-0 mt-3 bg-white" 
-                    style={{ width: "320px", zIndex: 1050, border: "1px solid rgba(0,0,0,0.1)" }}
+                  className="card shadow position-absolute end-0 mt-3 bg-white" 
+                  style={{ width: "320px", zIndex: 1050, border: "1px solid rgba(0,0,0,0.1)" }}
                 >
-                    {/* Mini Kosár Fejléc */}
-                    <div className="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
-                        <h6 className="m-0 fw-bold">Kosár ({osszesDb})</h6>
-                        <button className="btn btn-sm btn-light rounded-circle" onClick={() => setIsMiniCartOpen(false)}>
-                            <IoMdClose size={16}/>
-                        </button>
-                    </div>
-
-                    {/* Mini Kosár Tartalom */}
-                    <div className="card-body p-0" style={{ maxHeight: "300px", overflowY: "auto" }}>
-                        {kosar.length === 0 ? (
-                            <div className="text-center p-4 text-muted">
-                                <p className="mb-0">A kosarad jelenleg üres.</p>
-                            </div>
-                        ) : (
-                            <ul className="list-group list-group-flush">
-                                {kosar.map((item) => (
-                                    <li key={`${item.id}-${item.meret}-${item.anyag}`} className="list-group-item d-flex gap-2 align-items-center">
-                                        <img 
-                                            src={item.kep} 
-                                            alt={item.orszag} 
-                                            style={{ width: "40px", height: "auto", borderRadius: "4px" }} 
-                                        />
-                                        <div className="flex-grow-1" style={{ lineHeight: "1.2" }}>
-                                            <div className="fw-bold small">{item.orszag} zászló</div>
-                                            <small className="text-muted d-block" style={{fontSize: "0.8rem"}}>
-                                                {item.meret}, {item.anyag}
-                                            </small>
-                                            <div className="small fw-semibold text-primary">
-                                                {item.db} db x {item.ar.toLocaleString()} Ft
-                                            </div>
-                                        </div>
-                                        <button 
-                                            className="btn btn-link text-danger p-0" 
-                                            title="Törlés"
-                                            onClick={(e) => {
-                                                e.stopPropagation(); // Hogy ne záródjon be a klikk miatt
-                                                torlesKosarbol(item.id, item.meret, item.anyag);
-                                            }}
-                                        >
-                                            <IoMdClose size={18} />
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-
-                    {/* Mini Kosár Lábléc */}
-                    {kosar.length > 0 && (
-                        <div className="card-footer bg-light p-3">
-                            <div className="d-flex justify-content-between fw-bold mb-3">
-                                <span>Összesen:</span>
-                                <span>{vegosszeg.toLocaleString()} Ft</span>
+                  <div className="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
+                    <h6 className="m-0 fw-bold">Kosár ({osszesDb})</h6>
+                    <button className="btn btn-sm btn-light rounded-circle" onClick={() => setIsMiniCartOpen(false)}>
+                      <IoMdClose size={16}/>
+                    </button>
+                  </div>
+                  <div className="card-body p-0" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                    {kosar.length === 0 ? (
+                      <div className="text-center p-4 text-muted">
+                        <p className="mb-0">A kosarad jelenleg üres.</p>
+                      </div>
+                    ) : (
+                      <ul className="list-group list-group-flush">
+                        {kosar.map((item) => (
+                          <li key={`${item.id}-${item.meret}-${item.anyag}`} className="list-group-item d-flex gap-2 align-items-center">
+                            <img 
+                              src={item.kep} 
+                              alt={item.orszag} 
+                              style={{ width: "40px", height: "auto", borderRadius: "4px" }} 
+                            />
+                            <div className="flex-grow-1" style={{ lineHeight: "1.2" }}>
+                              <div className="fw-bold small">{item.orszag} zászló</div>
+                              <small className="text-muted d-block" style={{fontSize: "0.8rem"}}>
+                                {item.meret}, {item.anyag}
+                              </small>
+                              <div className="small fw-semibold text-primary">
+                                {item.db} db x {item.ar.toLocaleString()} Ft
+                              </div>
                             </div>
                             <button 
-                                className="btn btn-primary w-100" 
-                                onClick={() => {
-                                    setIsMiniCartOpen(false);
-                                    navigate("/kosar");
-                                }}
+                              className="btn btn-link text-danger p-0" 
+                              title="Törlés"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                torlesKosarbol(item.id, item.meret, item.anyag);
+                              }}
                             >
-                                Kosár megtekintése
+                              <IoMdClose size={18} />
                             </button>
-                        </div>
+                          </li>
+                        ))}
+                      </ul>
                     )}
+                  </div>
+                  {kosar.length > 0 && (
+                    <div className="card-footer bg-light p-3">
+                      <div className="d-flex justify-content-between fw-bold mb-3">
+                        <span>Összesen:</span>
+                        <span>{vegosszeg.toLocaleString()} Ft</span>
+                      </div>
+                      <button 
+                        className="btn btn-primary w-100" 
+                        onClick={() => {
+                          setIsMiniCartOpen(false);
+                          navigate("/kosar");
+                        }}
+                      >
+                        Kosár megtekintése
+                      </button>
+                    </div>
+                  )}
                 </div>
-            )}
-          </div>
-          {/* --- MINI KOSÁR LOGIKA VÉGE --- */}
+              )}
+            </div>
 
-          {/* Autocomplete Search Input */}
-          <div className="position-relative" style={{ width: "250px" }}>
-            <input
-              className="form-control rounded-pill"
-              type="search"
-              placeholder="Keresés..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
+            {/* Keresőmező (Autocomplete) */}
+            <div className="position-relative d-none d-lg-block" style={{ width: "250px" }}>
+              <input
+                className="form-control rounded-pill"
+                type="search"
+                placeholder="Keresés..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+              {results.length > 0 && (
+                <ul
+                  className="list-group position-absolute w-100 mt-1 shadow-sm"
+                  style={{ borderRadius: "10px", zIndex: 9999 }}
+                >
+                  {results.map((item) => (
+                    <li
+                      key={item.id}
+                      className="list-group-item list-group-item-action"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => goTo(item.orszag)}
+                    >
+                      {item.orszag}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
-            {results.length > 0 && (
-              <ul
-                className="list-group position-absolute w-100 mt-1 shadow-sm"
-                style={{ borderRadius: "10px", zIndex: 9999 }}
-              >
-                {results.map((item) => (
-                  <li
-                    key={item.id}
-                    className="list-group-item list-group-item-action"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => goTo(item.orszag)}
-                  >
-                    {item.orszag}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          </div> {/* End of Right Side Icons Container */}
 
         </div>
       </div>
-
       <style>{`
         .navbar-nav .nav-link:hover, .dropdown-item:hover {
           color: #0d6efd;
@@ -232,7 +239,6 @@ const Header = () => {
         .dropdown-menu {
           border-radius: 0.5rem;
         }
-        /* Gördítősáv testreszabása a mini kosárhoz */
         .card-body::-webkit-scrollbar {
             width: 6px;
         }
