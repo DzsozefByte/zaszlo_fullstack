@@ -2,12 +2,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import React, { useState, useEffect, useContext } from 'react';
 import ReactCountryFlag from "react-country-flag";
-import { IoMdCart, IoMdClose, IoMdPerson } from "react-icons/io";
+import { IoMdCart, IoMdClose, IoMdPerson, IoMdLogOut } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import httpCommon from "../http-common";
 import { KosarContext } from "../context/KosarContext";
 
-const Header = () => {
+const Header = ({ user, logout }) => {
   const [searchText, setSearchText] = useState("");
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const Header = () => {
 
   const osszesDb = kosar.reduce((acc, item) => acc + item.db, 0);
 
+  // Keresés (Autocomplete) logika
   useEffect(() => {
     const load = async () => {
       if (searchText.length < 2) {
@@ -74,10 +75,14 @@ const Header = () => {
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <Link className="nav-link active fw-medium" aria-current="page" to="/">Kezdőlap</Link>
+              <Link className="nav-link active fw-medium" to="/">Kezdőlap</Link>
             </li>
-            <Link className="nav-link fw-medium" aria-current="page" to="/kereso">Szűrő</Link>
-            <Link className="nav-link fw-medium" aria-current="page" to="/rolunk">Rólunk</Link>
+            <li className="nav-item">
+              <Link className="nav-link fw-medium" to="/kereso">Szűrő</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link fw-medium" to="/rolunk">Rólunk</Link>
+            </li>
 
             {/* Kontinens dropdown */}
             <li className="nav-item dropdown">
@@ -97,22 +102,53 @@ const Header = () => {
           {/* JOBB OLDALI IKONOK KONTÉNER */}
           <div className="d-flex align-items-center">
 
-            {/* --- USER / BEJELENTKEZÉS DROPDOWN --- */}
+            {/* --- USER DROPDOWN (Névvel, ha be van lépve) --- */}
             <div className="nav-item dropdown me-3">
               <a 
-                className="nav-link d-flex align-items-center text-dark" 
+                className={`nav-link d-flex align-items-center ${user ? "text-primary" : "text-dark"}`} 
                 href="#" 
                 role="button" 
                 data-bs-toggle="dropdown" 
                 aria-expanded="false"
+                style={{ cursor: "pointer" }}
               >
                 <IoMdPerson size={28} />
+                {user && (
+                  <span className="ms-2 fw-bold d-none d-sm-inline-block">
+                    {user.nev}
+                  </span>
+                )}
               </a>
-              <ul className="dropdown-menu dropdown-menu-end shadow-sm" style={{ minWidth: "200px" }}>
-                 {/* Később ide jöhet feltétel: ha be van lépve, akkor "Profil", "Kilépés" */}
-                <li><h6 className="dropdown-header">Fiók</h6></li>
-                <li><Link className="dropdown-item" to="/login">Bejelentkezés</Link></li>
-                <li><Link className="dropdown-item" to="/register">Regisztráció</Link></li>
+              <ul className="dropdown-menu dropdown-menu-end shadow-sm" style={{ minWidth: "220px" }}>
+                {user ? (
+                  <>
+                    <li>
+                      <div className="px-3 py-2">
+                        <div className="small text-muted">Bejelentkezve:</div>
+                        <div className="fw-bold">{user.email}</div>
+                      </div>
+                    </li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><Link className="dropdown-item" to="/profil">Fiókom adatai</Link></li>
+                    <li>
+                      <button 
+                        className="dropdown-item text-danger d-flex align-items-center justify-content-between" 
+                        onClick={() => {
+                          logout();
+                          navigate("/");
+                        }}
+                      >
+                        Kilépés <IoMdLogOut size={18} />
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li><h6 className="dropdown-header">Fiók</h6></li>
+                    <li><Link className="dropdown-item" to="/login">Bejelentkezés</Link></li>
+                    <li><Link className="dropdown-item" to="/register">Regisztráció</Link></li>
+                  </>
+                )}
               </ul>
             </div>
 

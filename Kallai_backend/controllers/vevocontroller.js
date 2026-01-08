@@ -128,3 +128,19 @@ exports.profil = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.logout = (req, res) => {
+  try {
+    // Töröljük a refreshToken cookie-t
+    // Fontos: ugyanazokkal a beállításokkal kell törölni, ahogy létrehoztuk (kivéve a maxAge)
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: "Strict",
+      secure: process.env.NODE_ENV === "production"
+    });
+
+    return res.status(200).json({ message: "Sikeres kijelentkezés!" });
+  } catch (error) {
+    return res.status(500).json({ message: "Hiba a kijelentkezéskor." });
+  }
+};

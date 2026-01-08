@@ -24,4 +24,10 @@ router.post("/refresh-token", felhasznaloController.refreshToken);
 router.get("/profil", auth, felhasznaloController.profil);
 
 
+// Profil lekérése (védett)
+router.get("/profil", auth, felhasznaloController.profil);
+
+// ÚJ: Kijelentkezés
+router.post("/logout", felhasznaloController.logout);
+
 module.exports = router;
