@@ -12,10 +12,13 @@ import Footer from './components/footer.jsx';
 import Kapcsolat from './components/kapcsolat.jsx';
 import Aszf from './components/aszf.jsx';
 import Rolunk from './components/rolunk.jsx';
-import Kosar from './components/Kosar.jsx';
+import Kosar from './components/kosar.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
-import Profil from './components/Profil.jsx'; // ÚJ IMPORT
+import Profil from './components/Profil.jsx';
+
+import Fizetes from './components/Fizetes.jsx'; 
+
 import { KosarProvider } from './context/KosarContext.jsx';
 import httpCommon from './http-common.js';
 
@@ -52,16 +55,12 @@ function App() {
     }
   }, [accessToken]);
 
-  // MÓDOSÍTOTT LOGOUT FÜGGVÉNY
   const logout = async () => {
     try {
-      // 1. Backend hívás a cookie törléséhez
       await httpCommon.post("/auth/logout", {}, { withCredentials: true });
     } catch (error) {
       console.error("Hiba a kijelentkezés során (cookie törlés sikertelen):", error);
-      // Opcionális: akkor is kiléptetjük a klienst, ha a backend hiba volt
     } finally {
-       // 2. Kliens oldali takarítás mindenképp megtörténjen
        setAccessToken("");
        setUser(null);
     }
@@ -77,6 +76,9 @@ function App() {
           <Route path="/kereso" element={<Kereso />} />
           <Route path="/termek/:country" element={<Termek />} />
           <Route path="/kosar" element={<Kosar />} />
+          
+          <Route path="/fizetes" element={<Fizetes />} />
+
           <Route path="/kapcsolat" element={<Kapcsolat />} />
           <Route path="/aszf" element={<Aszf />} />
           <Route path="/rolunk" element={<Rolunk />} />
@@ -85,8 +87,7 @@ function App() {
           <Route path="/login" element={<Login setAccesstoken={setAccessToken} accessToken={accessToken} />} />
           <Route path="/register" element={<Register />} />
           
-          {/* ÚJ: Profil route */}
-          {/* Átadjuk az accessToken-t, hogy le tudja kérni az adatokat */}
+          {/* Profil route */}
           <Route path="/profil" element={<Profil accessToken={accessToken} />} />
           
         </Routes>

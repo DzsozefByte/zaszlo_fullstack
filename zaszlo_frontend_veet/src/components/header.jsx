@@ -138,7 +138,7 @@ const Header = ({ user, logout }) => {
                           navigate("/");
                         }}
                       >
-                        Kilépés <IoMdLogOut size={18} />
+                        Kijelentkezés <IoMdLogOut size={18} />
                       </button>
                     </li>
                   </>

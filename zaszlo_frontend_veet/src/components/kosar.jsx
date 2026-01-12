@@ -109,7 +109,12 @@ const Kosar = () => {
                                 <span>Fizetendő:</span>
                                 <span>{vegosszeg.toLocaleString()} Ft</span>
                             </div>
-                            <Button variant="success" size="lg" className="w-100">
+                            <Button 
+                                variant="success" 
+                                size="lg" 
+                                className="w-100"
+                                onClick={() => navigate("/fizetes")} // <--- EZ A LÉNYEG
+                            >
                                 Tovább a fizetéshez
                             </Button>
                             <Button 
