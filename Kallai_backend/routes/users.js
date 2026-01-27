@@ -4,10 +4,9 @@ const router = express.Router();
 // Controller importálása
 const felhasznaloController = require("../controllers/vevocontroller");
 
-// Validatorok importálása
-
-const auth = require("../middleware/auth");
-
+// ÚJ: Middleware-ek importálása (destrukturálva)
+// Így a 'verifyToken' nevű függvényt emeljük ki az objektumból
+const { verifyToken } = require("../middleware/auth");
 
 // ROUTES
 
@@ -20,12 +19,9 @@ router.post("/login", felhasznaloController.login);
 // Refresh token
 router.post("/refresh-token", felhasznaloController.refreshToken);
 
-// védett útvonal
-router.get("/profil", auth, felhasznaloController.profil);
-
-
 // Profil lekérése (védett)
-router.get("/profil", auth, felhasznaloController.profil);
+// Itt az 'auth' helyett most már a 'verifyToken' függvényt használjuk
+router.get("/profil", verifyToken, felhasznaloController.profil);
 
 // ÚJ: Kijelentkezés
 router.post("/logout", felhasznaloController.logout);

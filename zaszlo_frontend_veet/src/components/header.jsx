@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import React, { useState, useEffect, useContext } from 'react';
 import ReactCountryFlag from "react-country-flag";
-import { IoMdCart, IoMdClose, IoMdPerson, IoMdLogOut } from "react-icons/io";
+import { IoMdCart, IoMdClose, IoMdPerson, IoMdLogOut, IoMdSettings } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import httpCommon from "../http-common";
 import { KosarContext } from "../context/KosarContext";
@@ -84,6 +84,13 @@ const Header = ({ user, logout }) => {
               <Link className="nav-link fw-medium" to="/rolunk">Rólunk</Link>
             </li>
 
+            {/* --- ADMIN LINK A FŐMENÜBEN --- */}
+            {user && user.szerep === 'admin' && (
+              <li className="nav-item">
+                <Link className="nav-link fw-bold text-danger" to="/admin">Admin Panel</Link>
+              </li>
+            )}
+
             {/* Kontinens dropdown */}
             <li className="nav-item dropdown">
               <a className="nav-link dropdown-toggle fw-medium" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -99,10 +106,9 @@ const Header = ({ user, logout }) => {
             </li>
           </ul>
 
-          {/* JOBB OLDALI IKONOK KONTÉNER */}
           <div className="d-flex align-items-center">
 
-            {/* --- USER DROPDOWN (Névvel, ha be van lépve) --- */}
+            {/* --- USER DROPDOWN --- */}
             <div className="nav-item dropdown me-3">
               <a 
                 className={`nav-link d-flex align-items-center ${user ? "text-primary" : "text-dark"}`} 
@@ -126,9 +132,23 @@ const Header = ({ user, logout }) => {
                       <div className="px-3 py-2">
                         <div className="small text-muted">Bejelentkezve:</div>
                         <div className="fw-bold">{user.email}</div>
+                        {user.szerep === 'admin' && <span className="badge bg-danger">ADMINISZTRÁTOR</span>}
                       </div>
                     </li>
                     <li><hr className="dropdown-divider" /></li>
+                    
+                    {/* ADMIN LINK A PROFIL MENÜBEN */}
+                    {user.szerep === 'admin' && (
+                      <>
+                        <li>
+                          <Link className="dropdown-item fw-bold text-danger d-flex align-items-center" to="/admin">
+                            <IoMdSettings className="me-2" /> Adminisztráció
+                          </Link>
+                        </li>
+                        <li><hr className="dropdown-divider" /></li>
+                      </>
+                    )}
+
                     <li><Link className="dropdown-item" to="/profil">Fiókom adatai</Link></li>
                     <li>
                       <button 
@@ -236,7 +256,7 @@ const Header = ({ user, logout }) => {
               )}
             </div>
 
-            {/* Keresőmező (Autocomplete) */}
+            {/* Keresőmező */}
             <div className="position-relative d-none d-lg-block" style={{ width: "250px" }}>
               <input
                 className="form-control rounded-pill"
@@ -264,8 +284,7 @@ const Header = ({ user, logout }) => {
               )}
             </div>
 
-          </div> {/* End of Right Side Icons Container */}
-
+          </div>
         </div>
       </div>
       <style>{`

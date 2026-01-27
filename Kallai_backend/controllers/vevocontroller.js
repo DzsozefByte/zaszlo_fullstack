@@ -83,31 +83,26 @@ exports.login = async (req, res, next) => {
   }
 };
 
-//3. refresh token kezelése
-exports.refreshToken = (req, res) => {
+// 3. refresh token kezelése - JAVÍTOTT VERZIÓ
+exports.refreshToken = async (req, res) => { // async-re váltottunk!
   try {
-    // Cookie kiolvasása
     const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ message: "Nincs refresh token." });
 
-    if (!refreshToken) {
-      return res.status(401).json({ message: "Nincs refresh token." });
-    }
-
-    // Refresh token ellenőrzése
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET);
+    
+    // KERESD KI A FELHASZNÁLÓT, hogy meglegyen a jogosultsága
+    const user = await Felhasznalo.getById(decoded.id);
+    if (!user) return res.status(403).json({ message: "Felhasználó nem található." });
 
-    // Új access token generálása
+    // Új access token, amiben már ott van a SZEREP is!
     const newAccessToken = jwt.sign(
-      { id: decoded.id, email: decoded.email},
+      { id: user.id, nev: user.nev, email: user.email, szerep: user.jogosultsag },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    // Küldjük vissza az új access tokent
-    return res.json({
-      accessToken: newAccessToken,
-    });
-
+    return res.json({ accessToken: newAccessToken });
   } catch (error) {
     return res.status(403).json({ message: "Érvénytelen vagy lejárt refresh token." });
   }

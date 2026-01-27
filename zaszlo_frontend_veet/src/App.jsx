@@ -16,6 +16,7 @@ import Kosar from './components/kosar.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import Profil from './components/Profil.jsx';
+import AdminPanel from './components/AdminPanel.jsx';
 
 import Fizetes from './components/Fizetes.jsx'; 
 
@@ -89,7 +90,17 @@ function App() {
           
           {/* Profil route */}
           <Route path="/profil" element={<Profil accessToken={accessToken} />} />
-          
+          <Route 
+              path="/admin" 
+              element={
+                user && user.szerep === 'admin' ? (
+                  <AdminPanel accessToken={accessToken} />
+                ) : (
+                  <Navigate to="/" />
+                )
+              } 
+            />
+                  
         </Routes>
         <Footer />
       </Router>
