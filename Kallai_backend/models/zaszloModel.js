@@ -11,7 +11,7 @@ class Zaszlok {
   }
 
   static async delete(id){
-    await db.query('DELETE FROM kapcsolo_zaszlok WHERE zaszlo_id = ?', [id]);
+    await db.query('DELETE FROM kapcsolo_zaszlok WHERE LOWER(orszag) = LOWER(:orszag)', [id]);
     const [result] = await db.query('DELETE FROM zaszlok WHERE id = ?', [id]);
     return result.affectedRows;
   }  
@@ -67,7 +67,6 @@ static async filter(meret, anyag, kontinens, orszag) {
   }
 
 };
-
 }
 
 module.exports = Zaszlok;

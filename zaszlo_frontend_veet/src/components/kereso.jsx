@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import httpCommon from "../http-common";
-import Card from 'react-bootstrap/Card';
-import Button from 'react-bootstrap/Button';
-import Pagination from 'react-bootstrap/Pagination';
-import { useLocation, useNavigate } from 'react-router-dom';
+import Card from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
+import Pagination from "react-bootstrap/Pagination";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Kereso = () => {
     const [zaszlok, setZaszlok] = useState([]);
@@ -28,7 +28,24 @@ const Kereso = () => {
             const url = queryString ? `/zaszlok/search?${queryString}` : "/zaszlok";
 
             const response = await httpCommon.get(url);
-            setZaszlok(response.data);
+            let data = Array.isArray(response.data)
+                ? response.data
+                : [response.data];
+
+            // 🔒 PONTOS ORSZÁG SZŰRÉS, HA VAN KERESÉS
+            if (filt.search) {
+                const exactMatches = data.filter(
+                    z =>
+                        z.orszag.trim().toLowerCase() ===
+                        filt.search.trim().toLowerCase()
+                );
+
+                if (exactMatches.length) {
+                    data = exactMatches;
+                }
+            }
+
+            setZaszlok(data);
             setCurrentPage(1);
         } catch (error) {
             console.error("Hiba az adatok lekérése során:", error);
@@ -37,40 +54,42 @@ const Kereso = () => {
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const newFilters = { continent: params.get("continent") || "" };
+        const newFilters = {
+            continent: params.get("continent") || "",
+            search: params.get("search") || ""
+        };
 
-        setFilters(prev => {
-            const updated = { ...prev, ...newFilters };
-            fetchData(updated);
-            return updated;
-        });
+        setFilters(newFilters);
+        fetchData(newFilters);
     }, [location.search, fetchData]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters(prev => {
-            const updated = { ...prev, [name]: value };
-            fetchData(updated);
-            return updated;
-        });
+
+        const updated = { ...filters, [name]: value };
+        setFilters(updated);
+        fetchData(updated);
     };
 
+    // 🇭🇺 országonként csak egy zászló
     const uniqueCountries = Array.from(
         new Map(zaszlok.map(z => [z.orszag, z])).values()
     );
 
     const totalPages = Math.ceil(uniqueCountries.length / itemsPerPage);
     const firstIndex = (currentPage - 1) * itemsPerPage;
-    const currentItems = uniqueCountries.slice(firstIndex, firstIndex + itemsPerPage);
+    const currentItems = uniqueCountries.slice(
+        firstIndex,
+        firstIndex + itemsPerPage
+    );
 
     const changePage = (page) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     return (
         <div className="kereso-page-wrapper d-flex flex-column min-vh-100">
-
             <div className="content-area d-flex flex-wrap">
 
                 <div className="filter-panel mb-3">
@@ -103,7 +122,6 @@ const Kereso = () => {
                 </div>
 
                 <div className="flags-main-content flex-grow-1">
-
                     <div className="flags-grid">
                         {currentItems.map((z, index) => (
                             <Card key={index} className="flag-card">
@@ -115,11 +133,19 @@ const Kereso = () => {
                                     />
                                 </div>
                                 <Card.Body>
-                                    <Card.Title className="flag-title">{z.orszag}</Card.Title>
+                                    <Card.Title className="flag-title">
+                                        {z.orszag}
+                                    </Card.Title>
                                     <Button
                                         variant="primary"
-                                        style={{ width: '100%' }}
-                                        onClick={() => navigate(`/termek/${encodeURIComponent(z.orszag)}`)}
+                                        style={{ width: "100%" }}
+                                        onClick={() =>
+                                            navigate(
+                                                `/termek/${encodeURIComponent(
+                                                    z.orszag
+                                                )}`
+                                            )
+                                        }
                                     >
                                         Részletek
                                     </Button>
@@ -149,11 +175,8 @@ const Kereso = () => {
                             </Pagination>
                         </div>
                     )}
-
                 </div>
-
             </div>
-
         </div>
     );
 };
