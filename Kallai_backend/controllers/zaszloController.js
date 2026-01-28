@@ -1,3 +1,42 @@
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // A te pontos útvonalad a gépeden:
+    const uploadPath = 'C:\\Users\\13d\\Documents\\zaszlo_fullstack\\zaszlo_frontend_veet\\public\\images';
+    
+    // Biztonsági ellenőrzés: ha nem létezne a mappa, létrehozza (opcionális)
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    // A fájl neve az orszagId lesz, amit az URL-ből kapunk: /upload/:orszagId
+    const orszagId = req.params.orszagId;
+    cb(null, `${orszagId}.png`);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+exports.uploadImage = [
+  upload.single('image'), // Fontos, hogy a Frontend is 'image' néven küldje!
+  (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Nem érkezett fájl!' });
+    }
+    res.status(200).json({ 
+      message: 'Kép sikeresen feltöltve!', 
+      filename: req.file.filename 
+    });
+  }
+];
+
+
 const Zaszlo = require('../models/zaszloModel');
 
 exports.getAllZaszlok = async (req, res) => {
@@ -55,14 +94,22 @@ exports.filterZaszlok = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { orszag, meretId, anyagId, ar, kontinens } = req.body; // kontinens hozzáadva
-    const ujId = await Zaszlo.create({ orszag, meretId, anyagId, ar, kontinens });
-    res.status(201).json({ message: 'Zászló sikeresen hozzáadva!' });
+    const { orszag, meretId, anyagId, ar, kontinens } = req.body;
+    
+    // A modellnek vissza kell adnia az új rekord adatait (insertId és orszagId)
+    const result = await Zaszlo.create({ orszag, meretId, anyagId, ar, kontinens });
+    
+    // VISSZAKÜLDJÜK AZ ID-kat! Ez a kulcs a képfeltöltéshez.
+    res.status(201).json({ 
+      message: 'Zászló sikeresen hozzáadva!',
+      id: result.insertId,
+      orszagId: result.orszagId // A frontend ebből tudja, hogy pl. "194.png" lesz a név
+    });
   } catch (error) {
+    console.error("Create hiba:", error);
     res.status(500).json({ message: 'Hiba történt', error: error.message });
   }
 };
-
 exports.getAdminZaszlok = async (req, res) => {
   try {
     const zaszlok = await Zaszlo.getAdminList();

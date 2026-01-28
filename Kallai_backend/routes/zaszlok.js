@@ -15,4 +15,8 @@ router.get('/:id', zaszlo.getById);
 router.post('/', verifyToken, isAdmin, zaszlo.create);
 router.delete('/:id', verifyToken, isAdmin, zaszlo.delete);
 
+// Új kép feltöltése egy adott országhoz
+router.post('/upload/:orszagId', verifyToken, isAdmin, zaszlo.uploadImage);
+
+
 module.exports = router;
