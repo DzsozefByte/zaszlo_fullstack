@@ -5,9 +5,14 @@ const { verifyToken, isAdmin } = require('../middleware/auth'); // Importáljuk 
 
 router.get('/', zaszlo.getAllZaszlok);
 router.get('/search', zaszlo.filterZaszlok);
+
+// EZ LEGYEN ELŐBB:
+router.get('/admin-list', verifyToken, isAdmin, zaszlo.getAdminZaszlok);
+
+// EZ LEGYEN UTÁNA (különben az admin-list szót ID-nak nézi):
 router.get('/:id', zaszlo.getById);
 
-// Csak bejelentkezett ADMIN törölhet!
+router.post('/', verifyToken, isAdmin, zaszlo.create);
 router.delete('/:id', verifyToken, isAdmin, zaszlo.delete);
 
 module.exports = router;

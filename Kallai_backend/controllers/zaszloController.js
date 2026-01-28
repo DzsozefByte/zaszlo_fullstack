@@ -53,4 +53,22 @@ exports.filterZaszlok = async (req, res) => {
     }
 };
 
+exports.create = async (req, res) => {
+  try {
+    const { orszag, meretId, anyagId, ar, kontinens } = req.body; // kontinens hozzáadva
+    const ujId = await Zaszlo.create({ orszag, meretId, anyagId, ar, kontinens });
+    res.status(201).json({ message: 'Zászló sikeresen hozzáadva!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Hiba történt', error: error.message });
+  }
+};
 
+exports.getAdminZaszlok = async (req, res) => {
+  try {
+    const zaszlok = await Zaszlo.getAdminList();
+    res.json(zaszlok);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Hiba az admin lista lekérésekor' });
+  }
+};
