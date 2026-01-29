@@ -10,12 +10,16 @@ const Login = ({ setAccesstoken }) => {
  const handleSubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await httpCommon.post(
-      "/auth/login",
-      { email, jelszo },
-      { withCredentials: true } 
-    )
-    setAccesstoken(res.data.accessToken);
+const res = await httpCommon.post(
+  "/auth/login",
+  { email, jelszo },
+  { withCredentials: true } 
+);
+
+// ELMENTJÜK A BÖNGÉSZŐBE IS:
+localStorage.setItem('token', res.data.accessToken); 
+
+setAccesstoken(res.data.accessToken);
     
 
   } catch (err) {

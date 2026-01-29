@@ -6,6 +6,8 @@ var logger = require('morgan');
 const cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var zaszlokRouter = require('./routes/zaszlok');
+var szamlakRouter = require('./routes/szamlak'); // ADD HOZZÁ EZT
 require("dotenv").config();
 
 
@@ -32,6 +34,9 @@ app.use('/auth', usersRouter);
 
 var zaszlokRouter = require('./routes/zaszlok');
 app.use('/zaszlok', zaszlokRouter);
+
+app.use('/zaszlok', zaszlokRouter);
+app.use('/szamlak', szamlakRouter); // ÉS EZT IS
 
 
 

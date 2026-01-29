@@ -45,18 +45,48 @@ const Fizetes = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleRendeles = (e) => {
-    e.preventDefault();
-    setLoading(true);
+// Fizetes.jsx - handleRendeles függvény
+const handleRendeles = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    // Itt küldenéd el az adatokat a szervernek (API hívás)
-    setTimeout(() => {
-      alert("Sikeres rendelés! Köszönjük a vásárlást.");
-      setLoading(false);
-      // Itt érdemes lenne kiüríteni a kosarat: clearKosar()
-      navigate("/"); // Visszairányítás a főoldalra
-    }, 2000);
-  };
+  // Kinyerjük a tokent a localStorage-ból
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    alert("Nincs érvényes munkamenet. Kérlek, jelentkezz be újra!");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:8080/szamlak', { 
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Fontos a "Bearer " szóköz után a token!
+      },
+      body: JSON.stringify({
+        fizetesiMod: fizetesiMod,
+        kosar: kosar
+      })
+    });
+
+    if (response.status === 401 || response.status === 403) {
+       alert("Lejárt vagy érvénytelen token. Jelentkezz be újra!");
+    } else if (response.ok) {
+       alert("Sikeres rendelés!");
+       // Kosár ürítése...
+       navigate("/");
+    } else {
+       alert("Hiba történt a szerveren.");
+    }
+  } catch (error) {
+    alert("Hálózati hiba!");
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (kosar.length === 0) {
     navigate("/");
