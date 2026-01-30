@@ -1,105 +1,139 @@
 import httpCommon from "../http-common";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Carousel from 'react-bootstrap/Carousel';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useNavigate } from "react-router-dom"; // IMPORTÁLNI KELL!
+import { useNavigate } from "react-router-dom";
 
-import './Fooldal.css'; 
+import './Fooldal.css';
 
-// A FlagSection komponenst is frissíteni kell a navigációhoz
+// --- ÚJ KOMPONENS: Értékajánlat Sáv ---
+const FeaturesBar = () => (
+  <div className="features-bar">
+    <Container>
+      <Row className="text-center py-4">
+        <Col md={4} className="feature-item mb-3 mb-md-0">
+          <i className="bi bi-patch-check-fill text-primary feature-icon"></i>
+          <h5 className="mt-2">Prémium Minőség</h5>
+          <p className="text-muted small mb-0">Tartós anyagok, élénk színek.</p>
+        </Col>
+        <Col md={4} className="feature-item mb-3 mb-md-0">
+          <i className="bi bi-globe-americas text-primary feature-icon"></i>
+          <h5 className="mt-2">Óriási Választék</h5>
+          <p className="text-muted small mb-0">Több mint 200 ország zászlaja.</p>
+        </Col>
+        <Col md={4} className="feature-item">
+          <i className="bi bi-truck text-primary feature-icon"></i>
+          <h5 className="mt-2">Gyors Szállítás</h5>
+          <p className="text-muted small mb-0">Akár 1-2 munkanapon belül.</p>
+        </Col>
+      </Row>
+    </Container>
+  </div>
+);
+
+// --- FRISSÍTETT KOMPONENS: FlagSection ---
 const FlagSection = ({ title, items, sectionKey }) => {
-  const navigate = useNavigate(); // Hook inicializálása
+  const navigate = useNavigate();
+  const scrollRef = useRef(null);
 
-  const scrollLeft = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollBy({ left: -300, behavior: "smooth" });
+  const scroll = (scrollOffset) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: scrollOffset, behavior: "smooth" });
+    }
   };
 
-  const scrollRight = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollBy({ left: 300, behavior: "smooth" });
-  };
-
-  const sectionId = `sec-${sectionKey}`;
-
-  // Segédfüggvény a navigáláshoz
   const handleNavigate = (orszag) => {
     navigate(`/termek/${encodeURIComponent(orszag)}`);
   };
 
   return (
-    <div className="flag-section" style={{ position: 'relative', margin: '2rem 0' }}>
-      <h2 className="flag-section-title">{title}</h2>
+    <section className="flag-section-wrapper my-5">
+      <Container>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2 className="section-title mb-0">{title}</h2>
+          <div className="scroll-controls d-none d-md-flex">
+            <button
+              className="scroll-btn prev me-2"
+              aria-label="Előző"
+              onClick={() => scroll(-320)}
+            >
+              <i className="bi bi-chevron-left"></i>
+            </button>
+            <button
+              className="scroll-btn next"
+              aria-label="Következő"
+              onClick={() => scroll(320)}
+            >
+              <i className="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
 
-      <button
-        className="scroll-arrow left"
-        aria-label="Előző"
-        onClick={() => scrollLeft(sectionId)}
-      >
-        <i className="bi bi-chevron-left" style={{ fontSize: '1.2rem' }}></i>
-      </button>
-
-      <div
-        id={sectionId}
-        className="horizontal-card-row"
-        role="region"
-        aria-label={title}
-      >
-        {items.map((z, index) => (
-          <Card
-            key={index}
-            className="flag-card"
-            // JAVÍTVA: window.location helyett navigate
-            onClick={() => handleNavigate(z.orszag)}
-            style={{ cursor: "pointer" }} // Hogy látszódjon, kattintható
-          >
-            <div className="flag-img-wrapper">
-              <Card.Img
-                variant="top"
-                src={`/images/${z.id}.png`}
-                alt={z.orszag}
-                className="flag-img"
-              />
-            </div>
-            <Card.Body style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <Card.Title className="flag-title">{z.orszag}</Card.Title>
-              <Button 
-                variant="primary" 
-                onClick={(e) => { 
-                    e.stopPropagation(); 
-                    // JAVÍTVA: window.location helyett navigate
-                    handleNavigate(z.orszag); 
-                }}
-              >
-                Részletek
-              </Button>
-            </Card.Body>
-          </Card>
-        ))}
-      </div>
-
-      <button
-        className="scroll-arrow right"
-        aria-label="Következő"
-        onClick={() => scrollRight(sectionId)}
-      >
-        <i className="bi bi-chevron-right" style={{ fontSize: '1.2rem' }}></i>
-      </button>
-    </div>
+        <div
+          ref={scrollRef}
+          className="horizontal-scroll-container"
+          role="region"
+          aria-label={title}
+        >
+          {items.map((z, index) => (
+            <Card
+              key={index}
+              className="modern-flag-card h-100"
+              onClick={() => handleNavigate(z.orszag)}
+            >
+              <div className="card-img-wrapper">
+                <Card.Img
+                  variant="top"
+                  src={`/images/${z.id}.png`}
+                  alt={z.orszag}
+                  className="img-fluid"
+                  loading="lazy" // Teljesítmény optimalizálás
+                />
+              </div>
+              <Card.Body className="d-flex flex-column justify-content-between text-center p-3">
+                <Card.Title as="h5" className="fw-bold text-truncate w-100 mb-3">
+                  {z.orszag}
+                </Card.Title>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="stretched-link w-100 rounded-pill fw-semibold"
+                  onClick={(e) => {
+                    // A stretched-link miatt a gomb kattintás is a kártya kattintást indítja,
+                    // de ha külön logikát akarnánk, itt megállíthatnánk: e.stopPropagation();
+                  }}
+                >
+                  Részletek
+                </Button>
+              </Card.Body>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </section>
   );
 };
 
+
+// --- FŐ KOMPONENS: Fooldal ---
 const Fooldal = () => {
   const [zaszlok, setZaszlok] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
     try {
+      setIsLoading(true);
       const response = await httpCommon.get("/zaszlok");
       setZaszlok(response.data);
     } catch (error) {
       console.error("Hiba az adatok lekérése során:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -120,39 +154,58 @@ const Fooldal = () => {
   const otherFlags = zaszlok.filter(z => !popularCountries.includes(z.orszag) && !euCountries.includes(z.orszag));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '80vh', backgroundColor: '#f8f9fa', paddingBottom: '2rem' }}>
-      <div style={{ width: '90%', margin: '2rem 0', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}>
-        <Carousel fade>
-          {[1, 2, 3].map((num) => (
-            <Carousel.Item key={num} interval={3000}>
-              <img
-                className="d-block w-100"
-                src={`/images/stock${num}${num === 2 ? '.jpeg' : '.jpg'}`}
-                alt={`Slide ${num}`}
-                style={{ objectFit: 'cover', height: '400px', filter: 'brightness(85%)' }}
-              />
-              <Carousel.Caption style={{
-                bottom: '20%',
-                background: 'rgba(0,0,0,0.5)',
-                padding: '1rem 2rem',
-                borderRadius: '10px'
-              }}>
-                <h3 style={{ color: '#fff', fontWeight: '700' }}>
-                  {num === 1 ? 'Fedezd fel a világ zászlóit' : num === 2 ? 'Nemzetközi választék' : 'Elegáns és tartós'}
-                </h3>
-                <p style={{ color: '#f1f1f1', fontSize: '1rem' }}>
-                  {num === 1 ? 'Minőségi zászlók minden nemzet számára, közvetlenül Magyarországról.' : num === 2 ? 'Több mint száz ország zászlója egy helyen – gyűjtőknek és rajongóknak.' : 'Zászlóinkat a legjobb anyagokból készítjük, hogy hosszú ideig kibírják.'}
-                </p>
-              </Carousel.Caption>
+    <div className="homepage-wrapper">
+      {/* Hero Carousel */}
+      <div className="hero-section">
+        <Carousel fade indicators={false} controls={false} interval={5000}>
+          {[
+            { img: '/images/stock1.jpg', title: 'Fedezd fel a világ színeit', text: 'Prémium minőségű zászlók minden nemzet számára.' },
+            { img: '/images/stock2.jpeg', title: 'Mutasd meg hovatartozásod', text: 'Legyen szó sporteseményről vagy ünnepről.' },
+            { img: '/images/stock3.jpg', title: 'A zászlók szakértője', text: 'Több mint 10 éve a gyűjtők és rajongók szolgálatában.' }
+          ].map((item, index) => (
+            <Carousel.Item key={index} className="hero-carousel-item">
+              {/* Feltételezzük, hogy a képek léteznek. Ha nincs stock fotód, használj placeholdert teszteléshez:
+                  src={`https://picsum.photos/1920/600?random=${index}`} */}
+              <div
+                className="hero-bg-image"
+                style={{ backgroundImage: `url(${item.img})` }}
+              ></div>
+              <div className="hero-overlay">
+                <Container className="h-100 d-flex align-items-center justify-content-center justify-content-md-start">
+                  <div className="hero-caption text-center text-md-start">
+                    <h1 className="display-4 fw-bolder text-white mb-3">{item.title}</h1>
+                    <p className="lead text-white-50 mb-4 d-none d-md-block">
+                      {item.text}
+                    </p>
+                    <Button variant="primary" size="lg" className="rounded-pill px-5 fw-bold shadow-sm">
+                      Böngészés
+                    </Button>
+                  </div>
+                </Container>
+              </div>
             </Carousel.Item>
           ))}
         </Carousel>
       </div>
 
-      <div style={{ width: '90%' }}>
-        {popularFlags.length > 0 && <FlagSection title="Legnépszerűbb országok zászlói" items={popularFlags} sectionKey="popular" />}
-        {euFlags.length > 0 && <FlagSection title="Az Európai Unió országai" items={euFlags} sectionKey="eu" />}
-        {otherFlags.length > 0 && <FlagSection title="Egyéb országok" items={otherFlags} sectionKey="other" />}
+      {/* Features Bar */}
+      <FeaturesBar />
+
+      {/* Content Sections */}
+      <div className="content-sections py-4">
+        {isLoading ? (
+          <Container className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Betöltés...</span>
+            </div>
+          </Container>
+        ) : (
+          <>
+            {popularFlags.length > 0 && <FlagSection title="Legnépszerűbb választások" items={popularFlags} sectionKey="popular" />}
+            {euFlags.length > 0 && <FlagSection title="Európai Unió tagállamai" items={euFlags} sectionKey="eu" />}
+            {otherFlags.length > 0 && <FlagSection title="További országok a világból" items={otherFlags} sectionKey="other" />}
+          </>
+        )}
       </div>
     </div>
   );

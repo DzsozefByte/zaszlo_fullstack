@@ -1,97 +1,220 @@
-/* --- ALAPOK --- */
-* { box-sizing: border-box; }
+/* --- Fooldal.css --- */
 
-/* Flag section title */
-.flag-section-title {
-    text-align: left;
-    font-weight: 700;
-    font-size: 1.4rem;
-    margin: 0 0 0.75rem 0;
-    padding-left: 3.2rem; /* hely a nyilaknak */
+/* Alap beállítások a főoldalhoz */
+.homepage-wrapper {
+    background-color: #f9fafb; /* Nagyon világos szürke háttér a tisztaságért */
+    overflow-x: hidden;
 }
 
-/* HORIZONTÁLIS SOR */
-.horizontal-card-row {
-    display: flex;
-    flex-wrap: nowrap;       /* NEM törjük sorokra */
-    gap: 1rem;
-    overflow-x: auto;
-    padding: 1rem 3.2rem;    /* bal-jobb padding, hogy hely legyen a nyilaknak */
-    scroll-behavior: smooth;
-    align-items: stretch;
+/* --- 1. Hero Section (Carousel) --- */
+.hero-section {
+    position: relative;
+    /* Magasság beállítása különböző eszközökre */
+    height: 60vh;
+    min-height: 400px;
+    max-height: 600px;
 }
 
-/* Eltüntetjük a scrollbar-okat (webkit és mások) */
-.horizontal-card-row::-webkit-scrollbar { height: 8px; display: none; }
-.horizontal-card-row { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* A cardok rugalmas, de nem törő elemek legyenek (egymás mellett maradnak) */
-.flag-card {
-    min-width: 220px;
-    max-width: 260px;
-    flex: 0 0 auto;       /* NE nyújtsuk/fosszuk: fix méret alap, de rugalmasan kezelhető */
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
-    cursor: pointer;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background: #fff;
+.hero-carousel-item {
+    height: 60vh;
+    min-height: 400px;
+    max-height: 600px;
+    position: relative;
 }
 
-.flag-card:hover { transform: translateY(-6px); box-shadow: 0 10px 24px rgba(0,0,0,0.18); }
-
-/* kép wrapper */
-.flag-img-wrapper {
-    height: 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #fff;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-}
-
-.flag-img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    padding: 0.6rem;
-}
-
-/* Card tartalom */
-.flag-title { font-weight: 600; font-size: 1.05rem; text-align: center; margin: 0.5rem 0; }
-.flag-card .btn { margin-top: auto; }
-
-/* NYILAK */
-.scroll-arrow {
+/* Háttérkép kezelése, hogy kitöltse a teret */
+.hero-bg-image {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    /* Enyhe zoom effektus lassú mozgással */
+    animation: slowZoom 20s infinite alternate;
+}
+
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+/* Modern sötétítés gradienttel */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.1) 100%);
+    z-index: 2;
+}
+
+.hero-caption {
+    max-width: 600px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Mobil nézet igazítások */
+@media (max-width: 768px) {
+    .hero-section, .hero-carousel-item {
+        height: 50vh;
+        min-height: 350px;
+    }
+    .hero-overlay {
+        background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+    }
+    .hero-caption h1 {
+        font-size: 2rem;
+    }
+}
+
+
+/* --- 2. Features Bar (Értékajánlat sáv) --- */
+.features-bar {
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    position: relative;
+    z-index: 10;
+    margin-top: -30px; /* Hogy rálógjon kicsit a hero képre */
+    border-radius: 8px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.feature-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .features-bar {
+        margin-top: 0;
+        width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border-bottom: 1px solid #eee;
+    }
+}
+
+
+/* --- 3. Flag Sections & Modern Cards --- */
+.section-title {
+    font-weight: 700;
+    color: #2c3e50;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Kis aláhúzás a címek alatt */
+.section-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 3px;
+    background-color: var(--bs-primary); /* Bootstrap primary színét használja */
+    border-radius: 2px;
+}
+
+/* Görgető konténer modernizálása */
+.horizontal-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding: 1rem 5px 2rem 5px; /* Hely az árnyékoknak */
+    scroll-snap-type: x mandatory;
+    /* Görgetősáv elrejtése (Firefox) */
+    scrollbar-width: none;
+    /* Görgetősáv elrejtése (IE, Edge) */
+    -ms-overflow-style: none;
+}
+
+/* Görgetősáv elrejtése (Chrome, Safari, Opera) */
+.horizontal-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Modern Flag Card design */
+.modern-flag-card {
+    min-width: 220px;
+    max-width: 220px;
+    border: none; /* Nincs alap keret */
+    border-radius: 12px;
     background: #ffffff;
-    border-radius: 50%;
-    padding: 0.5rem;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-    z-index: 40;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    scroll-snap-align: start;
+    overflow: hidden;
     cursor: pointer;
-    border: none;
+}
+
+/* Hover effektus a kártyán */
+.modern-flag-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+/* Kép tartó */
+.card-img-wrapper {
+    height: 140px;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.3s ease;
 }
 
-/* pozíciók */
-.scroll-arrow.left { left: 8px; }
-.scroll-arrow.right { right: 8px; }
-
-/* kisebb eszközökön lejjebb és elrejthetjük a nyilakat */
-@media (max-width: 768px) {
-    .flag-section-title { padding-left: 1rem; }
-    .horizontal-card-row { padding: 0.5rem 1rem; gap: 0.8rem; }
-    .scroll-arrow { display: none; }
+.modern-flag-card:hover .card-img-wrapper {
+    background-color: #e9ecef;
 }
 
-/* további finomítások, hogy ne ütközzön a meglévő stílussal */
-.flag-section { margin-bottom: 2rem; position: relative; }
+.card-img-wrapper img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    /* Enyhe árnyék a zászlón magán */
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Görgető nyilak */
+.scroll-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.scroll-btn:hover {
+    background: var(--bs-primary);
+    color: white;
+    border-color: var(--bs-primary);
+}
+
+/* Reszponzív kártya méretek */
+@media (max-width: 576px) {
+    .modern-flag-card {
+        min-width: 180px;
+        max-width: 180px;
+    }
+    .card-img-wrapper {
+        height: 120px;
+        padding: 1rem;
+    }
+    .section-title {
+        font-size: 1.5rem;
+    }
+}

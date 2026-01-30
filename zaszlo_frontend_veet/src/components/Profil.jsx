@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import httpCommon from '../http-common';
-import { IoMdPerson } from "react-icons/io";
+import { IoMdPerson, IoMdMail, IoMdKey, IoMdLogOut } from "react-icons/io";
+import { Container, Row, Col, Card, Badge, Spinner } from 'react-bootstrap';
 
 const Profil = ({ accessToken }) => {
   const [userData, setUserData] = useState(null);
@@ -9,24 +10,15 @@ const Profil = ({ accessToken }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Ha nincs token, dobjuk vissza a főoldalra vagy loginra
-    if (!accessToken) {
-        // Várunk kicsit, hátha csak a refresh fut, de ha tartósan nincs, akkor redirect
-        // Itt most egyszerűsítve: ha a parent komponens (App) null-t ad, akkor nem fut le a fetch
-        return; 
-    }
+    if (!accessToken) return;
 
     const fetchProfil = async () => {
       try {
         const response = await httpCommon.get("/auth/profil", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
+          headers: { Authorization: `Bearer ${accessToken}` }
         });
         setUserData(response.data.user);
       } catch (error) {
-        console.error("Hiba a profil lekérésekor:", error);
-        // Ha lejárt a token vagy hiba van, navigáljunk a loginra
         navigate("/login");
       } finally {
         setLoading(false);
@@ -36,62 +28,62 @@ const Profil = ({ accessToken }) => {
     fetchProfil();
   }, [accessToken, navigate]);
 
-  if (!accessToken) {
-      return (
-          <div className="container mt-5 text-center">
-              <p>Jelentkezz be a profilod megtekintéséhez!</p>
-              <button className="btn btn-primary" onClick={() => navigate("/login")}>Bejelentkezés</button>
-          </div>
-      );
-  }
-
   if (loading) {
-    return <div className="container mt-5 text-center"><div className="spinner-border text-primary"></div></div>;
+    return (
+        <Container className="py-5 mt-5 text-center">
+            <Spinner animation="border" variant="primary" />
+            <p className="mt-3 text-muted">Adataid betöltése folyamatban...</p>
+        </Container>
+    );
   }
 
   return (
-    <div className="container mt-5 mb-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8 col-lg-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-primary text-white text-center py-4">
-               <IoMdPerson size={64} className="mb-2" />
-               <h3 className="mb-0">Fiókom</h3>
+    <Container className="py-5">
+      <Row className="justify-content-center">
+        <Col md={8} lg={5}>
+          <Card className="border-0 shadow-lg rounded-4 overflow-hidden">
+            <div className="bg-primary text-white text-center py-5 position-relative">
+               <div className="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow mx-auto mb-3" style={{width: '90px', height: '90px'}}>
+                  <IoMdPerson size={50} />
+               </div>
+               <h3 className="mb-1 fw-bold">{userData?.nev}</h3>
+               <Badge bg="light" text="dark" className="rounded-pill px-3 py-2 text-uppercase letter-spacing-1 shadow-sm">
+                  {userData?.jogosultsag || 'vásárló'}
+               </Badge>
             </div>
-            <div className="card-body p-4">
-              {userData ? (
-                <div className="d-flex flex-column gap-3">
-                  <div className="border-bottom pb-2">
-                    <small className="text-muted text-uppercase">Név</small>
-                    <div className="fs-5 fw-medium">{userData.nev}</div>
-                  </div>
-
-                  <div className="border-bottom pb-2">
-                    <small className="text-muted text-uppercase">Email cím</small>
-                    <div className="fs-5 fw-medium">{userData.email}</div>
-                  </div>
-
-                  <div className="border-bottom pb-2">
-                    <small className="text-muted text-uppercase">Jogosultság</small>
-                    <div>
-                        <span className="badge bg-secondary fs-6">{userData.jogosultsag}</span>
+            
+            <Card.Body className="p-4 py-5">
+                <div className="mb-4">
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                        <div className="bg-light p-2 rounded-3 text-primary"><IoMdMail size={24}/></div>
+                        <div className="flex-grow-1">
+                            <small className="text-muted d-block text-uppercase small fw-bold">Email cím</small>
+                            <span className="fs-6 fw-medium">{userData?.email}</span>
+                        </div>
                     </div>
-                  </div>
-                  
-                  {/* Itt lehetne később: Cím szerkesztése, Korábbi rendelések, stb. */}
-                  
+
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                        <div className="bg-light p-2 rounded-3 text-primary"><IoMdKey size={24}/></div>
+                        <div className="flex-grow-1">
+                            <small className="text-muted d-block text-uppercase small fw-bold">Biztonság</small>
+                            <span className="fs-6 fw-medium">Jelszó beállítva</span>
+                        </div>
+                    </div>
                 </div>
-              ) : (
-                <div className="alert alert-danger">Nem sikerült betölteni az adatokat.</div>
-              )}
-            </div>
-            <div className="card-footer bg-white text-end p-3">
-                <button className="btn btn-outline-secondary" onClick={() => navigate("/")}>Vissza a főoldalra</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
+                <div className="d-grid gap-2 mt-4">
+                    <button className="btn btn-outline-primary rounded-pill fw-bold" onClick={() => navigate("/")}>
+                        Vissza a kezdőlapra
+                    </button>
+                    <button className="btn btn-link text-danger text-decoration-none small mt-2">
+                        <IoMdLogOut /> Kijelentkezés
+                    </button>
+                </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
