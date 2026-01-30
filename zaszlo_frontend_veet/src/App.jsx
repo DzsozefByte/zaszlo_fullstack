@@ -33,11 +33,16 @@ function App() {
         const res = await httpCommon.post("/auth/refresh-token", {}, {
           withCredentials: true,
         });
-        setAccessToken(res.data.accessToken);
+        const newToken = res.data.accessToken;
+        setAccessToken(newToken);
+        
+        // FONTOS: Frissítésnél is mentsük el, hogy a Fizetes.jsx lássa!
+        localStorage.setItem('token', newToken); 
       }
       catch (err) {
         setAccessToken("");
         setUser(null);
+        localStorage.removeItem('token'); // Ha sikertelen, takarítsunk ki
       }
     };
     refreshToken();
@@ -58,12 +63,16 @@ function App() {
 
   const logout = async () => {
     try {
+      // Megpróbáljuk a backendről is törölni a sütit
       await httpCommon.post("/auth/logout", {}, { withCredentials: true });
     } catch (error) {
-      console.error("Hiba a kijelentkezés során (cookie törlés sikertelen):", error);
+      console.error("Hiba a kijelentkezés során:", error);
     } finally {
-       setAccessToken("");
-       setUser(null);
+      // FONTOS: Mindent ki kell takarítani!
+      setAccessToken("");
+      setUser(null);
+      localStorage.removeItem('token'); // EZ HIÁNYZOTT!
+      console.log("Kijelentkezés: token törölve a localStorage-ból.");
     }
   };
 
@@ -78,17 +87,16 @@ function App() {
           <Route path="/termek/:country" element={<Termek />} />
           <Route path="/kosar" element={<Kosar />} />
           
-          <Route path="/fizetes" element={<Fizetes />} />
+          {/* FONTOS: A Fizetes-nek is átadhatjuk az accessToken-t propként a biztonság kedvéért */}
+          <Route path="/fizetes" element={<Fizetes accessToken={accessToken} />} />
 
           <Route path="/kapcsolat" element={<Kapcsolat />} />
           <Route path="/aszf" element={<Aszf />} />
           <Route path="/rolunk" element={<Rolunk />} />
 
-          {/* Login / Register */}
-          <Route path="/login" element={<Login setAccesstoken={setAccessToken} accessToken={accessToken} />} />
+          <Route path="/login" element={<Login setAccesstoken={setAccessToken} />} />
           <Route path="/register" element={<Register />} />
           
-          {/* Profil route */}
           <Route path="/profil" element={<Profil accessToken={accessToken} />} />
           <Route 
               path="/admin" 
@@ -100,7 +108,6 @@ function App() {
                 )
               } 
             />
-                  
         </Routes>
         <Footer />
       </Router>

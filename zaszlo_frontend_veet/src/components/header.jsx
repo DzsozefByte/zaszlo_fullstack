@@ -151,15 +151,21 @@ const Header = ({ user, logout }) => {
 
                     <li><Link className="dropdown-item" to="/profil">Fiókom adatai</Link></li>
                     <li>
-                      <button 
-                        className="dropdown-item text-danger d-flex align-items-center justify-content-between" 
-                        onClick={() => {
-                          logout();
-                          navigate("/");
-                        }}
-                      >
-                        Kijelentkezés <IoMdLogOut size={18} />
-                      </button>
+<button 
+  className="dropdown-item text-danger d-flex align-items-center justify-content-between" 
+  onClick={() => {
+    // 1. TÖRLÉS: Ez a legfontosabb sor, ami eddig hiányzott!
+    localStorage.removeItem('token'); 
+    
+    // 2. A szülő komponenstől kapott logout (ami valószínűleg a state-et üríti)
+    logout(); 
+    
+    // 3. Irány a főoldal
+    navigate("/");
+  }}
+>
+  Kijelentkezés <IoMdLogOut size={18} />
+</button>
                     </li>
                   </>
                 ) : (
