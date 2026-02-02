@@ -148,8 +148,7 @@ const Fizetes = () => {
               <Card.Header className="bg-white fw-bold py-3">3. Fizetési mód</Card.Header>
               <Card.Body>
                 <Form.Check type="radio" id="kartya" label="Bankkártyás fizetés" name="fizetes" checked={fizetesiMod === 'kartya'} onChange={() => setFizetesiMod('kartya')} className="mb-3" />
-                <Form.Check type="radio" id="utalas" label="Előre utalás" name="fizetes" checked={fizetesiMod === 'utalas'} onChange={() => setFizetesiMod('utalas')} className="mb-3" />
-                <Form.Check type="radio" id="utanvet" label={`Utánvét (+${fizetesiArak.utanvet} Ft)`} name="fizetes" checked={fizetesiMod === 'utanvet'} onChange={() => setFizetesiMod('utanvet')} />
+                <Form.Check type="radio" id="utanvet" label={`Utánvét (Kézpénz) (+${fizetesiArak.utanvet} Ft)`} name="fizetes" checked={fizetesiMod === 'utanvet'} onChange={() => setFizetesiMod('utanvet')} />
               </Card.Body>
             </Card>
           </Col>

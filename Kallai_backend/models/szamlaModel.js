@@ -23,12 +23,14 @@ class Szamla {
                 const tetelAdatok = kosar.map(item => [
                     ujSzamlaId, 
                     item.id,      // zaszlo_id
+                    item.meret,   // meret
+                    item.anyag,   // anyag
                     item.db,      // mennyiseg
                     item.ar       // egyseg_ar
                 ]);
 
                 await connection.query(
-                    `INSERT INTO rendeles_reszletek (szamla_id, zaszlo_id, mennyiseg, egyseg_ar) VALUES ?`,
+                    `INSERT INTO rendeles_reszletek (szamla_id, zaszlo_id, meret, anyag, mennyiseg, egyseg_ar) VALUES ?`,
                     [tetelAdatok]
                 );
             }
