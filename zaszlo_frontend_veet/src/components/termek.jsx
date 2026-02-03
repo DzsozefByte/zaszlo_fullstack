@@ -81,12 +81,6 @@ const Termek = () => {
                     {/* --- JOBB OLDAL: KONFIGURÁCIÓ --- */}
                     <div className="col-lg-6">
                         <h1 className="display-5 fw-bold mb-3">{product.orszag} zászló</h1>
-                        <div className="d-flex align-items-center mb-4">
-                             <div className="text-warning me-2">
-                                <i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i><i className="bi bi-star-fill"></i>
-                             </div>
-                             <span className="text-muted small">(Kiváló minőségű termék)</span>
-                        </div>
 
                         <div className="p-4 bg-white rounded-4 shadow-sm border mb-4">
                             <h4 className="fw-bold mb-4">Konfiguráció</h4>

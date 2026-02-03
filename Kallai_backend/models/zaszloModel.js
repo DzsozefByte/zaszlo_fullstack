@@ -33,13 +33,46 @@ class Zaszlok {
     }
   }
 
-  static async delete(id) {
+static async delete(id) {
+    const connection = await db.getConnection();
     try {
-      const [result] = await db.query('DELETE FROM zaszlok WHERE id = ?', [id]);
-      return result.affectedRows;
+      await connection.beginTransaction();
+
+      // 1. Megkeressük az orszagId-t, mielőtt törölnénk a zászlót
+      const [rows] = await connection.query('SELECT orszagId FROM zaszlok WHERE id = ?', [id]);
+      
+      if (rows.length === 0) {
+        await connection.rollback();
+        return 0; // Nem található a zászló
+      }
+      
+      const orszagId = rows[0].orszagId;
+
+      // 2. Töröljük a konkrét zászlót (id alapján)
+      const [deleteResult] = await connection.query('DELETE FROM zaszlok WHERE id = ?', [id]);
+
+      // 3. Ellenőrizzük, maradt-e még BÁRMILYEN más zászló ehhez az országhoz
+      // (Mert lehet, hogy van belőle más méret vagy anyag)
+      const [remaining] = await connection.query(
+        'SELECT COUNT(*) as count FROM zaszlok WHERE orszagId = ?', 
+        [orszagId]
+      );
+
+      // 4. Ha ez volt az utolsó zászló ehhez az országhoz, töröljük az országot is
+      if (remaining[0].count === 0) {
+        await connection.query('DELETE FROM orszagok WHERE id = ?', [orszagId]);
+        console.log(`Az ország (ID: ${orszagId}) is törölve lett, mert elfogytak a hozzá tartozó zászlók.`);
+      }
+
+      await connection.commit();
+      return deleteResult.affectedRows;
+
     } catch (err) {
+      await connection.rollback();
       console.error("Hiba a törlés során (Model):", err);
       throw err;
+    } finally {
+      connection.release();
     }
   }
 
