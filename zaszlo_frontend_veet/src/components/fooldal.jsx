@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import './Fooldal.css';
 
-// --- ÚJ KOMPONENS: Értékajánlat Sáv ---
+// --- KOMPONENS: Értékajánlat Sáv ---
 const FeaturesBar = () => (
   <div className="features-bar">
     <Container>
@@ -36,8 +36,8 @@ const FeaturesBar = () => (
   </div>
 );
 
-// --- FRISSÍTETT KOMPONENS: FlagSection ---
-const FlagSection = ({ title, items, sectionKey }) => {
+// --- KOMPONENS: FlagSection ---
+const FlagSection = ({ title, items }) => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
@@ -57,57 +57,24 @@ const FlagSection = ({ title, items, sectionKey }) => {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="section-title mb-0">{title}</h2>
           <div className="scroll-controls d-none d-md-flex">
-            <button
-              className="scroll-btn prev me-2"
-              aria-label="Előző"
-              onClick={() => scroll(-320)}
-            >
+            <button className="scroll-btn prev me-2" aria-label="Előző" onClick={() => scroll(-320)}>
               <i className="bi bi-chevron-left"></i>
             </button>
-            <button
-              className="scroll-btn next"
-              aria-label="Következő"
-              onClick={() => scroll(320)}
-            >
+            <button className="scroll-btn next" aria-label="Következő" onClick={() => scroll(320)}>
               <i className="bi bi-chevron-right"></i>
             </button>
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="horizontal-scroll-container"
-          role="region"
-          aria-label={title}
-        >
+        <div ref={scrollRef} className="horizontal-scroll-container" role="region" aria-label={title}>
           {items.map((z, index) => (
-            <Card
-              key={index}
-              className="modern-flag-card h-100"
-              onClick={() => handleNavigate(z.orszag)}
-            >
+            <Card key={index} className="modern-flag-card h-100" onClick={() => handleNavigate(z.orszag)}>
               <div className="card-img-wrapper">
-                <Card.Img
-                  variant="top"
-                  src={`/images/${z.id}.png`}
-                  alt={z.orszag}
-                  className="img-fluid"
-                  loading="lazy" // Teljesítmény optimalizálás
-                />
+                <Card.Img variant="top" src={`/images/${z.id}.png`} alt={z.orszag} className="img-fluid" loading="lazy" />
               </div>
               <Card.Body className="d-flex flex-column justify-content-between text-center p-3">
-                <Card.Title as="h5" className="fw-bold text-truncate w-100 mb-3">
-                  {z.orszag}
-                </Card.Title>
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  className="stretched-link w-100 rounded-pill fw-semibold"
-                  onClick={(e) => {
-                    // A stretched-link miatt a gomb kattintás is a kártya kattintást indítja,
-                    // de ha külön logikát akarnánk, itt megállíthatnánk: e.stopPropagation();
-                  }}
-                >
+                <Card.Title as="h5" className="fw-bold text-truncate w-100 mb-3">{z.orszag}</Card.Title>
+                <Button variant="outline-primary" size="sm" className="stretched-link w-100 rounded-pill fw-semibold">
                   Részletek
                 </Button>
               </Card.Body>
@@ -124,6 +91,9 @@ const FlagSection = ({ title, items, sectionKey }) => {
 const Fooldal = () => {
   const [zaszlok, setZaszlok] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // ITT VOLT A HIBA: Definiálnunk kell a navigate-et a komponensen belül
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
@@ -164,22 +134,23 @@ const Fooldal = () => {
             { img: '/images/stock3.jpg', title: 'A zászlók szakértője', text: 'Több mint 10 éve a gyűjtők és rajongók szolgálatában.' }
           ].map((item, index) => (
             <Carousel.Item key={index} className="hero-carousel-item">
-              {/* Feltételezzük, hogy a képek léteznek. Ha nincs stock fotód, használj placeholdert teszteléshez:
-                  src={`https://picsum.photos/1920/600?random=${index}`} */}
-              <div
-                className="hero-bg-image"
-                style={{ backgroundImage: `url(${item.img})` }}
-              ></div>
+              <div className="hero-bg-image" style={{ backgroundImage: `url(${item.img})` }}></div>
               <div className="hero-overlay">
                 <Container className="h-100 d-flex align-items-center justify-content-center justify-content-md-start">
                   <div className="hero-caption text-center text-md-start">
                     <h1 className="display-4 fw-bolder text-white mb-3">{item.title}</h1>
-                    <p className="lead text-white-50 mb-4 d-none d-md-block">
-                      {item.text}
-                    </p>
-                    <Button variant="primary" size="lg" className="rounded-pill px-5 fw-bold shadow-sm">
+                    <p className="lead text-white-50 mb-4 d-none d-md-block">{item.text}</p>
+                    
+                    {/* A javított gomb onClick eseménnyel */}
+                    <Button 
+                      variant="primary" 
+                      size="lg" 
+                      className="rounded-pill px-5 fw-bold shadow-sm"
+                      onClick={() => navigate('/kereso')}
+                    >
                       Böngészés
                     </Button>
+                    
                   </div>
                 </Container>
               </div>
@@ -188,10 +159,8 @@ const Fooldal = () => {
         </Carousel>
       </div>
 
-      {/* Features Bar */}
       <FeaturesBar />
 
-      {/* Content Sections */}
       <div className="content-sections py-4">
         {isLoading ? (
           <Container className="text-center py-5">
@@ -201,9 +170,9 @@ const Fooldal = () => {
           </Container>
         ) : (
           <>
-            {popularFlags.length > 0 && <FlagSection title="Legnépszerűbb választások" items={popularFlags} sectionKey="popular" />}
-            {euFlags.length > 0 && <FlagSection title="Európai Unió tagállamai" items={euFlags} sectionKey="eu" />}
-            {otherFlags.length > 0 && <FlagSection title="További országok a világból" items={otherFlags} sectionKey="other" />}
+            {popularFlags.length > 0 && <FlagSection title="Legnépszerűbb választások" items={popularFlags} />}
+            {euFlags.length > 0 && <FlagSection title="Európai Unió tagállamai" items={euFlags} />}
+            {otherFlags.length > 0 && <FlagSection title="További országok a világból" items={otherFlags} />}
           </>
         )}
       </div>
