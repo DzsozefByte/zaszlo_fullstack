@@ -172,7 +172,7 @@ CREATE TABLE `orszagok` (
   PRIMARY KEY (`id`),
   KEY `FK_orszagok_kont_Id` (`kont_Id`),
   CONSTRAINT `FK_orszagok_kont_Id` FOREIGN KEY (`kont_Id`) REFERENCES `kontinensek` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -201,7 +201,7 @@ CREATE TABLE `rendeles_reszletek` (
   `mennyiseg` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
   `egyseg_ar` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -210,7 +210,7 @@ CREATE TABLE `rendeles_reszletek` (
 
 LOCK TABLES `rendeles_reszletek` WRITE;
 /*!40000 ALTER TABLE `rendeles_reszletek` DISABLE KEYS */;
-INSERT INTO `rendeles_reszletek` VALUES (1,'16','32','','','1','5400'),(2,'17','60','','','1','16200'),(3,'18','82','','','1','21600'),(4,'18','1','','','1','21600'),(5,'18','40','','','1','21600'),(6,'18','41','','','1','21600'),(7,'19','85','','','1','1800'),(8,'20','61','','','1','1800'),(9,'21','61','','','1','1800'),(10,'21','9','','','1','1800'),(11,'22','183','','','1','1800'),(12,'22','183','','','1','5400'),(13,'22','183','','','1','21600'),(14,'23','75','','','1','2700'),(15,'23','32','','','1','2700'),(16,'24','39','150x90cm','nylon','1','10800'),(17,'25','2','150x90cm','selyem','2','8100'),(18,'25','10','60x40cm','poliészter','1','1800'),(19,'25','9','300x150cm','rPET','3','21600'),(20,'26','61','60x40cm','poliészter','1','1800');
+INSERT INTO `rendeles_reszletek` VALUES (1,'16','32','','','1','5400'),(2,'17','60','','','1','16200'),(3,'18','82','','','1','21600'),(4,'18','1','','','1','21600'),(5,'18','40','','','1','21600'),(6,'18','41','','','1','21600'),(7,'19','85','','','1','1800'),(8,'20','61','','','1','1800'),(9,'21','61','','','1','1800'),(10,'21','9','','','1','1800'),(11,'22','183','','','1','1800'),(12,'22','183','','','1','5400'),(13,'22','183','','','1','21600'),(14,'23','75','','','1','2700'),(15,'23','32','','','1','2700'),(16,'24','39','150x90cm','nylon','1','10800'),(17,'25','2','150x90cm','selyem','2','8100'),(18,'25','10','60x40cm','poliészter','1','1800'),(19,'25','9','300x150cm','rPET','3','21600'),(20,'26','61','60x40cm','poliészter','1','1800'),(21,'27','32','200x100cm','selyem','2','10800'),(22,'27','183','200x100cm','poliészter','1','7200'),(23,'27','184','200x100cm','poliészter','1','7200'),(24,'28','204','60x40cm','poliészter','1','1800');
 /*!40000 ALTER TABLE `rendeles_reszletek` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -234,7 +234,7 @@ CREATE TABLE `szamla` (
   KEY `FK_szamla_vevo_id` (`vevo_id`),
   CONSTRAINT `FK_szamla_fizetesi_mod` FOREIGN KEY (`fizetesi_mod`) REFERENCES `fizetesi_mod` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_szamla_vevo_id` FOREIGN KEY (`vevo_id`) REFERENCES `vevo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -243,7 +243,7 @@ CREATE TABLE `szamla` (
 
 LOCK TABLES `szamla` WRITE;
 /*!40000 ALTER TABLE `szamla` DISABLE KEYS */;
-INSERT INTO `szamla` VALUES (15,2,'2026-01-12','2026-01-12','2026-01-19',4,'1'),(16,2,'2026-01-29','2026-01-29','2026-01-29',4,'SZ-613542'),(17,2,'2026-01-29','2026-01-29','2026-01-29',14,'SZ-662971'),(18,1,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-888158'),(19,2,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-700203'),(20,2,'2026-01-30','2026-01-30','2026-01-30',30,'SZ-591319'),(21,2,'2026-01-30','2026-01-30','2026-01-30',30,'SZ-921239'),(22,2,'2026-01-30','2026-01-30','2026-01-30',14,'SZ-286436'),(23,2,'2026-01-30','2026-01-30','2026-01-30',36,'SZ-698914'),(24,2,'2026-02-02','2026-02-02','2026-02-02',14,'SZ-586531'),(25,2,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-747113'),(26,1,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-910250');
+INSERT INTO `szamla` VALUES (15,2,'2026-01-12','2026-01-12','2026-01-19',4,'1'),(16,2,'2026-01-29','2026-01-29','2026-01-29',4,'SZ-613542'),(17,2,'2026-01-29','2026-01-29','2026-01-29',14,'SZ-662971'),(18,1,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-888158'),(19,2,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-700203'),(20,2,'2026-01-30','2026-01-30','2026-01-30',30,'SZ-591319'),(21,2,'2026-01-30','2026-01-30','2026-01-30',30,'SZ-921239'),(22,2,'2026-01-30','2026-01-30','2026-01-30',14,'SZ-286436'),(23,2,'2026-01-30','2026-01-30','2026-01-30',36,'SZ-698914'),(24,2,'2026-02-02','2026-02-02','2026-02-02',14,'SZ-586531'),(25,2,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-747113'),(26,1,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-910250'),(27,2,'2026-02-04','2026-02-04','2026-02-04',36,'SZ-736946'),(28,2,'2026-02-04','2026-02-04','2026-02-04',35,'SZ-925557');
 /*!40000 ALTER TABLE `szamla` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -348,7 +348,7 @@ CREATE TABLE `zaszlok` (
   CONSTRAINT `FK_zaszlok_anyag` FOREIGN KEY (`anyag`) REFERENCES `anyagok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_zaszlok_meret` FOREIGN KEY (`meret`) REFERENCES `meretek` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_zaszlok_orszagId` FOREIGN KEY (`orszagId`) REFERENCES `orszagok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3897 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3902 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -442,4 +442,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-02  8:43:49
+-- Dump completed on 2026-02-11 13:02:12
