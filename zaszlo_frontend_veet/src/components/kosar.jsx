@@ -1,18 +1,26 @@
 import React, { useContext } from "react";
 import { KosarContext } from "../context/KosarContext";
-import { Button, Card, Table, Container, Row, Col } from "react-bootstrap";
+import { Button, Card, Table, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { IoMdTrash, IoMdAdd, IoMdRemove, IoMdCart } from "react-icons/io";
+import { IoMdTrash, IoMdAdd, IoMdRemove, IoMdCart, IoMdCloseCircle } from "react-icons/io";
 
 const Kosar = () => {
-    const { kosar, torlesKosarbol, dbModositas, vegosszeg } = useContext(KosarContext);
+    // ITT ADTUK HOZZÁ A setKosar-t
+    const { kosar, torlesKosarbol, dbModositas, vegosszeg, setKosar } = useContext(KosarContext);
     const navigate = useNavigate();
+
+    // Teljes kosár ürítése függvény
+    const handleKosarUrites = () => {
+        if (window.confirm("Biztosan ki szeretnéd üríteni a teljes kosarat?")) {
+            setKosar([]); // Ez töröl mindent
+        }
+    };
 
     if (kosar.length === 0) {
         return (
             <Container className="py-5 mt-5 text-center">
                 <div className="mb-4">
-                    <IoMdCart size={80} className="text-light" />
+                    <IoMdCart size={80} className="text-light bg-secondary p-3 rounded-circle opacity-50" />
                 </div>
                 <h2 className="fw-bold">A kosarad jelenleg üres</h2>
                 <p className="text-muted">Nézz szét a kínálatunkban és válaszd ki kedvenc zászlóidat!</p>
@@ -25,9 +33,15 @@ const Kosar = () => {
 
     return (
         <Container className="py-5">
-            <h2 className="mb-4 fw-bold d-flex align-items-center gap-2">
-                <IoMdCart /> Kosár tartalma
-            </h2>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="fw-bold d-flex align-items-center gap-2 m-0">
+                    <IoMdCart /> Kosár tartalma
+                </h2>
+                {/* ÚJ GOMB: Kosár ürítése */}
+                <Button variant="outline-danger" size="sm" onClick={handleKosarUrites} className="rounded-pill">
+                    <IoMdCloseCircle className="me-1" /> Kosár ürítése
+                </Button>
+            </div>
             
             <Row className="g-4">
                 <div className="col-lg-8">

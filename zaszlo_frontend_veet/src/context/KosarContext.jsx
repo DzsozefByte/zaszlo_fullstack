@@ -3,8 +3,7 @@ import React, { createContext, useState, useEffect } from "react";
 export const KosarContext = createContext();
 
 export const KosarProvider = ({ children }) => {
-    // 1. KOSÁR BETÖLTÉSE: A useState-nek átadunk egy függvényt, ami 
-    // az első indításkor megnézi, van-e már valami a localStorage-ban.
+    // 1. KOSÁR BETÖLTÉSE: Első indításkor megnézi a localStorage-ot
     const [kosar, setKosar] = useState(() => {
         try {
             const mentes = localStorage.getItem("kosar_tartalom");
@@ -17,8 +16,7 @@ export const KosarProvider = ({ children }) => {
     
     const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
 
-    // 2. AUTOMATIKUS MENTÉS: Minden alkalommal, amikor a 'kosar' állapota 
-    // megváltozik (hozzáadás, törlés, darabszám módosítás), frissítjük a localStorage-ot.
+    // 2. AUTOMATIKUS MENTÉS: Amikor a 'kosar' változik, frissítjük a localStorage-ot
     useEffect(() => {
         localStorage.setItem("kosar_tartalom", JSON.stringify(kosar));
     }, [kosar]);
@@ -33,7 +31,7 @@ export const KosarProvider = ({ children }) => {
         if (letezoElem) {
             setKosar(
                 kosar.map((item) =>
-                    item.id === termek.id && item.meret === termet.meret && item.anyag === termek.anyag
+                    item.id === termek.id && item.meret === termek.meret && item.anyag === termek.anyag
                         ? { ...item, db: item.db + 1 }
                         : item
                 )
@@ -62,6 +60,7 @@ export const KosarProvider = ({ children }) => {
     return (
         <KosarContext.Provider value={{
             kosar,
+            setKosar, // Most már elérhető kívülről is
             kosarbaRak,
             torlesKosarbol,
             dbModositas,

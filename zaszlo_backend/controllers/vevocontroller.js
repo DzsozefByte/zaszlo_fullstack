@@ -1,23 +1,27 @@
 const bcrypt = require("bcrypt");
 const Felhasznalo = require("../models/vevoModel");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 
-//1. regisztráció
+// 1. Regisztráció
 exports.register = async (req, res, next) => {
   try {
-    const { nev, email, jelszo, jogosultsag } = req.body;
+    const { nev, email, jelszo } = req.body;
 
-    // email létezik-e?
+    // Ellenőrizzük, hogy minden adat megjött-e
+    if (!nev || !email || !jelszo) {
+      return res.status(400).json({ message: "Hiányzó adatok! (név, email vagy jelszó)" });
+    }
+
+    // Email létezik-e?
     const userExists = await Felhasznalo.findByEmail(email);
     if (userExists) {
       return res.status(400).json({ message: "A megadott email már foglalt." });
     }
 
-    // jelszó hash
+    // Jelszó hash
     const hashedPassword = await bcrypt.hash(jelszo, 10);
 
-    // felhasználó mentése
+    // Felhasználó mentése
     await Felhasznalo.register({
       nev,
       email,
@@ -25,54 +29,52 @@ exports.register = async (req, res, next) => {
       jogosultsag: 'user',
     });
 
-    // válasz
     res.status(201).json({ message: "Sikeres regisztráció!" });
 
   } catch (error) {
-    next(error);
+    console.error("Regisztrációs hiba részletei:", error);
+    res.status(500).json({ message: "Hiba a regisztráció során az adatbázisban." });
   }
 };
 
-//2. bejelentkezés
+// 2. Bejelentkezés
 exports.login = async (req, res, next) => {
   try {
     const { email, jelszo } = req.body;
 
-    // Felhasználó lekérése
+    if (!email || !jelszo) {
+      return res.status(400).json({ message: "Email és jelszó megadása kötelező!" });
+    }
+
     const user = await Felhasznalo.findByEmail(email);
     if (!user) {
       return res.status(400).json({ message: "Hibás email vagy jelszó." });
     }
 
-    // Jelszó ellenőrzés
     const isMatch = await bcrypt.compare(jelszo, user.jelszo);
     if (!isMatch) {
       return res.status(400).json({ message: "Hibás email vagy jelszó." });
     }
 
-    // Access token (rövid élettartamú)
     const accessToken = jwt.sign(
       { id: user.id, nev: user.nev, email: user.email, szerep: user.jogosultsag },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN } // pl. 1h
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
     );
 
-    // Refresh token (hosszú élettartamú JWT)
     const refreshToken = jwt.sign(
       { id: user.id, email: user.email },
       process.env.REFRESH_JWT_SECRET,
-      { expiresIn: process.env.REFRESH_EXPIRES_IN } // pl. 7d
+      { expiresIn: process.env.REFRESH_EXPIRES_IN || '7d' }
     );
 
-    // Refresh token HTTP-only cookie-ban
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // HTTPS élesben
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 nap (összhangban a JWT lejárattal)
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax", // Jobb kompatibilitás localhost-on
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    // Visszaküldjük az access tokent JSON-ben
     res.json({
       message: "Sikeres bejelentkezés!",
       accessToken
@@ -83,23 +85,21 @@ exports.login = async (req, res, next) => {
   }
 };
 
-// 3. refresh token kezelése - JAVÍTOTT VERZIÓ
-exports.refreshToken = async (req, res) => { // async-re váltottunk!
+// 3. Refresh token
+exports.refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.status(401).json({ message: "Nincs refresh token." });
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_JWT_SECRET);
-    
-    // KERESD KI A FELHASZNÁLÓT, hogy meglegyen a jogosultsága
     const user = await Felhasznalo.getById(decoded.id);
+    
     if (!user) return res.status(403).json({ message: "Felhasználó nem található." });
 
-    // Új access token, amiben már ott van a SZEREP is!
     const newAccessToken = jwt.sign(
       { id: user.id, nev: user.nev, email: user.email, szerep: user.jogosultsag },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
     );
 
     return res.json({ accessToken: newAccessToken });
@@ -108,34 +108,26 @@ exports.refreshToken = async (req, res) => { // async-re váltottunk!
   }
 };
 
-//4. védett útvonal - profil lekérése
+// 4. Profil lekérése
 exports.profil = async (req, res, next) => {
   try {
     const user = await Felhasznalo.getById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "Felhasználó nem található." });
-    }
-
+    if (!user) return res.status(404).json({ message: "Felhasználó nem található." });
+    
+    // Ne küldjük vissza a jelszót a profilban
+    delete user.jelszo;
     res.json({ user });
-
   } catch (error) {
     next(error);
   }
 };
 
+// 5. Kijelentkezés
 exports.logout = (req, res) => {
-  try {
-    // Töröljük a refreshToken cookie-t
-    // Fontos: ugyanazokkal a beállításokkal kell törölni, ahogy létrehoztuk (kivéve a maxAge)
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      sameSite: "Strict",
-      secure: process.env.NODE_ENV === "production"
-    });
-
-    return res.status(200).json({ message: "Sikeres kijelentkezés!" });
-  } catch (error) {
-    return res.status(500).json({ message: "Hiba a kijelentkezéskor." });
-  }
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: process.env.NODE_ENV === "production"
+  });
+  return res.status(200).json({ message: "Sikeres kijelentkezés!" });
 };

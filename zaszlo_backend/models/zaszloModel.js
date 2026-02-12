@@ -3,7 +3,7 @@ const db = require('../config/db');
 class Zaszlok {
   static async getAll() {
     try {
-      const [rows] = await db.query('SELECT * FROM view3');
+      const [rows] = await db.query('SELECT * FROM 193orszag');
       return rows;
     } catch (err) {
       throw err;

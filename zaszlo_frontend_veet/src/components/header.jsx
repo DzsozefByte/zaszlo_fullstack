@@ -12,7 +12,8 @@ const Header = ({ user, logout }) => {
   const [results, setResults] = useState([]);
   const navigate = useNavigate();
 
-  const { kosar, vegosszeg, isMiniCartOpen, setIsMiniCartOpen, torlesKosarbol } = useContext(KosarContext);
+  // Kiszedjük a setKosar-t is a Context-ből
+  const { kosar, vegosszeg, isMiniCartOpen, setIsMiniCartOpen, torlesKosarbol, setKosar } = useContext(KosarContext);
   const osszesDb = kosar.reduce((acc, item) => acc + item.db, 0);
 
   const kontinensek = [
@@ -130,7 +131,12 @@ const Header = ({ user, logout }) => {
                                 <li><Link className="dropdown-item rounded-3 py-2 small text-danger" to="/admin"><IoMdSettings size={18} className="me-2"/> Admin panel</Link></li>
                             )}
                             <li>
-                                <button className="dropdown-item rounded-3 py-2 small text-danger mt-1" onClick={() => { localStorage.removeItem('token'); logout(); navigate("/"); }}>
+                                <button className="dropdown-item rounded-3 py-2 small text-danger mt-1" onClick={() => { 
+                                    localStorage.removeItem('token'); 
+                                    setKosar([]); // <--- KIJELENTKEZÉSKOR ÜRÍTJÜK A KOSARAT
+                                    logout(); 
+                                    navigate("/"); 
+                                }}>
                                     <IoMdLogOut size={18} className="me-2"/> Kijelentkezés
                                 </button>
                             </li>
