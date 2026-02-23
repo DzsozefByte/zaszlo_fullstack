@@ -50,33 +50,43 @@ const Fizetes = ({ user, accessToken }) => {
         setRendelesAdatok({ ...rendelesAdatok, [name]: value });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-        const vegsoRendeles = {
-            ...rendelesAdatok,
-            termekek: kosar,
-            vegosszeg: vegosszeg,
-            datum: new Date().toISOString()
-        };
-
-        try {
-            // Backend hívás a rendelés mentéséhez
-            await httpCommon.post("/rendelesek", vegsoRendeles, {
-                headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-            });
-
-            setRendelesSikeres(true);
-            setKosar([]); // Kosár ürítése sikeres vásárlás után
-        } catch (error) {
-            console.error("Hiba a rendelés során:", error);
-            alert("Hiba történt a rendelés feldolgozásakor. Kérjük, próbáld újra!");
-        } finally {
-            setLoading(false);
+    // A backend a 'fizetesiMod' és 'kosar' kulcsokat várja a req.body-ban
+    const vegsoRendeles = {
+        fizetesiMod: rendelesAdatok.fizetesiMod, // "utanvet" vagy "kartya"
+        kosar: kosar, // A backend 'kosar' néven várja a tömböt, nem 'termekek' néven
+        // Itt küldheted a többi adatot is, ha a backendet bővíted (cím, név stb.)
+        szallitasiAdatok: {
+            nev: rendelesAdatok.nev,
+            iranyitoszam: rendelesAdatok.iranyitoszam,
+            varos: rendelesAdatok.varos,
+            utca: rendelesAdatok.utca,
+            telefon: rendelesAdatok.telefonszam
         }
     };
 
+    try {
+        // JAVÍTÁS: /rendelesek HELYETT /szamlak
+        await httpCommon.post("/szamlak", vegsoRendeles, {
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+        });
+
+        setRendelesSikeres(true);
+        setKosar([]); // Kosár ürítése
+    } catch (error) {
+        console.error("Hiba a rendelés során:", error);
+        // Részletesebb hibaüzenet a konzolon, ha a backend válaszol valamit
+        if (error.response) {
+            console.log("Backend hibaüzenet:", error.response.data);
+        }
+        alert("Hiba történt a rendelés feldolgozásakor. Kérjük, próbáld újra!");
+    } finally {
+        setLoading(false);
+    }
+};
     if (rendelesSikeres) {
         return (
             <Container className="py-5 text-center animate-slide-up">

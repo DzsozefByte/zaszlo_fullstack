@@ -44,5 +44,30 @@ class Szamla {
             connection.release();
         }
     }
+
+    static async getByUserId(vevoId) {
+    try {
+        // Feltételezve, hogy a db kapcsolatot a fájl elején importáltad: const db = require('../config/db');
+        const [rows] = await db.query(
+            'SELECT * FROM szamla WHERE vevo_id = ? ORDER BY szamla_kelte DESC',
+            [vevoId]
+        );
+        return rows;
+    } catch (err) {
+        throw err;
+    }
+}
+
+static async getByUserId(vevoId) {
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM szamla WHERE vevo_id = ? ORDER BY szamla_kelte DESC',
+            [vevoId]
+        );
+        return rows;
+    } catch (err) {
+        throw err;
+    }
+}
 }
 module.exports = Szamla;

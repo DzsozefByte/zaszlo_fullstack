@@ -17,6 +17,7 @@ import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import Profil from './components/Profil.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
+import Szamlak from './components/Szamlak.jsx';
 
 import Fizetes from './components/Fizetes.jsx'; 
 
@@ -98,6 +99,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           
           <Route path="/profil" element={<Profil accessToken={accessToken} />} />
+          <Route path="/szamlak" element={<Szamlak accessToken={accessToken} />} />
           <Route 
               path="/admin" 
               element={

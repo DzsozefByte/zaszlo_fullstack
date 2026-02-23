@@ -23,6 +23,9 @@ class Vevo {
     [id]
   );
   return rows[0];
-}}
+}
+
+
+}
 
 module.exports = Vevo;

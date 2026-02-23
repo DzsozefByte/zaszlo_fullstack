@@ -127,6 +127,7 @@ const Header = ({ user, logout }) => {
                             </div>
                             <li><hr className="dropdown-divider mx-2 opacity-50"/></li>
                             <li><Link className="dropdown-item rounded-3 py-2 small" to="/profil"><IoMdSettings size={18} className="me-2 text-muted"/> Fiók beállítások</Link></li>
+                            <li><Link className="dropdown-item rounded-3 py-2 small" to="/szamlak"><IoMdSettings size={18} className="me-2 text-muted"/> Számlák</Link></li>
                             {user.szerep === 'admin' && (
                                 <li><Link className="dropdown-item rounded-3 py-2 small text-danger" to="/admin"><IoMdSettings size={18} className="me-2"/> Admin panel</Link></li>
                             )}
