@@ -5,35 +5,25 @@ const jwt = require("jsonwebtoken");
 // 1. Regisztráció
 exports.register = async (req, res, next) => {
   try {
-    const { nev, email, jelszo } = req.body;
+    const { nev, email, jelszo, telefonszam, iranyitoszam, varos, utca } = req.body;
 
-    // Ellenőrizzük, hogy minden adat megjött-e
     if (!nev || !email || !jelszo) {
-      return res.status(400).json({ message: "Hiányzó adatok! (név, email vagy jelszó)" });
+      return res.status(400).json({ message: "A név, email és jelszó kötelező!" });
     }
 
-    // Email létezik-e?
     const userExists = await Felhasznalo.findByEmail(email);
-    if (userExists) {
-      return res.status(400).json({ message: "A megadott email már foglalt." });
-    }
+    if (userExists) return res.status(400).json({ message: "Ez az email már foglalt." });
 
-    // Jelszó hash
     const hashedPassword = await bcrypt.hash(jelszo, 10);
 
-    // Felhasználó mentése
     await Felhasznalo.register({
-      nev,
-      email,
-      jelszo: hashedPassword,
-      jogosultsag: 'user',
+      nev, email, telefonszam, iranyitoszam, varos, utca,
+      jelszo: hashedPassword
     });
 
     res.status(201).json({ message: "Sikeres regisztráció!" });
-
   } catch (error) {
-    console.error("Regisztrációs hiba részletei:", error);
-    res.status(500).json({ message: "Hiba a regisztráció során az adatbázisban." });
+    res.status(500).json({ message: "Hiba a mentés során" });
   }
 };
 

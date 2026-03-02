@@ -16,6 +16,21 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Temporary view structure for view `193orszag`
+--
+
+DROP TABLE IF EXISTS `193orszag`;
+/*!50001 DROP VIEW IF EXISTS `193orszag`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `193orszag` AS SELECT 
+ 1 AS `id`,
+ 1 AS `orszag`,
+ 1 AS `kontinens`,
+ 1 AS `zaszlok_szama`*/;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Table structure for table `anyagok`
 --
 
@@ -24,9 +39,10 @@ DROP TABLE IF EXISTS `anyagok`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `anyagok` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `anyag` varchar(50) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `szorzo` float DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `anyag` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  `szorzo` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `anyag` (`anyag`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -49,8 +65,9 @@ DROP TABLE IF EXISTS `fizetesi_mod`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `fizetesi_mod` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nev` varchar(50) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `nev` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nev` (`nev`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -60,7 +77,7 @@ CREATE TABLE `fizetesi_mod` (
 
 LOCK TABLES `fizetesi_mod` WRITE;
 /*!40000 ALTER TABLE `fizetesi_mod` DISABLE KEYS */;
-INSERT INTO `fizetesi_mod` VALUES (1,'kézpénz'),(2,'kártya');
+INSERT INTO `fizetesi_mod` VALUES (2,'kártya'),(1,'kézpénz');
 /*!40000 ALTER TABLE `fizetesi_mod` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -81,35 +98,6 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
--- Table structure for table `kapcsolo_zaszlok`
---
-
-DROP TABLE IF EXISTS `kapcsolo_zaszlok`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `kapcsolo_zaszlok` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `zaszlo_id` int DEFAULT NULL,
-  `szamla_id` int DEFAULT NULL,
-  `darab` int DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK_kapcsolo_zaszlok_zaszlo_id` (`zaszlo_id`),
-  KEY `FK_kapcsolo_zaszlok_szamla_id` (`szamla_id`),
-  CONSTRAINT `FK_kapcsolo_zaszlok_szamla_id` FOREIGN KEY (`szamla_id`) REFERENCES `szamla` (`szamla_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FK_kapcsolo_zaszlok_zaszlo_id` FOREIGN KEY (`zaszlo_id`) REFERENCES `zaszlok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `kapcsolo_zaszlok`
---
-
-LOCK TABLES `kapcsolo_zaszlok` WRITE;
-/*!40000 ALTER TABLE `kapcsolo_zaszlok` DISABLE KEYS */;
-/*!40000 ALTER TABLE `kapcsolo_zaszlok` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `kontinensek`
 --
 
@@ -118,8 +106,9 @@ DROP TABLE IF EXISTS `kontinensek`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `kontinensek` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `kontinens` varchar(30) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `kontinens` varchar(30) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kontinens` (`kontinens`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -129,7 +118,7 @@ CREATE TABLE `kontinensek` (
 
 LOCK TABLES `kontinensek` WRITE;
 /*!40000 ALTER TABLE `kontinensek` DISABLE KEYS */;
-INSERT INTO `kontinensek` VALUES (1,'Afrika'),(2,'Európa'),(3,'Ázsia'),(4,'Észak-Amerika'),(5,'Dél-Amerika'),(6,'Óceánia'),(7,'Antarktisz');
+INSERT INTO `kontinensek` VALUES (1,'Afrika'),(7,'Antarktisz'),(3,'Ázsia'),(5,'Dél-Amerika'),(4,'Észak-Amerika'),(2,'Európa'),(6,'Óceánia');
 /*!40000 ALTER TABLE `kontinensek` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -142,9 +131,11 @@ DROP TABLE IF EXISTS `meretek`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meretek` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `meret` varchar(50) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `szorzo` float DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `meret` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  `szorzo` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `meret` (`meret`),
+  UNIQUE KEY `szorzo` (`szorzo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -167,11 +158,12 @@ DROP TABLE IF EXISTS `orszagok`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `orszagok` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `orszag` varchar(200) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `kont_Id` int DEFAULT NULL,
+  `orszag` varchar(200) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  `kont_Id` int NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `orszag` (`orszag`),
   KEY `FK_orszagok_kont_Id` (`kont_Id`),
-  CONSTRAINT `FK_orszagok_kont_Id` FOREIGN KEY (`kont_Id`) REFERENCES `kontinensek` (`id`)
+  CONSTRAINT `FK_orszagok_kont_Id` FOREIGN KEY (`kont_Id`) REFERENCES `kontinensek` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -194,14 +186,18 @@ DROP TABLE IF EXISTS `rendeles_reszletek`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rendeles_reszletek` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `szamla_id` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `zaszlo_id` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
+  `szamla_id` int NOT NULL,
+  `zaszlo_id` int NOT NULL,
   `meret` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL,
   `anyag` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL,
-  `mennyiseg` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `egyseg_ar` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+  `mennyiseg` int NOT NULL,
+  `egyseg_ar` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_rendeles_reszletek_szamla_id` (`szamla_id`),
+  KEY `FK_rendeles_reszletek_zaszlo_id` (`zaszlo_id`),
+  CONSTRAINT `FK_rendeles_reszletek_szamla_id` FOREIGN KEY (`szamla_id`) REFERENCES `szamla` (`szamla_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_rendeles_reszletek_zaszlo_id` FOREIGN KEY (`zaszlo_id`) REFERENCES `zaszlok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -210,7 +206,7 @@ CREATE TABLE `rendeles_reszletek` (
 
 LOCK TABLES `rendeles_reszletek` WRITE;
 /*!40000 ALTER TABLE `rendeles_reszletek` DISABLE KEYS */;
-INSERT INTO `rendeles_reszletek` VALUES (1,'16','32','','','1','5400'),(2,'17','60','','','1','16200'),(3,'18','82','','','1','21600'),(4,'18','1','','','1','21600'),(5,'18','40','','','1','21600'),(6,'18','41','','','1','21600'),(7,'19','85','','','1','1800'),(8,'20','61','','','1','1800'),(9,'21','61','','','1','1800'),(10,'21','9','','','1','1800'),(11,'22','183','','','1','1800'),(12,'22','183','','','1','5400'),(13,'22','183','','','1','21600'),(14,'23','75','','','1','2700'),(15,'23','32','','','1','2700'),(16,'24','39','150x90cm','nylon','1','10800'),(17,'25','2','150x90cm','selyem','2','8100'),(18,'25','10','60x40cm','poliészter','1','1800'),(19,'25','9','300x150cm','rPET','3','21600'),(20,'26','61','60x40cm','poliészter','1','1800'),(21,'27','32','200x100cm','selyem','2','10800'),(22,'27','183','200x100cm','poliészter','1','7200'),(23,'27','184','200x100cm','poliészter','1','7200'),(24,'28','204','60x40cm','poliészter','1','1800');
+INSERT INTO `rendeles_reszletek` VALUES (16,24,39,'150x90cm','nylon',1,10800),(17,25,2,'150x90cm','selyem',2,8100),(18,25,10,'60x40cm','poliészter',1,1800),(19,25,9,'300x150cm','rPET',3,21600),(20,26,61,'60x40cm','poliészter',1,1800),(21,29,32,'200x100cm','selyem',2,10800),(22,29,183,'200x100cm','poliészter',1,7200),(23,29,184,'200x100cm','poliészter',1,7200),(24,29,204,'60x40cm','poliészter',1,1800),(25,29,85,'60x40cm','poliészter',1,1800),(26,30,32,'60x40cm','poliészter',1,1800),(27,31,85,'60x40cm','poliészter',1,1800),(28,32,10,'150x90cm','selyem',1,8100),(29,33,5,'60x40cm','poliészter',1,1800),(30,34,183,'300x150cm','selyem',1,16200),(31,35,61,'60x40cm','poliészter',1,1800),(32,35,85,'60x40cm','poliészter',1,1800);
 /*!40000 ALTER TABLE `rendeles_reszletek` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -223,18 +219,18 @@ DROP TABLE IF EXISTS `szamla`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `szamla` (
   `szamla_id` int NOT NULL AUTO_INCREMENT,
-  `fizetesi_mod` int DEFAULT NULL,
-  `teljesites_kelte` date DEFAULT NULL,
-  `szamla_kelte` date DEFAULT NULL,
-  `fizetesi_hatarido` date DEFAULT NULL,
-  `vevo_id` int DEFAULT NULL,
-  `szamlaszam` varchar(30) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
+  `fizetesi_mod` int NOT NULL,
+  `teljesites_kelte` date NOT NULL,
+  `szamla_kelte` date NOT NULL,
+  `fizetesi_hatarido` date NOT NULL,
+  `vevo_id` int NOT NULL,
+  `szamlaszam` varchar(30) COLLATE utf8mb4_hungarian_ci NOT NULL,
   PRIMARY KEY (`szamla_id`),
   KEY `FK_szamla_fizetesi_mod` (`fizetesi_mod`),
   KEY `FK_szamla_vevo_id` (`vevo_id`),
   CONSTRAINT `FK_szamla_fizetesi_mod` FOREIGN KEY (`fizetesi_mod`) REFERENCES `fizetesi_mod` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_szamla_vevo_id` FOREIGN KEY (`vevo_id`) REFERENCES `vevo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -243,7 +239,7 @@ CREATE TABLE `szamla` (
 
 LOCK TABLES `szamla` WRITE;
 /*!40000 ALTER TABLE `szamla` DISABLE KEYS */;
-INSERT INTO `szamla` VALUES (15,2,'2026-01-12','2026-01-12','2026-01-19',4,'1'),(16,2,'2026-01-29','2026-01-29','2026-01-29',4,'SZ-613542'),(17,2,'2026-01-29','2026-01-29','2026-01-29',14,'SZ-662971'),(18,1,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-888158'),(19,2,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-700203'),(20,2,'2026-01-30','2026-01-30','2026-01-30',30,'SZ-591319'),(21,2,'2026-01-30','2026-01-30','2026-01-30',30,'SZ-921239'),(22,2,'2026-01-30','2026-01-30','2026-01-30',14,'SZ-286436'),(23,2,'2026-01-30','2026-01-30','2026-01-30',36,'SZ-698914'),(24,2,'2026-02-02','2026-02-02','2026-02-02',14,'SZ-586531'),(25,2,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-747113'),(26,1,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-910250'),(27,2,'2026-02-04','2026-02-04','2026-02-04',36,'SZ-736946'),(28,2,'2026-02-04','2026-02-04','2026-02-04',35,'SZ-925557');
+INSERT INTO `szamla` VALUES (17,2,'2026-01-29','2026-01-29','2026-01-29',14,'SZ-662971'),(18,1,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-888158'),(19,2,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-700203'),(22,2,'2026-01-30','2026-01-30','2026-01-30',14,'SZ-286436'),(24,2,'2026-02-02','2026-02-02','2026-02-02',14,'SZ-586531'),(25,2,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-747113'),(26,1,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-910250'),(29,2,'2026-02-11','2026-02-11','2026-02-11',37,'SZ-124333'),(30,1,'2026-02-12','2026-02-12','2026-02-12',14,'SZ-135376'),(31,1,'2026-02-23','2026-02-23','2026-02-23',1,'SZ-532032'),(32,1,'2026-02-23','2026-02-23','2026-02-23',1,'SZ-670650'),(33,1,'2026-02-23','2026-02-23','2026-02-23',1,'SZ-323980'),(34,1,'2026-02-23','2026-02-23','2026-02-23',39,'SZ-524571'),(35,1,'2026-02-23','2026-02-23','2026-02-23',40,'SZ-263708');
 /*!40000 ALTER TABLE `szamla` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -256,14 +252,20 @@ DROP TABLE IF EXISTS `vevo`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vevo` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nev` varchar(100) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
+  `nev` varchar(100) COLLATE utf8mb4_hungarian_ci NOT NULL,
   `lakcim` varchar(150) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
   `adoszam` varchar(50) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `jelszo` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `jogosultsag` varchar(50) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+  `jelszo` varchar(255) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  `jogosultsag` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL DEFAULT 'user',
+  `email` varchar(100) COLLATE utf8mb4_hungarian_ci NOT NULL,
+  `telefonszam` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
+  `iranyitoszam` int DEFAULT NULL,
+  `varos` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
+  `utca` varchar(255) COLLATE utf8mb4_hungarian_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `jelszo` (`jelszo`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -272,44 +274,9 @@ CREATE TABLE `vevo` (
 
 LOCK TABLES `vevo` WRITE;
 /*!40000 ALTER TABLE `vevo` DISABLE KEYS */;
-INSERT INTO `vevo` VALUES (1,'Kerekes Ádám','5420 Túrkeve Molnár utca 1',NULL,'$2a$10$W42TqnyQyAECCUwl9Lzutu4et8q/eMm9df9Oln18R/gJ.4EFIxGmC','user','k.adam12220@gmail.com'),(2,'Csala Martin','5400 Mezőtúr Futó utca 17',NULL,'$2a$10$FDRK4xkHOog12QQZkQdeDuhEwy7D2eU.uxbJqSD7cfmUT92s.h/6y','user','csalamartin2@gmail.com'),(3,'Tóth-Takács András','5082 Tiszatenyő Táncsics Mihály utca 2',NULL,NULL,NULL,NULL),(4,'Kiss Lajos','5400 Mezőtúr Széna utca 16',NULL,NULL,NULL,NULL),(5,'Húrkeve KFT.','5420 Túrkeve Petőfi utca 4','12180439-2-41',NULL,NULL,NULL),(6,'Kiss Pál','5400 Mezőtúr Petőfi tér 1','3292611',NULL,NULL,NULL),(7,'Muzsai Tamás','5400 Mezőtúr munkás utca 34',NULL,NULL,NULL,NULL),(8,'F. Tóth Lajos','5310 Kisujszállás Kossuth utca 3',NULL,NULL,NULL,NULL),(9,'Laktatos Lajos','5600 Békéscsaba Május 1 utca 67',NULL,NULL,NULL,NULL),(10,'Tóth Gréta','8000 Székesfehérvár Vas utca 26',NULL,NULL,NULL,NULL),(11,'motherson hungary - SMR','5420 Túrkeve kisujszállási utca 52/b','83758375-5-22',NULL,NULL,NULL),(12,'Kádárné Cserepes Jolán','2360 Gyál Aradi utca 72',NULL,NULL,NULL,NULL),(13,'Bartos Cs. István','8000 Székesfehérvár akácfa utca 42',NULL,NULL,NULL,NULL),(14,'Sipos József','5400 Mezőtúr Szabadság Tér 24/4 3.em.11',NULL,'$2a$10$XYxZKNj2fsOBfQYq1d7/ruT6YwtTx8FdjRsykbCsDGnCA8ECdarvi','admin','ssjocijr@gmail.com'),(30,'LK',NULL,NULL,'$2b$10$zeB8kkfZqdEwxalw5lMGpOJI8mj.UR90GPD4/Y9mO9y5xDRQzBSei','user','kisslk67@gmail.com'),(31,'LK3',NULL,NULL,'$2b$10$.Oe0r.MN5GCBuYNf15BDielKJhIKMKyuI9c2PmP4QhA.I7p4HIZku','user','kisslk6767@gmail.com'),(32,'Krik',NULL,NULL,'$2b$10$CEvIyXF2QRHKvDhAO6PhguKMCJVGJQWF8qy64mmHDFKpscqVzanlS','user','asd@gmail.com'),(33,'Ábrahám Mihály',NULL,NULL,'$2b$10$V9JupDmGXHjHQnmMs6D2H.NLl5WbkZVvOGSVLDrbsfLhGsXpiu5JW','admin','mihalyabraham23@gmail.com'),(35,'Girán Benjámin',NULL,NULL,'$2b$10$GreW7y0gFAwHwvTLvpUsTefI1Wb31VgeQcfTekEPveyiNkJIAzEpO','user','skeletonbenyo@gmail.com'),(36,'Kovács Adél',NULL,NULL,'$2b$10$gXgJqIl8OLXJmf9GxZ2ay.esugvpbPp16R3134mtwfa.8OUH9bsvS','user','k.adel.88@freemail.hu');
+INSERT INTO `vevo` VALUES (1,'Kerekes Ádám','5420 Túrkeve Molnár utca 1',NULL,'$2a$10$W42TqnyQyAECCUwl9Lzutu4et8q/eMm9df9Oln18R/gJ.4EFIxGmC','user','k.adam12220@gmail.com',NULL,NULL,NULL,NULL),(2,'Csala Martin','5400 Mezőtúr Futó utca 17',NULL,'$2a$10$FDRK4xkHOog12QQZkQdeDuhEwy7D2eU.uxbJqSD7cfmUT92s.h/6y','user','csalamartin2@gmail.com',NULL,NULL,NULL,NULL),(14,'Sipos József','5400 Mezőtúr Szabadság Tér 24/4 3.em.11',NULL,'$2a$10$XYxZKNj2fsOBfQYq1d7/ruT6YwtTx8FdjRsykbCsDGnCA8ECdarvi','admin','ssjocijr@gmail.com',NULL,NULL,NULL,NULL),(33,'Ábrahám Mihály','5420 Túrkeve Kisújszállási utca 38',NULL,'$2b$10$V9JupDmGXHjHQnmMs6D2H.NLl5WbkZVvOGSVLDrbsfLhGsXpiu5JW','admin','mihalyabraham23@gmail.com',NULL,NULL,NULL,NULL),(37,'Muzsai Tamás',NULL,NULL,'$2b$10$RihJLhWybAgjJ4Rdx8i33OkIZGukIZ/BKdcdnxznUyOcdOLcwRftG','user','Mtomika2006@gmail.com',NULL,NULL,NULL,NULL),(39,'Kovács Adél',NULL,NULL,'$2b$10$5R.LASSDWNMVlyYjRbT4.eSr8LHhAG.6yPg3NzQanGa7y0Dfr/yKC','user','k.adel.88@freemail.hu',NULL,NULL,NULL,NULL),(40,'Teszt Elek',NULL,NULL,'$2b$10$0Cj0B7gu20oMN8i2C4aucOMAN8ZrQD38O9zUSVD7rkndU.Utk3Xru','user','TesztElek@gmail.com','+36404527865',69420,'Zedváros','Petőfi utca 12');
 /*!40000 ALTER TABLE `vevo` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Temporary view structure for view `view1`
---
-
-DROP TABLE IF EXISTS `view1`;
-/*!50001 DROP VIEW IF EXISTS `view1`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view1` AS SELECT 
- 1 AS `nev`,
- 1 AS `lakcim`,
- 1 AS `adoszam`,
- 1 AS `szamla_kelte`,
- 1 AS `orszag`,
- 1 AS `meret`,
- 1 AS `anyag`,
- 1 AS `darab`,
- 1 AS `szamlaszam`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view3`
---
-
-DROP TABLE IF EXISTS `view3`;
-/*!50001 DROP VIEW IF EXISTS `view3`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view3` AS SELECT 
- 1 AS `id`,
- 1 AS `orszag`,
- 1 AS `kontinens`,
- 1 AS `zaszlok_szama`*/;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary view structure for view `view_reszletes`
@@ -338,9 +305,9 @@ DROP TABLE IF EXISTS `zaszlok`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `zaszlok` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `meret` int DEFAULT NULL,
-  `anyag` int DEFAULT NULL,
-  `orszagId` int DEFAULT NULL,
+  `meret` int NOT NULL,
+  `anyag` int NOT NULL,
+  `orszagId` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_zaszlok_meret` (`meret`),
   KEY `FK_zaszlok_anyag` (`anyag`),
@@ -362,6 +329,24 @@ INSERT INTO `zaszlok` VALUES (1,1,1,1),(2,1,2,1),(3,1,3,1),(4,1,4,1),(5,2,1,1),(
 UNLOCK TABLES;
 
 --
+-- Final view structure for view `193orszag`
+--
+
+/*!50001 DROP VIEW IF EXISTS `193orszag`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb3 */;
+/*!50001 SET character_set_results     = utf8mb3 */;
+/*!50001 SET collation_connection      = utf8mb3_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `193orszag` AS select `orszagok`.`id` AS `id`,`orszagok`.`orszag` AS `orszag`,`kontinensek`.`kontinens` AS `kontinens`,count(`zaszlok`.`id`) AS `zaszlok_szama` from ((`orszagok` join `kontinensek` on((`kontinensek`.`id` = `orszagok`.`kont_Id`))) left join `zaszlok` on((`zaszlok`.`orszagId` = `orszagok`.`id`))) group by `orszagok`.`id`,`orszagok`.`orszag`,`kontinensek`.`kontinens` order by `orszagok`.`orszag` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `getall`
 --
 
@@ -375,42 +360,6 @@ UNLOCK TABLES;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `getall` AS select `orszagok`.`id` AS `id`,`meretek`.`meret` AS `meret`,`anyagok`.`anyag` AS `anyag`,`orszagok`.`orszag` AS `orszag`,`kontinensek`.`kontinens` AS `kontinens` from ((((`zaszlok` join `meretek` on((`meretek`.`id` = `zaszlok`.`meret`))) join `anyagok` on((`anyagok`.`id` = `zaszlok`.`anyag`))) join `orszagok` on((`orszagok`.`id` = `zaszlok`.`orszagId`))) join `kontinensek` on((`kontinensek`.`id` = `orszagok`.`kont_Id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view1`
---
-
-/*!50001 DROP VIEW IF EXISTS `view1`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb3 */;
-/*!50001 SET character_set_results     = utf8mb3 */;
-/*!50001 SET collation_connection      = utf8mb3_general_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view1` AS select `vevo`.`nev` AS `nev`,`vevo`.`lakcim` AS `lakcim`,`vevo`.`adoszam` AS `adoszam`,`szamla`.`szamla_kelte` AS `szamla_kelte`,`orszagok`.`orszag` AS `orszag`,`meretek`.`meret` AS `meret`,`anyagok`.`anyag` AS `anyag`,`kapcsolo_zaszlok`.`darab` AS `darab`,`szamla`.`szamlaszam` AS `szamlaszam` from (((((((`vevo` join `szamla` on((`szamla`.`vevo_id` = `vevo`.`id`))) join `fizetesi_mod` on((`szamla`.`fizetesi_mod` = `fizetesi_mod`.`id`))) join `kapcsolo_zaszlok` on((`szamla`.`szamla_id` = `kapcsolo_zaszlok`.`szamla_id`))) join `zaszlok` on((`kapcsolo_zaszlok`.`zaszlo_id` = `zaszlok`.`id`))) join `meretek` on((`zaszlok`.`meret` = `meretek`.`id`))) join `orszagok` on((`zaszlok`.`orszagId` = `orszagok`.`id`))) join `anyagok` on((`anyagok`.`id` = `zaszlok`.`anyag`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view3`
---
-
-/*!50001 DROP VIEW IF EXISTS `view3`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb3 */;
-/*!50001 SET character_set_results     = utf8mb3 */;
-/*!50001 SET collation_connection      = utf8mb3_general_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view3` AS select `orszagok`.`id` AS `id`,`orszagok`.`orszag` AS `orszag`,`kontinensek`.`kontinens` AS `kontinens`,count(`zaszlok`.`id`) AS `zaszlok_szama` from ((`orszagok` join `kontinensek` on((`kontinensek`.`id` = `orszagok`.`kont_Id`))) left join `zaszlok` on((`zaszlok`.`orszagId` = `orszagok`.`id`))) group by `orszagok`.`id`,`orszagok`.`orszag`,`kontinensek`.`kontinens` order by `orszagok`.`orszag` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -442,4 +391,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-11 13:02:12
+-- Dump completed on 2026-02-24 11:18:23
