@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import httpCommon from "../http-common.js";
 import "./AdminPanel.css";
 
@@ -10,6 +10,10 @@ const AdminPanel = ({ accessToken }) => {
 
   const [meta, setMeta] = useState({ meretek: [], anyagok: [], kontinensek: [] });
   const [felhasznalok, setFelhasznalok] = useState([]);
+  const [fizetesiModok, setFizetesiModok] = useState([]);
+  const [ujFizetesiModNev, setUjFizetesiModNev] = useState("");
+  const [szamlak, setSzamlak] = useState([]);
+  const [nyitottSzamlak, setNyitottSzamlak] = useState({});
   const [roleDraft, setRoleDraft] = useState({});
   const [meretDrafts, setMeretDrafts] = useState({});
   const [anyagDrafts, setAnyagDrafts] = useState({});
@@ -43,6 +47,8 @@ const AdminPanel = ({ accessToken }) => {
   );
 
   const extractError = (err, fallback) => err?.response?.data?.message || fallback;
+  const formatDate = (value) => (value ? new Date(value).toLocaleDateString("hu-HU") : "-");
+  const formatCurrency = (value) => `${Number(value || 0).toLocaleString("hu-HU")} Ft`;
 
   const showMessage = (tipus, szoveg) => {
     setUzenet({ tipus, szoveg });
@@ -121,10 +127,26 @@ const AdminPanel = ({ accessToken }) => {
     );
   };
 
+  const fetchFizetesiModok = async () => {
+    const res = await httpCommon.get("/szamlak/payment-methods", authConfig);
+    setFizetesiModok(res.data || []);
+  };
+
+  const fetchAdminSzamlak = async () => {
+    const res = await httpCommon.get("/szamlak/admin", authConfig);
+    setSzamlak(res.data || []);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([fetchMeta(), fetchZaszlok(), fetchFelhasznalok()]);
+        await Promise.all([
+          fetchMeta(),
+          fetchZaszlok(),
+          fetchFelhasznalok(),
+          fetchFizetesiModok(),
+          fetchAdminSzamlak(),
+        ]);
       } catch (err) {
         showMessage("danger", extractError(err, "Hiba a kezdo adatok betoltese soran."));
       }
@@ -135,8 +157,12 @@ const AdminPanel = ({ accessToken }) => {
     }
   }, [accessToken]);
 
-  const toggleRow = (orszagNev) => {
-    setNyitottOrszagok((prev) => ({ ...prev, [orszagNev]: !prev[orszagNev] }));
+  const toggleRow = (orszagId) => {
+    setNyitottOrszagok((prev) => ({ ...prev, [orszagId]: !prev[orszagId] }));
+  };
+
+  const toggleSzamla = (szamlaId) => {
+    setNyitottSzamlak((prev) => ({ ...prev, [szamlaId]: !prev[szamlaId] }));
   };
 
   const toggleBulkSelection = (key, id) => {
@@ -264,6 +290,27 @@ const AdminPanel = ({ accessToken }) => {
     }
   };
 
+  const handleDeleteCountry = async (orszagId, orszagNev) => {
+    if (
+      !window.confirm(
+        `Biztosan torolni szeretned a(z) ${orszagNev} orszagot az osszes variaciojaval egyutt?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await httpCommon.delete(`/zaszlok/admin/countries/${orszagId}`, authConfig);
+      await Promise.all([fetchZaszlok(), fetchMeta()]);
+      if (String(countryEdit.orszagId) === String(orszagId)) {
+        setCountryEdit({ orszagId: "", orszag: "", kontinensId: "" });
+      }
+      showMessage("success", `${orszagNev} es minden variacioja torolve.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent az orszag tomeges torlese soran."));
+    }
+  };
+
   const handleCreateMeret = async (e) => {
     e.preventDefault();
     try {
@@ -298,6 +345,19 @@ const AdminPanel = ({ accessToken }) => {
     }
   };
 
+  const handleDeleteMeret = async (id) => {
+    if (!window.confirm(`Biztosan torolni szeretned a(z) #${id} meretet?`)) {
+      return;
+    }
+    try {
+      await httpCommon.delete(`/zaszlok/admin/sizes/${id}`, authConfig);
+      await Promise.all([fetchMeta(), fetchZaszlok()]);
+      showMessage("success", `Meret (#${id}) torolve.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent a meret torlesekor."));
+    }
+  };
+
   const handleCreateAnyag = async (e) => {
     e.preventDefault();
     try {
@@ -329,6 +389,61 @@ const AdminPanel = ({ accessToken }) => {
       showMessage("success", `Anyag (#${id}) sikeresen modositva.`);
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba tortent az anyag modositasakor."));
+    }
+  };
+
+  const handleDeleteAnyag = async (id) => {
+    if (!window.confirm(`Biztosan torolni szeretned a(z) #${id} anyagot?`)) {
+      return;
+    }
+    try {
+      await httpCommon.delete(`/zaszlok/admin/materials/${id}`, authConfig);
+      await Promise.all([fetchMeta(), fetchZaszlok()]);
+      showMessage("success", `Anyag (#${id}) torolve.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent az anyag torlesekor."));
+    }
+  };
+
+  const handleCreateFizetesiMod = async (e) => {
+    e.preventDefault();
+    try {
+      await httpCommon.post(
+        "/szamlak/admin/payment-methods",
+        { nev: ujFizetesiModNev },
+        authConfig
+      );
+      setUjFizetesiModNev("");
+      await fetchFizetesiModok();
+      showMessage("success", "Uj fizetesi mod sikeresen letrehozva.");
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent a fizetesi mod mentese soran."));
+    }
+  };
+
+  const handleDeleteFizetesiMod = async (id, nev) => {
+    if (!window.confirm(`Biztosan torolni szeretned a(z) ${nev} fizetesi modot?`)) {
+      return;
+    }
+    try {
+      await httpCommon.delete(`/szamlak/admin/payment-methods/${id}`, authConfig);
+      await fetchFizetesiModok();
+      showMessage("success", `Fizetesi mod torolve: ${nev}.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent a fizetesi mod torlesekor."));
+    }
+  };
+
+  const handleDeleteSzamla = async (id, szamlaszam) => {
+    if (!window.confirm(`Biztosan torolni szeretned a(z) ${szamlaszam} szamlat?`)) {
+      return;
+    }
+    try {
+      await httpCommon.delete(`/szamlak/admin/${id}`, authConfig);
+      await fetchAdminSzamlak();
+      showMessage("success", `Szamla torolve: ${szamlaszam}.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent a szamla torlesekor."));
     }
   };
 
@@ -556,7 +671,15 @@ const AdminPanel = ({ accessToken }) => {
                 </select>
               </div>
 
-              <div className="col-12 text-end">
+              <div className="col-12 d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-danger"
+                  disabled={!countryEdit.orszagId}
+                  onClick={() => handleDeleteCountry(countryEdit.orszagId, countryEdit.orszag)}
+                >
+                  Orszag torlese
+                </button>
                 <button type="submit" className="btn admin-btn-secondary">
                   Orszag mentese
                 </button>
@@ -569,11 +692,11 @@ const AdminPanel = ({ accessToken }) => {
           <article className="admin-card">
             <div className="admin-card-header">
               <h2>Alapadatok modositasa</h2>
-              <p>Uj adatok felvetele, es meglevo meret/anyag szerkesztese.</p>
+              <p>Meret, anyag es fizetesi mod alapadatok kezelese egy helyen.</p>
             </div>
 
             <div className="row g-4">
-              <div className="col-12 col-xl-6">
+              <div className="col-12 col-xl-4">
                 <h3 className="admin-section-title">Meretek</h3>
 
                 <form onSubmit={handleCreateMeret} className="row g-2 mb-3">
@@ -613,7 +736,7 @@ const AdminPanel = ({ accessToken }) => {
                         <th>ID</th>
                         <th>Meret</th>
                         <th>Szorzo</th>
-                        <th className="text-end">Mentes</th>
+                        <th className="text-end">Muvelet</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -648,13 +771,22 @@ const AdminPanel = ({ accessToken }) => {
                             />
                           </td>
                           <td className="text-end">
-                            <button
-                              type="button"
-                              className="btn btn-outline-success btn-sm"
-                              onClick={() => handleUpdateMeret(item.id)}
-                            >
-                              Mentes
-                            </button>
+                            <div className="d-flex gap-1 justify-content-end">
+                              <button
+                                type="button"
+                                className="btn btn-outline-success btn-sm"
+                                onClick={() => handleUpdateMeret(item.id)}
+                              >
+                                Mentes
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() => handleDeleteMeret(item.id)}
+                              >
+                                Torles
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -663,7 +795,7 @@ const AdminPanel = ({ accessToken }) => {
                 </div>
               </div>
 
-              <div className="col-12 col-xl-6">
+              <div className="col-12 col-xl-4">
                 <h3 className="admin-section-title">Anyagok</h3>
 
                 <form onSubmit={handleCreateAnyag} className="row g-2 mb-3">
@@ -703,7 +835,7 @@ const AdminPanel = ({ accessToken }) => {
                         <th>ID</th>
                         <th>Anyag</th>
                         <th>Szorzo</th>
-                        <th className="text-end">Mentes</th>
+                        <th className="text-end">Muvelet</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -738,16 +870,83 @@ const AdminPanel = ({ accessToken }) => {
                             />
                           </td>
                           <td className="text-end">
+                            <div className="d-flex gap-1 justify-content-end">
+                              <button
+                                type="button"
+                                className="btn btn-outline-success btn-sm"
+                                onClick={() => handleUpdateAnyag(item.id)}
+                              >
+                                Mentes
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() => handleDeleteAnyag(item.id)}
+                              >
+                                Torles
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="col-12 col-xl-4">
+                <h3 className="admin-section-title">Fizetesi modok</h3>
+
+                <form onSubmit={handleCreateFizetesiMod} className="row g-2 mb-3">
+                  <div className="col-8">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Uj fizetesi mod neve"
+                      value={ujFizetesiModNev}
+                      onChange={(e) => setUjFizetesiModNev(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="col-4 d-grid">
+                    <button type="submit" className="btn btn-outline-primary btn-sm">
+                      Uj mod
+                    </button>
+                  </div>
+                </form>
+
+                <div className="table-responsive admin-subtable">
+                  <table className="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Megnevezes</th>
+                        <th className="text-end">Muvelet</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fizetesiModok.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.id}</td>
+                          <td>{item.nev}</td>
+                          <td className="text-end">
                             <button
                               type="button"
-                              className="btn btn-outline-success btn-sm"
-                              onClick={() => handleUpdateAnyag(item.id)}
+                              className="btn btn-outline-danger btn-sm"
+                              onClick={() => handleDeleteFizetesiMod(item.id, item.nev)}
                             >
-                              Mentes
+                              Torles
                             </button>
                           </td>
                         </tr>
                       ))}
+                      {!fizetesiModok.length && (
+                        <tr>
+                          <td colSpan="3" className="text-center text-muted py-3">
+                            Nincs megjelenitheto fizetesi mod.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -835,13 +1034,14 @@ const AdminPanel = ({ accessToken }) => {
                   <th>Orszag</th>
                   <th>Kontinens</th>
                   <th className="text-center">Variacio</th>
+                  <th className="text-end">Muvelet</th>
                 </tr>
               </thead>
               <tbody>
                 {orszagLista.map((csoport) => (
                   <React.Fragment key={`${csoport.nev}-${csoport.orszagId}`}>
-                    <tr className="admin-flag-row" onClick={() => toggleRow(csoport.nev)}>
-                      <td className="text-center">{nyitottOrszagok[csoport.nev] ? "v" : ">"}</td>
+                    <tr className="admin-flag-row" onClick={() => toggleRow(csoport.orszagId)}>
+                      <td className="text-center">{nyitottOrszagok[csoport.orszagId] ? "v" : ">"}</td>
                       <td>
                         <img
                           src={`/images/${csoport.orszagId}.png`}
@@ -859,11 +1059,23 @@ const AdminPanel = ({ accessToken }) => {
                       <td className="text-center">
                         <span className="badge admin-pill">{csoport.variaciok.length} db</span>
                       </td>
+                      <td className="text-end">
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCountry(csoport.orszagId, csoport.nev);
+                          }}
+                        >
+                          Orszag torlese
+                        </button>
+                      </td>
                     </tr>
 
-                    {nyitottOrszagok[csoport.nev] && (
+                    {nyitottOrszagok[csoport.orszagId] && (
                       <tr>
-                        <td colSpan="5" className="p-0">
+                        <td colSpan="6" className="p-0">
                           <div className="p-3 bg-body-tertiary">
                             <table className="table table-sm table-bordered mb-0 bg-white">
                               <thead>
@@ -899,6 +1111,115 @@ const AdminPanel = ({ accessToken }) => {
                     )}
                   </React.Fragment>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="admin-card mb-4">
+          <div className="admin-card-header">
+            <h2>Szamlakezeles</h2>
+            <p>Szamlak attekintese, tetelsorok megjelenitese es torles admin feluletrol.</p>
+          </div>
+
+          <div className="table-responsive">
+            <table className="table align-middle admin-flag-table mb-0">
+              <thead>
+                <tr>
+                  <th style={{ width: 56 }} />
+                  <th>Szamlaszam</th>
+                  <th>Vasarlo</th>
+                  <th>Datum</th>
+                  <th>Fizetesi mod</th>
+                  <th className="text-end">Vegosszeg</th>
+                  <th className="text-end">Muvelet</th>
+                </tr>
+              </thead>
+              <tbody>
+                {szamlak.map((szamla) => (
+                  <React.Fragment key={szamla.id}>
+                    <tr className="admin-flag-row" onClick={() => toggleSzamla(szamla.id)}>
+                      <td className="text-center">{nyitottSzamlak[szamla.id] ? "v" : ">"}</td>
+                      <td className="fw-semibold">{szamla.szamlaszam}</td>
+                      <td>
+                        <div>{szamla.vevo_nev || "-"}</div>
+                        <small className="text-muted">{szamla.vevo_email || "-"}</small>
+                      </td>
+                      <td>{formatDate(szamla.szamla_kelte)}</td>
+                      <td>{szamla.fizetesi_mod_nev || `ID: ${szamla.fizetesi_mod}`}</td>
+                      <td className="text-end">{formatCurrency(szamla.vegosszeg)}</td>
+                      <td className="text-end">
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSzamla(szamla.id, szamla.szamlaszam);
+                          }}
+                        >
+                          Torles
+                        </button>
+                      </td>
+                    </tr>
+
+                    {nyitottSzamlak[szamla.id] && (
+                      <tr>
+                        <td colSpan="7" className="p-0">
+                          <div className="p-3 bg-body-tertiary">
+                            <div className="small text-muted mb-2">
+                              Vevo azonosito: #{szamla.vevo_id} | Teljesites:{" "}
+                              {formatDate(szamla.teljesites_kelte)}
+                            </div>
+                            <table className="table table-sm table-bordered mb-0 bg-white">
+                              <thead>
+                                <tr>
+                                  <th>Orszag</th>
+                                  <th>Meret</th>
+                                  <th>Anyag</th>
+                                  <th className="text-end">Db</th>
+                                  <th className="text-end">Egysegar</th>
+                                  <th className="text-end">Tetel osszeg</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(szamla.tetelek || []).map((item, index) => (
+                                  <tr
+                                    key={`${item.szamla_id}-${item.zaszlo_id}-${item.meret}-${item.anyag}-${index}`}
+                                  >
+                                    <td>{item.orszag || "-"}</td>
+                                    <td>{item.meret}</td>
+                                    <td>{item.anyag}</td>
+                                    <td className="text-end">{item.mennyiseg}</td>
+                                    <td className="text-end">
+                                      {formatCurrency(item.egyseg_ar)}
+                                    </td>
+                                    <td className="text-end">
+                                      {formatCurrency(item.tetel_osszeg)}
+                                    </td>
+                                  </tr>
+                                ))}
+                                {!szamla.tetelek?.length && (
+                                  <tr>
+                                    <td colSpan="6" className="text-center text-muted py-3">
+                                      A szamlahoz nem talalhato tetelsor.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+                {!szamlak.length && (
+                  <tr>
+                    <td colSpan="7" className="text-center text-muted py-4">
+                      Nincs megjelenitheto szamla.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

@@ -41,6 +41,33 @@ class Zaszlok {
     return [...new Set(rawIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
   }
 
+  static async cleanupUnusedCountries(connection, orszagIds) {
+    const uniqueIds = this.normalizeIds(orszagIds);
+    if (!uniqueIds.length) {
+      return 0;
+    }
+
+    const [unused] = await connection.query(
+      `
+      SELECT o.id
+      FROM orszagok o
+      LEFT JOIN zaszlok z ON z.orszagId = o.id
+      WHERE o.id IN (?)
+      GROUP BY o.id
+      HAVING COUNT(z.id) = 0
+      `,
+      [uniqueIds]
+    );
+
+    if (!unused.length) {
+      return 0;
+    }
+
+    const unusedIds = unused.map((item) => item.id);
+    const [deleted] = await connection.query("DELETE FROM orszagok WHERE id IN (?)", [unusedIds]);
+    return deleted.affectedRows;
+  }
+
   static async getKontinensIdByName(kontinens) {
     if (!kontinens || typeof kontinens !== "string") {
       return null;
@@ -154,6 +181,44 @@ class Zaszlok {
     return rows[0];
   }
 
+  static async deleteMeret(id) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [target] = await connection.query("SELECT id FROM meretek WHERE id = ?", [id]);
+      if (!target.length) {
+        await connection.rollback();
+        return null;
+      }
+
+      const [countryRows] = await connection.query(
+        "SELECT DISTINCT orszagId FROM zaszlok WHERE meret = ?",
+        [id]
+      );
+
+      const [deletedVariants] = await connection.query("DELETE FROM zaszlok WHERE meret = ?", [id]);
+      const deletedCountries = await this.cleanupUnusedCountries(
+        connection,
+        countryRows.map((item) => item.orszagId)
+      );
+
+      const [deletedBase] = await connection.query("DELETE FROM meretek WHERE id = ?", [id]);
+
+      await connection.commit();
+      return {
+        deletedBaseCount: deletedBase.affectedRows,
+        deletedVariantCount: deletedVariants.affectedRows,
+        deletedCountryCount: deletedCountries,
+      };
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   static async addAnyag(data) {
     const { anyag, szorzo } = data;
     const [duplicate] = await db.query(
@@ -197,6 +262,44 @@ class Zaszlok {
     await db.query("UPDATE anyagok SET anyag = ?, szorzo = ? WHERE id = ?", [anyag, szorzo, id]);
     const [rows] = await db.query("SELECT id, anyag, szorzo FROM anyagok WHERE id = ?", [id]);
     return rows[0];
+  }
+
+  static async deleteAnyag(id) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [target] = await connection.query("SELECT id FROM anyagok WHERE id = ?", [id]);
+      if (!target.length) {
+        await connection.rollback();
+        return null;
+      }
+
+      const [countryRows] = await connection.query(
+        "SELECT DISTINCT orszagId FROM zaszlok WHERE anyag = ?",
+        [id]
+      );
+
+      const [deletedVariants] = await connection.query("DELETE FROM zaszlok WHERE anyag = ?", [id]);
+      const deletedCountries = await this.cleanupUnusedCountries(
+        connection,
+        countryRows.map((item) => item.orszagId)
+      );
+
+      const [deletedBase] = await connection.query("DELETE FROM anyagok WHERE id = ?", [id]);
+
+      await connection.commit();
+      return {
+        deletedBaseCount: deletedBase.affectedRows,
+        deletedVariantCount: deletedVariants.affectedRows,
+        deletedCountryCount: deletedCountries,
+      };
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 
   static async createBulk(data) {
@@ -274,17 +377,40 @@ class Zaszlok {
 
       const orszagId = rows[0].orszagId;
       const [deleteResult] = await connection.query("DELETE FROM zaszlok WHERE id = ?", [id]);
-      const [remaining] = await connection.query(
-        "SELECT COUNT(*) AS count FROM zaszlok WHERE orszagId = ?",
-        [orszagId]
-      );
-
-      if (remaining[0].count === 0) {
-        await connection.query("DELETE FROM orszagok WHERE id = ?", [orszagId]);
-      }
+      await this.cleanupUnusedCountries(connection, [orszagId]);
 
       await connection.commit();
       return deleteResult.affectedRows;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  static async deleteCountry(orszagId) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [target] = await connection.query("SELECT id FROM orszagok WHERE id = ?", [orszagId]);
+      if (!target.length) {
+        await connection.rollback();
+        return null;
+      }
+
+      const [deletedVariants] = await connection.query(
+        "DELETE FROM zaszlok WHERE orszagId = ?",
+        [orszagId]
+      );
+      const [deletedCountry] = await connection.query("DELETE FROM orszagok WHERE id = ?", [orszagId]);
+
+      await connection.commit();
+      return {
+        deletedCountryCount: deletedCountry.affectedRows,
+        deletedVariantCount: deletedVariants.affectedRows,
+      };
     } catch (error) {
       await connection.rollback();
       throw error;

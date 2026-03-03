@@ -11,6 +11,7 @@ const Fizetes = ({ user, accessToken }) => {
   const authToken = accessToken || localStorage.getItem("token");
   const [loading, setLoading] = useState(false);
   const [rendelesSikeres, setRendelesSikeres] = useState(false);
+  const [fizetesiModok, setFizetesiModok] = useState([]);
 
   const [rendelesAdatok, setRendelesAdatok] = useState({
     nev: user?.nev || "",
@@ -19,7 +20,7 @@ const Fizetes = ({ user, accessToken }) => {
     iranyitoszam: user?.iranyitoszam || "",
     varos: user?.varos || "",
     utca: user?.utca || "",
-    fizetesiMod: "utanvet",
+    fizetesiModId: "",
     megjegyzes: "",
   });
 
@@ -73,6 +74,34 @@ const Fizetes = ({ user, accessToken }) => {
   }, [authToken, navigate]);
 
   useEffect(() => {
+    const fetchFizetesiModok = async () => {
+      try {
+        const response = await httpCommon.get("/szamlak/payment-methods", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        const methods = Array.isArray(response.data) ? response.data : [];
+        setFizetesiModok(methods);
+
+        setRendelesAdatok((prev) => {
+          const isSelectedStillValid = methods.some(
+            (item) => String(item.id) === String(prev.fizetesiModId)
+          );
+          return {
+            ...prev,
+            fizetesiModId: isSelectedStillValid ? prev.fizetesiModId : String(methods[0]?.id || ""),
+          };
+        });
+      } catch (error) {
+        setFizetesiModok([]);
+      }
+    };
+
+    if (authToken) {
+      fetchFizetesiModok();
+    }
+  }, [authToken]);
+
+  useEffect(() => {
     if (kosar.length === 0 && !rendelesSikeres) {
       navigate("/kosar");
     }
@@ -94,8 +123,19 @@ const Fizetes = ({ user, accessToken }) => {
 
     setLoading(true);
 
+    const selectedPaymentMethod = fizetesiModok.find(
+      (item) => String(item.id) === String(rendelesAdatok.fizetesiModId)
+    );
+
+    if (!selectedPaymentMethod) {
+      alert("Valassz ervenyes fizetesi modot.");
+      setLoading(false);
+      return;
+    }
+
     const vegsoRendeles = {
-      fizetesiMod: rendelesAdatok.fizetesiMod,
+      fizetesiModId: Number(rendelesAdatok.fizetesiModId),
+      fizetesiMod: selectedPaymentMethod.nev,
       kosar,
       szallitasiAdatok: {
         nev: rendelesAdatok.nev,
@@ -250,22 +290,20 @@ const Fizetes = ({ user, accessToken }) => {
 
                 <h5 className="fw-bold mt-4 mb-3">Fizetesi mod</h5>
                 <div className="d-flex flex-column gap-2">
-                  <Form.Check
-                    type="radio"
-                    label="Utanvet (fizetes a futarnal)"
-                    name="fizetesiMod"
-                    value="utanvet"
-                    checked={rendelesAdatok.fizetesiMod === "utanvet"}
-                    onChange={handleInputChange}
-                  />
-                  <Form.Check
-                    type="radio"
-                    label="Bankkartyas fizetes"
-                    name="fizetesiMod"
-                    value="kartya"
-                    checked={rendelesAdatok.fizetesiMod === "kartya"}
-                    onChange={handleInputChange}
-                  />
+                  {fizetesiModok.map((item) => (
+                    <Form.Check
+                      key={item.id}
+                      type="radio"
+                      label={item.nev}
+                      name="fizetesiModId"
+                      value={String(item.id)}
+                      checked={String(rendelesAdatok.fizetesiModId) === String(item.id)}
+                      onChange={handleInputChange}
+                    />
+                  ))}
+                  {!fizetesiModok.length && (
+                    <div className="text-danger small">Jelenleg nincs elerheto fizetesi mod.</div>
+                  )}
                 </div>
               </Card.Body>
             </Card>
@@ -319,7 +357,7 @@ const Fizetes = ({ user, accessToken }) => {
                   variant="primary"
                   size="lg"
                   className="w-100 rounded-pill fw-bold shadow py-3"
-                  disabled={loading}
+                  disabled={loading || !fizetesiModok.length || !rendelesAdatok.fizetesiModId}
                 >
                   {loading ? "Feldolgozas..." : "Rendeles veglegesitese"}
                 </Button>

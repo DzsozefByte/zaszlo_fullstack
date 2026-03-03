@@ -1,16 +1,26 @@
 const multer = require("multer");
 const fs = require("fs");
+const path = require("path");
 
 const Zaszlo = require("../models/zaszloModel");
 
+const IMAGE_UPLOAD_PATH = path.join(
+  "C:",
+  "Users",
+  "13d",
+  "Documents",
+  "zaszlo_fullstack",
+  "zaszlo_frontend_veet",
+  "public",
+  "images"
+);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath =
-      "C:\\Users\\13d\\Documents\\zaszlo_fullstack\\zaszlo_frontend_veet\\public\\images";
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+    if (!fs.existsSync(IMAGE_UPLOAD_PATH)) {
+      fs.mkdirSync(IMAGE_UPLOAD_PATH, { recursive: true });
     }
-    cb(null, uploadPath);
+    cb(null, IMAGE_UPLOAD_PATH);
   },
   filename: (req, file, cb) => {
     cb(null, `${req.params.orszagId}.png`);
@@ -158,6 +168,27 @@ exports.updateMeret = async (req, res) => {
   }
 };
 
+exports.deleteMeret = async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    if (!id) {
+      return res.status(400).json({ message: "Ervenytelen meret azonosito." });
+    }
+
+    const deleted = await Zaszlo.deleteMeret(id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Nem talalhato ilyen meret." });
+    }
+
+    return res.json({
+      message: "Meret es a kapcsolodo adatok sikeresen torolve.",
+      ...deleted,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Hiba tortent a meret torlese soran." });
+  }
+};
+
 exports.createAnyag = async (req, res) => {
   try {
     const anyag = typeof req.body.anyag === "string" ? req.body.anyag.trim() : "";
@@ -204,6 +235,27 @@ exports.updateAnyag = async (req, res) => {
       return res.status(409).json({ message: error.message });
     }
     return res.status(500).json({ message: "Hiba tortent az anyag modositasa soran." });
+  }
+};
+
+exports.deleteAnyag = async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    if (!id) {
+      return res.status(400).json({ message: "Ervenytelen anyag azonosito." });
+    }
+
+    const deleted = await Zaszlo.deleteAnyag(id);
+    if (!deleted) {
+      return res.status(404).json({ message: "Nem talalhato ilyen anyag." });
+    }
+
+    return res.json({
+      message: "Anyag es a kapcsolodo adatok sikeresen torolve.",
+      ...deleted,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Hiba tortent az anyag torlese soran." });
   }
 };
 
@@ -260,6 +312,36 @@ exports.delete = async (req, res) => {
     return res.json({ message: "Zaszlo sikeresen torolve." });
   } catch (error) {
     return res.status(500).json({ message: "Hiba tortent a zaszlo torlese soran." });
+  }
+};
+
+exports.deleteCountry = async (req, res) => {
+  try {
+    const orszagId = toInt(req.params.id);
+    if (!orszagId) {
+      return res.status(400).json({ message: "Ervenytelen orszag azonosito." });
+    }
+
+    const deleted = await Zaszlo.deleteCountry(orszagId);
+    if (!deleted) {
+      return res.status(404).json({ message: "A torolni kivant orszag nem talalhato." });
+    }
+
+    const imagePath = path.join(IMAGE_UPLOAD_PATH, `${orszagId}.png`);
+    if (fs.existsSync(imagePath)) {
+      try {
+        fs.unlinkSync(imagePath);
+      } catch (fileError) {
+        console.error("Nem sikerult torolni az orszag kepet:", fileError);
+      }
+    }
+
+    return res.json({
+      message: "Orszag es osszes variacioja sikeresen torolve.",
+      ...deleted,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Hiba tortent az orszag torlese soran." });
   }
 };
 

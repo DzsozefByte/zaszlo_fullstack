@@ -1,14 +1,27 @@
-// routes/szamlak.js
-
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const szamlaController = require('../controllers/szamlaController');
-const { verifyToken } = require('../middleware/auth'); // 'authMiddleware' helyett csak 'auth'
 
-// Meglévő poszt kérésed:
-router.post('/', verifyToken, szamlaController.createSzamla);
+const szamlaController = require("../controllers/szamlaController");
+const { verifyToken, isAdmin } = require("../middleware/auth");
 
-// ÚJ GET kérés a számlák lekéréséhez:
-router.get('/', verifyToken, szamlaController.getSajatSzamlak);
+router.get("/payment-methods", szamlaController.getFizetesiModok);
+
+router.post("/", verifyToken, szamlaController.createSzamla);
+router.get("/", verifyToken, szamlaController.getSajatSzamlak);
+
+router.get("/admin", verifyToken, isAdmin, szamlaController.adminGetSzamlak);
+router.post(
+  "/admin/payment-methods",
+  verifyToken,
+  isAdmin,
+  szamlaController.adminCreateFizetesiMod
+);
+router.delete(
+  "/admin/payment-methods/:id",
+  verifyToken,
+  isAdmin,
+  szamlaController.adminDeleteFizetesiMod
+);
+router.delete("/admin/:id", verifyToken, isAdmin, szamlaController.adminDeleteSzamla);
 
 module.exports = router;
