@@ -98,7 +98,21 @@ function App() {
           <Route path="/login" element={<Login setAccesstoken={setAccessToken} />} />
           <Route path="/register" element={<Register />} />
           
-          <Route path="/profil" element={<Profil accessToken={accessToken} />} />
+          <Route
+            path="/profil"
+            element={
+              <Profil
+                accessToken={accessToken}
+                onUserUpdate={(updatedUser) =>
+                  setUser((prev) => ({
+                    ...(prev || {}),
+                    ...updatedUser,
+                    szerep: prev?.szerep || updatedUser?.szerep || updatedUser?.jogosultsag,
+                  }))
+                }
+              />
+            }
+          />
           <Route path="/szamlak" element={<Szamlak accessToken={accessToken} />} />
           <Route 
               path="/admin" 
