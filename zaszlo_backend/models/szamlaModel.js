@@ -1,73 +1,101 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 class Szamla {
-    static async create(vevoId, fizetesiMod, kosar) {
-        const connection = await db.getConnection();
-        try {
-            await connection.beginTransaction();
+  static async resolveZaszloId(connection, item) {
+    const variantId = Number(item.variantId);
+    if (Number.isInteger(variantId) && variantId > 0) {
+      return variantId;
+    }
 
-            // 1. Számla fejléc (szamla tábla)
-            const ma = new Date().toISOString().split('T')[0];
-            const szamlaszam = `SZ-${Date.now().toString().slice(-6)}`;
+    const orszagId = Number(item.orszagId || item.id);
+    if (
+      Number.isInteger(orszagId) &&
+      orszagId > 0 &&
+      typeof item.meret === "string" &&
+      typeof item.anyag === "string"
+    ) {
+      const [rows] = await connection.query(
+        `
+        SELECT z.id
+        FROM zaszlok z
+        JOIN meretek m ON m.id = z.meret
+        JOIN anyagok a ON a.id = z.anyag
+        WHERE z.orszagId = ? AND m.meret = ? AND a.anyag = ?
+        LIMIT 1
+        `,
+        [orszagId, item.meret, item.anyag]
+      );
+      if (rows.length) {
+        return rows[0].id;
+      }
+    }
 
-            const [header] = await connection.query(
-                `INSERT INTO szamla (fizetesi_mod, teljesites_kelte, szamla_kelte, fizetesi_hatarido, vevo_id, szamlaszam) 
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [fizetesiMod === 'kartya' ? 2 : 1, ma, ma, ma, vevoId, szamlaszam]
-            );
+    const fallbackId = Number(item.id);
+    if (Number.isInteger(fallbackId) && fallbackId > 0) {
+      return fallbackId;
+    }
 
-            const ujSzamlaId = header.insertId;
+    throw new Error("Nem sikerult ervenyes zaszlo azonositohoz jutni.");
+  }
 
-            // 2. Tételek (rendeles_reszletek tábla)
-            if (kosar && kosar.length > 0) {
-                const tetelAdatok = kosar.map(item => [
-                    ujSzamlaId, 
-                    item.id,      // zaszlo_id
-                    item.meret,   // meret
-                    item.anyag,   // anyag
-                    item.db,      // mennyiseg
-                    item.ar       // egyseg_ar
-                ]);
+  static async create(vevoId, fizetesiMod, kosar) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
 
-                await connection.query(
-                    `INSERT INTO rendeles_reszletek (szamla_id, zaszlo_id, meret, anyag, mennyiseg, egyseg_ar) VALUES ?`,
-                    [tetelAdatok]
-                );
-            }
+      const ma = new Date().toISOString().split("T")[0];
+      const szamlaszam = `SZ-${Date.now().toString().slice(-6)}`;
 
-            await connection.commit();
-            return { success: true, szamlaszam };
-        } catch (err) {
-            await connection.rollback();
-            throw err;
-        } finally {
-            connection.release();
+      const [header] = await connection.query(
+        `
+        INSERT INTO szamla (fizetesi_mod, teljesites_kelte, szamla_kelte, fizetesi_hatarido, vevo_id, szamlaszam)
+        VALUES (?, ?, ?, ?, ?, ?)
+        `,
+        [fizetesiMod === "kartya" ? 2 : 1, ma, ma, ma, vevoId, szamlaszam]
+      );
+
+      const ujSzamlaId = header.insertId;
+
+      if (Array.isArray(kosar) && kosar.length > 0) {
+        const tetelAdatok = [];
+        for (const item of kosar) {
+          const zaszloId = await this.resolveZaszloId(connection, item);
+          tetelAdatok.push([
+            ujSzamlaId,
+            zaszloId,
+            item.meret,
+            item.anyag,
+            item.db,
+            item.ar,
+          ]);
         }
-    }
 
-    static async getByUserId(vevoId) {
-    try {
-        // Feltételezve, hogy a db kapcsolatot a fájl elején importáltad: const db = require('../config/db');
-        const [rows] = await db.query(
-            'SELECT * FROM szamla WHERE vevo_id = ? ORDER BY szamla_kelte DESC',
-            [vevoId]
+        await connection.query(
+          `
+          INSERT INTO rendeles_reszletek (szamla_id, zaszlo_id, meret, anyag, mennyiseg, egyseg_ar)
+          VALUES ?
+          `,
+          [tetelAdatok]
         );
-        return rows;
+      }
+
+      await connection.commit();
+      return { success: true, szamlaszam };
     } catch (err) {
-        throw err;
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
     }
+  }
+
+  static async getByUserId(vevoId) {
+    const [rows] = await db.query(
+      "SELECT * FROM szamla WHERE vevo_id = ? ORDER BY szamla_kelte DESC",
+      [vevoId]
+    );
+    return rows;
+  }
 }
 
-static async getByUserId(vevoId) {
-    try {
-        const [rows] = await db.query(
-            'SELECT * FROM szamla WHERE vevo_id = ? ORDER BY szamla_kelte DESC',
-            [vevoId]
-        );
-        return rows;
-    } catch (err) {
-        throw err;
-    }
-}
-}
 module.exports = Szamla;

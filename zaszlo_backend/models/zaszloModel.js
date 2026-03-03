@@ -20,35 +20,57 @@ class Zaszlok {
       JOIN kontinensek k ON o.kont_Id = k.id
       JOIN meretek m ON z.meret = m.id
       JOIN anyagok a ON z.anyag = a.id
-      ORDER BY o.orszag ASC
+      ORDER BY o.orszag ASC, m.id ASC, a.id ASC
     `);
     return rows;
   }
 
   static async getAdminMeta() {
-    const [meretek] = await db.query(
-      "SELECT id, meret, szorzo FROM meretek ORDER BY id ASC"
-    );
-    const [anyagok] = await db.query(
-      "SELECT id, anyag, szorzo FROM anyagok ORDER BY id ASC"
-    );
+    const [meretek] = await db.query("SELECT id, meret, szorzo FROM meretek ORDER BY id ASC");
+    const [anyagok] = await db.query("SELECT id, anyag, szorzo FROM anyagok ORDER BY id ASC");
     const [kontinensek] = await db.query(
       "SELECT id, kontinens FROM kontinensek ORDER BY kontinens ASC"
     );
-
     return { meretek, anyagok, kontinensek };
+  }
+
+  static normalizeIds(rawIds) {
+    if (!Array.isArray(rawIds)) {
+      return [];
+    }
+    return [...new Set(rawIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
   }
 
   static async getKontinensIdByName(kontinens) {
     if (!kontinens || typeof kontinens !== "string") {
       return null;
     }
-
     const [rows] = await db.query(
       "SELECT id FROM kontinensek WHERE LOWER(kontinens) = LOWER(?) LIMIT 1",
       [kontinens.trim()]
     );
     return rows[0]?.id || null;
+  }
+
+  static async resolveOrCreateCountry(orszag, kontinensId) {
+    const [existingOrszag] = await db.query(
+      "SELECT id, kont_Id FROM orszagok WHERE LOWER(orszag) = LOWER(?) LIMIT 1",
+      [orszag]
+    );
+
+    if (!existingOrszag.length) {
+      const [newOrszag] = await db.query(
+        "INSERT INTO orszagok (orszag, kont_Id) VALUES (?, ?)",
+        [orszag, kontinensId]
+      );
+      return newOrszag.insertId;
+    }
+
+    const orszagId = existingOrszag[0].id;
+    if (existingOrszag[0].kont_Id !== kontinensId) {
+      await db.query("UPDATE orszagok SET kont_Id = ? WHERE id = ?", [kontinensId, orszagId]);
+    }
+    return orszagId;
   }
 
   static async updateCountry(orszagId, data) {
@@ -84,13 +106,11 @@ class Zaszlok {
       `,
       [orszagId]
     );
-
     return rows[0];
   }
 
   static async addMeret(data) {
     const { meret, szorzo } = data;
-
     const [duplicate] = await db.query(
       "SELECT id FROM meretek WHERE LOWER(meret) = LOWER(?) LIMIT 1",
       [meret]
@@ -101,21 +121,41 @@ class Zaszlok {
       throw error;
     }
 
-    const [insertResult] = await db.query(
-      "INSERT INTO meretek (meret, szorzo) VALUES (?, ?)",
-      [meret, szorzo]
-    );
+    const [insertResult] = await db.query("INSERT INTO meretek (meret, szorzo) VALUES (?, ?)", [
+      meret,
+      szorzo,
+    ]);
 
-    const [rows] = await db.query(
-      "SELECT id, meret, szorzo FROM meretek WHERE id = ?",
-      [insertResult.insertId]
+    const [rows] = await db.query("SELECT id, meret, szorzo FROM meretek WHERE id = ?", [
+      insertResult.insertId,
+    ]);
+    return rows[0];
+  }
+
+  static async updateMeret(id, data) {
+    const { meret, szorzo } = data;
+    const [target] = await db.query("SELECT id FROM meretek WHERE id = ?", [id]);
+    if (!target.length) {
+      return null;
+    }
+
+    const [duplicate] = await db.query(
+      "SELECT id FROM meretek WHERE LOWER(meret) = LOWER(?) AND id <> ? LIMIT 1",
+      [meret, id]
     );
+    if (duplicate.length) {
+      const error = new Error("Ilyen meret mar letezik.");
+      error.code = "DUPLICATE_SIZE";
+      throw error;
+    }
+
+    await db.query("UPDATE meretek SET meret = ?, szorzo = ? WHERE id = ?", [meret, szorzo, id]);
+    const [rows] = await db.query("SELECT id, meret, szorzo FROM meretek WHERE id = ?", [id]);
     return rows[0];
   }
 
   static async addAnyag(data) {
     const { anyag, szorzo } = data;
-
     const [duplicate] = await db.query(
       "SELECT id FROM anyagok WHERE LOWER(anyag) = LOWER(?) LIMIT 1",
       [anyag]
@@ -126,23 +166,105 @@ class Zaszlok {
       throw error;
     }
 
-    const [insertResult] = await db.query(
-      "INSERT INTO anyagok (anyag, szorzo) VALUES (?, ?)",
-      [anyag, szorzo]
+    const [insertResult] = await db.query("INSERT INTO anyagok (anyag, szorzo) VALUES (?, ?)", [
+      anyag,
+      szorzo,
+    ]);
+
+    const [rows] = await db.query("SELECT id, anyag, szorzo FROM anyagok WHERE id = ?", [
+      insertResult.insertId,
+    ]);
+    return rows[0];
+  }
+
+  static async updateAnyag(id, data) {
+    const { anyag, szorzo } = data;
+    const [target] = await db.query("SELECT id FROM anyagok WHERE id = ?", [id]);
+    if (!target.length) {
+      return null;
+    }
+
+    const [duplicate] = await db.query(
+      "SELECT id FROM anyagok WHERE LOWER(anyag) = LOWER(?) AND id <> ? LIMIT 1",
+      [anyag, id]
+    );
+    if (duplicate.length) {
+      const error = new Error("Ilyen anyag mar letezik.");
+      error.code = "DUPLICATE_MATERIAL";
+      throw error;
+    }
+
+    await db.query("UPDATE anyagok SET anyag = ?, szorzo = ? WHERE id = ?", [anyag, szorzo, id]);
+    const [rows] = await db.query("SELECT id, anyag, szorzo FROM anyagok WHERE id = ?", [id]);
+    return rows[0];
+  }
+
+  static async createBulk(data) {
+    const orszag = typeof data.orszag === "string" ? data.orszag.trim() : "";
+    const kontinens = typeof data.kontinens === "string" ? data.kontinens.trim() : "";
+    const kontinensIdFromBody = Number(data.kontinensId);
+    const meretIds = this.normalizeIds(data.meretIds);
+    const anyagIds = this.normalizeIds(data.anyagIds);
+
+    if (!orszag || !meretIds.length || !anyagIds.length) {
+      const error = new Error("Hibas vagy hianyzo adat.");
+      error.code = "INVALID_INPUT";
+      throw error;
+    }
+
+    let kontinensId = Number.isInteger(kontinensIdFromBody) && kontinensIdFromBody > 0
+      ? kontinensIdFromBody
+      : null;
+    if (!kontinensId) {
+      kontinensId = (await this.getKontinensIdByName(kontinens)) || 2;
+    }
+
+    const orszagId = await this.resolveOrCreateCountry(orszag, kontinensId);
+    const [existing] = await db.query(
+      `
+      SELECT meret, anyag
+      FROM zaszlok
+      WHERE orszagId = ?
+        AND meret IN (?)
+        AND anyag IN (?)
+      `,
+      [orszagId, meretIds, anyagIds]
     );
 
-    const [rows] = await db.query(
-      "SELECT id, anyag, szorzo FROM anyagok WHERE id = ?",
-      [insertResult.insertId]
-    );
-    return rows[0];
+    const existingSet = new Set(existing.map((item) => `${item.meret}-${item.anyag}`));
+    const values = [];
+    for (const meretId of meretIds) {
+      for (const anyagId of anyagIds) {
+        const key = `${meretId}-${anyagId}`;
+        if (!existingSet.has(key)) {
+          values.push([meretId, anyagId, orszagId]);
+        }
+      }
+    }
+
+    let createdIds = [];
+    if (values.length > 0) {
+      const [result] = await db.query(
+        "INSERT INTO zaszlok (meret, anyag, orszagId) VALUES ?",
+        [values]
+      );
+      if (result.insertId && result.affectedRows) {
+        createdIds = Array.from({ length: result.affectedRows }, (_, idx) => result.insertId + idx);
+      }
+    }
+
+    return {
+      orszagId,
+      createdCount: values.length,
+      skippedCount: meretIds.length * anyagIds.length - values.length,
+      createdIds,
+    };
   }
 
   static async delete(id) {
     const connection = await db.getConnection();
     try {
       await connection.beginTransaction();
-
       const [rows] = await connection.query("SELECT orszagId FROM zaszlok WHERE id = ?", [id]);
 
       if (rows.length === 0) {
@@ -152,7 +274,6 @@ class Zaszlok {
 
       const orszagId = rows[0].orszagId;
       const [deleteResult] = await connection.query("DELETE FROM zaszlok WHERE id = ?", [id]);
-
       const [remaining] = await connection.query(
         "SELECT COUNT(*) AS count FROM zaszlok WHERE orszagId = ?",
         [orszagId]
@@ -177,9 +298,12 @@ class Zaszlok {
       `
       SELECT
         z.id,
-        o.orszag AS orszag,
-        m.meret AS meret,
-        a.anyag AS anyag
+        z.orszagId,
+        o.orszag,
+        m.meret,
+        m.szorzo AS meret_szorzo,
+        a.anyag,
+        a.szorzo AS anyag_szorzo
       FROM zaszlok z
       JOIN orszagok o ON z.orszagId = o.id
       JOIN meretek m ON z.meret = m.id
@@ -193,81 +317,73 @@ class Zaszlok {
 
   static async filter(meret, anyag, kontinens, orszag) {
     const feltetelek = [];
-    const talalt = [];
+    const talalatok = [];
 
     if (meret) {
-      feltetelek.push("meret LIKE ?");
-      talalt.push(`%${meret}%`);
+      feltetelek.push("m.meret LIKE ?");
+      talalatok.push(`%${meret}%`);
     }
     if (anyag) {
-      feltetelek.push("anyag LIKE ?");
-      talalt.push(`%${anyag}%`);
+      feltetelek.push("a.anyag LIKE ?");
+      talalatok.push(`%${anyag}%`);
     }
     if (kontinens) {
-      feltetelek.push("kontinens LIKE ?");
-      talalt.push(`%${kontinens}%`);
+      feltetelek.push("k.kontinens LIKE ?");
+      talalatok.push(`%${kontinens}%`);
     }
     if (orszag) {
-      feltetelek.push("orszag LIKE ?");
-      talalt.push(`%${orszag}%`);
+      feltetelek.push("o.orszag LIKE ?");
+      talalatok.push(`%${orszag}%`);
     }
 
     const whereClause = feltetelek.length ? `WHERE ${feltetelek.join(" AND ")}` : "";
-    const [rows] = await db.query(`SELECT * FROM getAll ${whereClause}`, talalt);
+    const [rows] = await db.query(
+      `
+      SELECT
+        o.id AS id,
+        o.id AS orszagId,
+        z.id AS variantId,
+        o.orszag,
+        k.kontinens,
+        m.id AS meretId,
+        m.meret,
+        m.szorzo AS meret_szorzo,
+        a.id AS anyagId,
+        a.anyag,
+        a.szorzo AS anyag_szorzo
+      FROM zaszlok z
+      JOIN meretek m ON m.id = z.meret
+      JOIN anyagok a ON a.id = z.anyag
+      JOIN orszagok o ON o.id = z.orszagId
+      JOIN kontinensek k ON k.id = o.kont_Id
+      ${whereClause}
+      ORDER BY o.orszag ASC, m.id ASC, a.id ASC
+      `,
+      talalatok
+    );
     return rows;
   }
 
   static async create(data) {
-    const orszag = typeof data.orszag === "string" ? data.orszag.trim() : "";
-    const meretId = Number(data.meretId);
-    const anyagId = Number(data.anyagId);
-    const kontinens = typeof data.kontinens === "string" ? data.kontinens.trim() : "";
+    const result = await this.createBulk({
+      orszag: data.orszag,
+      kontinens: data.kontinens,
+      kontinensId: data.kontinensId,
+      meretIds: [Number(data.meretId)],
+      anyagIds: [Number(data.anyagId)],
+    });
 
-    if (!orszag || !Number.isInteger(meretId) || !Number.isInteger(anyagId) || !kontinens) {
-      const error = new Error("Hibas vagy hianyzo adat.");
-      error.code = "INVALID_INPUT";
-      throw error;
-    }
-
-    const kontinensId = (await this.getKontinensIdByName(kontinens)) || 2;
-
-    const [existingOrszag] = await db.query(
-      "SELECT id, kont_Id FROM orszagok WHERE LOWER(orszag) = LOWER(?) LIMIT 1",
-      [orszag]
-    );
-
-    let orszagId;
-    if (existingOrszag.length === 0) {
-      const [newOrszag] = await db.query(
-        "INSERT INTO orszagok (orszag, kont_Id) VALUES (?, ?)",
-        [orszag, kontinensId]
-      );
-      orszagId = newOrszag.insertId;
-    } else {
-      orszagId = existingOrszag[0].id;
-      if (existingOrszag[0].kont_Id !== kontinensId) {
-        await db.query("UPDATE orszagok SET kont_Id = ? WHERE id = ?", [kontinensId, orszagId]);
-      }
-    }
-
-    const [existingVariant] = await db.query(
-      "SELECT id FROM zaszlok WHERE meret = ? AND anyag = ? AND orszagId = ? LIMIT 1",
-      [meretId, anyagId, orszagId]
-    );
-    if (existingVariant.length) {
+    if (result.createdCount === 0) {
       const error = new Error("Ez a termekvariacio mar letezik.");
       error.code = "DUPLICATE_VARIANT";
       throw error;
     }
 
-    const [result] = await db.query(
-      "INSERT INTO zaszlok (meret, anyag, orszagId) VALUES (?, ?, ?)",
-      [meretId, anyagId, orszagId]
-    );
-
     return {
-      insertId: result.insertId,
-      orszagId,
+      insertId: result.createdIds[0],
+      orszagId: result.orszagId,
+      createdCount: result.createdCount,
+      skippedCount: result.skippedCount,
     };
   }
 }

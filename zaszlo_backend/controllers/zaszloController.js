@@ -13,8 +13,7 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    const orszagId = req.params.orszagId;
-    cb(null, `${orszagId}.png`);
+    cb(null, `${req.params.orszagId}.png`);
   },
 });
 
@@ -34,6 +33,13 @@ const toPositiveNumber = (value) => {
     return null;
   }
   return parsed;
+};
+
+const parseIdArray = (value) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return [...new Set(value.map(Number).filter((item) => Number.isInteger(item) && item > 0))];
 };
 
 exports.uploadImage = [
@@ -125,6 +131,33 @@ exports.createMeret = async (req, res) => {
   }
 };
 
+exports.updateMeret = async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    const meret = typeof req.body.meret === "string" ? req.body.meret.trim() : "";
+    const szorzo = toPositiveNumber(req.body.szorzo);
+
+    if (!id || !meret || !szorzo) {
+      return res.status(400).json({ message: "Hianyzo vagy ervenytelen meret adat." });
+    }
+
+    const updated = await Zaszlo.updateMeret(id, { meret, szorzo });
+    if (!updated) {
+      return res.status(404).json({ message: "Nem talalhato ilyen meret." });
+    }
+
+    return res.json({
+      message: "Meret sikeresen modositva.",
+      meret: updated,
+    });
+  } catch (error) {
+    if (error.code === "DUPLICATE_SIZE") {
+      return res.status(409).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Hiba tortent a meret modositasa soran." });
+  }
+};
+
 exports.createAnyag = async (req, res) => {
   try {
     const anyag = typeof req.body.anyag === "string" ? req.body.anyag.trim() : "";
@@ -144,6 +177,71 @@ exports.createAnyag = async (req, res) => {
       return res.status(409).json({ message: error.message });
     }
     return res.status(500).json({ message: "Hiba tortent az anyag letrehozasakor." });
+  }
+};
+
+exports.updateAnyag = async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    const anyag = typeof req.body.anyag === "string" ? req.body.anyag.trim() : "";
+    const szorzo = toPositiveNumber(req.body.szorzo);
+
+    if (!id || !anyag || !szorzo) {
+      return res.status(400).json({ message: "Hianyzo vagy ervenytelen anyag adat." });
+    }
+
+    const updated = await Zaszlo.updateAnyag(id, { anyag, szorzo });
+    if (!updated) {
+      return res.status(404).json({ message: "Nem talalhato ilyen anyag." });
+    }
+
+    return res.json({
+      message: "Anyag sikeresen modositva.",
+      anyag: updated,
+    });
+  } catch (error) {
+    if (error.code === "DUPLICATE_MATERIAL") {
+      return res.status(409).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Hiba tortent az anyag modositasa soran." });
+  }
+};
+
+exports.createBulk = async (req, res) => {
+  try {
+    const orszag = typeof req.body.orszag === "string" ? req.body.orszag.trim() : "";
+    const kontinens = typeof req.body.kontinens === "string" ? req.body.kontinens.trim() : "";
+    const kontinensId = toInt(req.body.kontinensId);
+    const meretIds = parseIdArray(req.body.meretIds);
+    const anyagIds = parseIdArray(req.body.anyagIds);
+
+    if (!orszag || !meretIds.length || !anyagIds.length) {
+      return res.status(400).json({
+        message: "Orszag, legalabb egy meret es legalabb egy anyag kotelezo.",
+      });
+    }
+
+    const result = await Zaszlo.createBulk({
+      orszag,
+      kontinens,
+      kontinensId,
+      meretIds,
+      anyagIds,
+    });
+
+    const statusCode = result.createdCount > 0 ? 201 : 200;
+    return res.status(statusCode).json({
+      message:
+        result.createdCount > 0
+          ? "Tomeges variacio letrehozas sikeres."
+          : "Nem jott letre uj variacio, minden kombinacio mar letezett.",
+      ...result,
+    });
+  } catch (error) {
+    if (error.code === "INVALID_INPUT") {
+      return res.status(400).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Hiba tortent a tomeges letrehozas soran." });
   }
 };
 
@@ -176,7 +274,6 @@ exports.getById = async (req, res) => {
     if (!zaszlo) {
       return res.status(404).json({ message: "A kivalasztott zaszlo nem talalhato." });
     }
-
     return res.json(zaszlo);
   } catch (error) {
     return res.status(500).json({ message: "Hiba tortent a zaszlo lekerese soran." });
@@ -195,13 +292,13 @@ exports.filterZaszlok = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { orszag, meretId, anyagId, kontinens } = req.body;
-
+    const { orszag, meretId, anyagId, kontinens, kontinensId } = req.body;
     const result = await Zaszlo.create({
       orszag,
       meretId,
       anyagId,
       kontinens,
+      kontinensId,
     });
 
     return res.status(201).json({

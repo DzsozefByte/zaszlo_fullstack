@@ -11,7 +11,10 @@ router.get("/admin-list", verifyToken, isAdmin, zaszlo.getAdminZaszlok);
 router.get("/admin/meta", verifyToken, isAdmin, zaszlo.getAdminMeta);
 router.put("/admin/countries/:id", verifyToken, isAdmin, zaszlo.updateCountry);
 router.post("/admin/sizes", verifyToken, isAdmin, zaszlo.createMeret);
+router.put("/admin/sizes/:id", verifyToken, isAdmin, zaszlo.updateMeret);
 router.post("/admin/materials", verifyToken, isAdmin, zaszlo.createAnyag);
+router.put("/admin/materials/:id", verifyToken, isAdmin, zaszlo.updateAnyag);
+router.post("/admin/bulk-create", verifyToken, isAdmin, zaszlo.createBulk);
 
 router.post("/", verifyToken, isAdmin, zaszlo.create);
 router.post("/upload/:orszagId", verifyToken, isAdmin, zaszlo.uploadImage);

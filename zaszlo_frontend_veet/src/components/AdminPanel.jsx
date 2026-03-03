@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import httpCommon from "../http-common.js";
+import "./AdminPanel.css";
 
 const AdminPanel = ({ accessToken }) => {
   const [csoportositott, setCsoportositott] = useState({});
@@ -7,21 +8,19 @@ const AdminPanel = ({ accessToken }) => {
   const [uzenet, setUzenet] = useState({ tipus: "", szoveg: "" });
   const [selectedFile, setSelectedFile] = useState(null);
 
-  const [meta, setMeta] = useState({
-    meretek: [],
-    anyagok: [],
-    kontinensek: [],
-  });
-
+  const [meta, setMeta] = useState({ meretek: [], anyagok: [], kontinensek: [] });
   const [felhasznalok, setFelhasznalok] = useState([]);
   const [roleDraft, setRoleDraft] = useState({});
+  const [meretDrafts, setMeretDrafts] = useState({});
+  const [anyagDrafts, setAnyagDrafts] = useState({});
 
-  const [formData, setFormData] = useState({
+  const [bulkForm, setBulkForm] = useState({
     orszag: "",
-    kontinens: "",
-    meretId: "",
-    anyagId: "",
-    ar: "",
+    kontinensId: "",
+    meretIds: [],
+    anyagIds: [],
+    useAllMeretek: true,
+    useAllAnyagok: true,
   });
 
   const [countryEdit, setCountryEdit] = useState({
@@ -30,20 +29,11 @@ const AdminPanel = ({ accessToken }) => {
     kontinensId: "",
   });
 
-  const [newMeret, setNewMeret] = useState({
-    meret: "",
-    szorzo: "1",
-  });
-
-  const [newAnyag, setNewAnyag] = useState({
-    anyag: "",
-    szorzo: "1",
-  });
+  const [newMeret, setNewMeret] = useState({ meret: "", szorzo: "1" });
+  const [newAnyag, setNewAnyag] = useState({ anyag: "", szorzo: "1" });
 
   const authConfig = useMemo(
-    () => ({
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }),
+    () => ({ headers: { Authorization: `Bearer ${accessToken}` } }),
     [accessToken]
   );
 
@@ -52,25 +42,43 @@ const AdminPanel = ({ accessToken }) => {
     [csoportositott]
   );
 
-  const hibaUzenet = (err, fallbackText) =>
-    err?.response?.data?.message || fallbackText;
+  const extractError = (err, fallback) => err?.response?.data?.message || fallback;
 
   const showMessage = (tipus, szoveg) => {
     setUzenet({ tipus, szoveg });
   };
 
+  const initMeretDrafts = (meretek) => {
+    setMeretDrafts(
+      meretek.reduce((acc, meret) => {
+        acc[meret.id] = { meret: meret.meret, szorzo: String(meret.szorzo ?? "1") };
+        return acc;
+      }, {})
+    );
+  };
+
+  const initAnyagDrafts = (anyagok) => {
+    setAnyagDrafts(
+      anyagok.reduce((acc, anyag) => {
+        acc[anyag.id] = { anyag: anyag.anyag, szorzo: String(anyag.szorzo ?? "1") };
+        return acc;
+      }, {})
+    );
+  };
+
   const csoportositas = (adatok) => {
     const map = {};
     adatok.forEach((item) => {
-      if (!map[item.orszag]) {
-        map[item.orszag] = {
+      const key = `${item.orszag}-${item.orszagId}`;
+      if (!map[key]) {
+        map[key] = {
           nev: item.orszag,
           kontinens: item.kontinens,
           orszagId: item.orszagId,
           variaciok: [],
         };
       }
-      map[item.orszag].variaciok.push(item);
+      map[key].variaciok.push(item);
     });
     setCsoportositott(map);
   };
@@ -83,13 +91,16 @@ const AdminPanel = ({ accessToken }) => {
   const fetchMeta = async () => {
     const res = await httpCommon.get("/zaszlok/admin/meta", authConfig);
     const metaData = res.data || { meretek: [], anyagok: [], kontinensek: [] };
-    setMeta(metaData);
 
-    setFormData((prev) => ({
+    setMeta(metaData);
+    initMeretDrafts(metaData.meretek || []);
+    initAnyagDrafts(metaData.anyagok || []);
+
+    setBulkForm((prev) => ({
       ...prev,
-      kontinens: prev.kontinens || metaData.kontinensek[0]?.kontinens || "",
-      meretId: prev.meretId || metaData.meretek[0]?.id || "",
-      anyagId: prev.anyagId || metaData.anyagok[0]?.id || "",
+      kontinensId: prev.kontinensId || String(metaData.kontinensek[0]?.id || ""),
+      meretIds: prev.meretIds.length ? prev.meretIds : metaData.meretek.slice(0, 1).map((m) => m.id),
+      anyagIds: prev.anyagIds.length ? prev.anyagIds : metaData.anyagok.slice(0, 1).map((a) => a.id),
     }));
 
     setCountryEdit((prev) => ({
@@ -111,16 +122,16 @@ const AdminPanel = ({ accessToken }) => {
   };
 
   useEffect(() => {
-    const load = async () => {
+    const loadData = async () => {
       try {
         await Promise.all([fetchMeta(), fetchZaszlok(), fetchFelhasznalok()]);
       } catch (err) {
-        showMessage("danger", hibaUzenet(err, "Hiba a kezdo adatok betoltese soran."));
+        showMessage("danger", extractError(err, "Hiba a kezdo adatok betoltese soran."));
       }
     };
 
     if (accessToken) {
-      load();
+      loadData();
     }
   }, [accessToken]);
 
@@ -128,18 +139,45 @@ const AdminPanel = ({ accessToken }) => {
     setNyitottOrszagok((prev) => ({ ...prev, [orszagNev]: !prev[orszagNev] }));
   };
 
-  const handleCreate = async (e) => {
+  const toggleBulkSelection = (key, id) => {
+    setBulkForm((prev) => {
+      const set = new Set(prev[key]);
+      if (set.has(id)) {
+        set.delete(id);
+      } else {
+        set.add(id);
+      }
+      return { ...prev, [key]: [...set] };
+    });
+  };
+
+  const handleBulkCreate = async (e) => {
     e.preventDefault();
     showMessage("info", "Feldolgozas...");
 
-    try {
-      const payload = {
-        ...formData,
-        meretId: Number(formData.meretId),
-        anyagId: Number(formData.anyagId),
-      };
+    const meretIds = bulkForm.useAllMeretek
+      ? meta.meretek.map((meret) => meret.id)
+      : bulkForm.meretIds;
+    const anyagIds = bulkForm.useAllAnyagok
+      ? meta.anyagok.map((anyag) => anyag.id)
+      : bulkForm.anyagIds;
 
-      const res = await httpCommon.post("/zaszlok", payload, authConfig);
+    if (!meretIds.length || !anyagIds.length) {
+      showMessage("warning", "Valassz legalabb 1 meretet es 1 anyagot.");
+      return;
+    }
+
+    try {
+      const res = await httpCommon.post(
+        "/zaszlok/admin/bulk-create",
+        {
+          orszag: bulkForm.orszag,
+          kontinensId: Number(bulkForm.kontinensId),
+          meretIds,
+          anyagIds,
+        },
+        authConfig
+      );
 
       if (selectedFile && res.data?.orszagId) {
         const imageData = new FormData();
@@ -152,60 +190,61 @@ const AdminPanel = ({ accessToken }) => {
         });
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        orszag: "",
-      }));
+      setBulkForm((prev) => ({ ...prev, orszag: "" }));
       setSelectedFile(null);
-      const fileInput = document.getElementById("fileInput");
+      const fileInput = document.getElementById("admin-file-input");
       if (fileInput) {
         fileInput.value = "";
       }
 
       await fetchZaszlok();
-      showMessage("success", "Zaszlo sikeresen hozzaadva.");
+      showMessage(
+        "success",
+        `Kesz. Letrejott: ${res.data?.createdCount || 0} variacio, atugorva: ${
+          res.data?.skippedCount || 0
+        }.`
+      );
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba tortent a zaszlo mentese kozben."));
+      showMessage("danger", extractError(err, "Hiba tortent a variaciok letrehozasakor."));
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteVariant = async (id) => {
     if (!window.confirm("Biztosan torolni szeretned ezt a variaciot?")) {
       return;
     }
-
     try {
       await httpCommon.delete(`/zaszlok/${id}`, authConfig);
       await fetchZaszlok();
       showMessage("success", "Variacio sikeresen torolve.");
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba a torles soran."));
+      showMessage("danger", extractError(err, "Hiba a torles soran."));
     }
   };
 
   const handleCountrySelect = (orszagId) => {
-    const selected = orszagLista.find((o) => String(o.orszagId) === String(orszagId));
+    const selected = orszagLista.find((item) => String(item.orszagId) === String(orszagId));
     if (!selected) {
       setCountryEdit({ orszagId: "", orszag: "", kontinensId: "" });
       return;
     }
 
-    const kontId =
-      meta.kontinensek.find((k) => k.kontinens === selected.kontinens)?.id ||
+    const kontinensId =
+      meta.kontinensek.find((kont) => kont.kontinens === selected.kontinens)?.id ||
       meta.kontinensek[0]?.id ||
       "";
 
     setCountryEdit({
       orszagId: String(selected.orszagId),
       orszag: selected.nev,
-      kontinensId: String(kontId),
+      kontinensId: String(kontinensId),
     });
   };
 
   const handleCountryUpdate = async (e) => {
     e.preventDefault();
     if (!countryEdit.orszagId) {
-      showMessage("warning", "Eloszor valassz egy orszagot.");
+      showMessage("warning", "Valassz orszagot a modositas elott.");
       return;
     }
 
@@ -218,53 +257,78 @@ const AdminPanel = ({ accessToken }) => {
         },
         authConfig
       );
-
       await fetchZaszlok();
       showMessage("success", "Orszag adatai sikeresen modositva.");
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba tortent az orszag modositasa soran."));
+      showMessage("danger", extractError(err, "Hiba tortent az orszag modositasakor."));
     }
   };
 
   const handleCreateMeret = async (e) => {
     e.preventDefault();
-
     try {
       await httpCommon.post(
         "/zaszlok/admin/sizes",
-        {
-          meret: newMeret.meret,
-          szorzo: Number(newMeret.szorzo),
-        },
+        { meret: newMeret.meret, szorzo: Number(newMeret.szorzo) },
         authConfig
       );
-
       setNewMeret({ meret: "", szorzo: "1" });
       await fetchMeta();
       showMessage("success", "Uj meret sikeresen letrehozva.");
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba tortent az uj meret mentesekor."));
+      showMessage("danger", extractError(err, "Hiba tortent az uj meret mentese soran."));
+    }
+  };
+
+  const handleUpdateMeret = async (id) => {
+    const draft = meretDrafts[id];
+    if (!draft) {
+      return;
+    }
+    try {
+      await httpCommon.put(
+        `/zaszlok/admin/sizes/${id}`,
+        { meret: draft.meret, szorzo: Number(draft.szorzo) },
+        authConfig
+      );
+      await fetchMeta();
+      showMessage("success", `Meret (#${id}) sikeresen modositva.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent a meret modositasakor."));
     }
   };
 
   const handleCreateAnyag = async (e) => {
     e.preventDefault();
-
     try {
       await httpCommon.post(
         "/zaszlok/admin/materials",
-        {
-          anyag: newAnyag.anyag,
-          szorzo: Number(newAnyag.szorzo),
-        },
+        { anyag: newAnyag.anyag, szorzo: Number(newAnyag.szorzo) },
         authConfig
       );
-
       setNewAnyag({ anyag: "", szorzo: "1" });
       await fetchMeta();
       showMessage("success", "Uj anyag sikeresen letrehozva.");
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba tortent az uj anyag mentesekor."));
+      showMessage("danger", extractError(err, "Hiba tortent az uj anyag mentese soran."));
+    }
+  };
+
+  const handleUpdateAnyag = async (id) => {
+    const draft = anyagDrafts[id];
+    if (!draft) {
+      return;
+    }
+    try {
+      await httpCommon.put(
+        `/zaszlok/admin/materials/${id}`,
+        { anyag: draft.anyag, szorzo: Number(draft.szorzo) },
+        authConfig
+      );
+      await fetchMeta();
+      showMessage("success", `Anyag (#${id}) sikeresen modositva.`);
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba tortent az anyag modositasakor."));
     }
   };
 
@@ -278,7 +342,7 @@ const AdminPanel = ({ accessToken }) => {
       await fetchFelhasznalok();
       showMessage("success", `Felhasznalo (#${userId}) jogosultsaga frissitve.`);
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba tortent a jogosultsag modositasakor."));
+      showMessage("danger", extractError(err, "Hiba tortent a jogosultsag modositasakor."));
     }
   };
 
@@ -286,394 +350,563 @@ const AdminPanel = ({ accessToken }) => {
     if (!window.confirm("Biztosan torolni szeretned ezt a felhasznalot?")) {
       return;
     }
-
     try {
       await httpCommon.delete(`/auth/admin/users/${userId}`, authConfig);
       await fetchFelhasznalok();
       showMessage("success", `Felhasznalo (#${userId}) torolve.`);
     } catch (err) {
-      showMessage("danger", hibaUzenet(err, "Hiba tortent a felhasznalo torlesekor."));
+      showMessage("danger", extractError(err, "Hiba tortent a felhasznalo torlesekor."));
     }
   };
 
   return (
-    <div className="container mt-5 pb-5">
-      <h2 className="mb-4">Adminisztracios felulet</h2>
+    <div className="admin-shell">
+      <div className="admin-orb admin-orb-one" />
+      <div className="admin-orb admin-orb-two" />
 
-      {uzenet.szoveg && <div className={`alert alert-${uzenet.tipus}`}>{uzenet.szoveg}</div>}
+      <div className="container-fluid px-3 px-lg-4 admin-container">
+        <header className="admin-hero">
+          <p className="admin-eyebrow">Admin Studio</p>
+          <h1>Zaszlo adminisztracio</h1>
+          <p className="admin-subtitle">
+            Szerkeszd a bazisadatokat, kezeld a felhasznalokat, es hozz letre tomegesen variaciokat.
+          </p>
+        </header>
 
-      <div className="card shadow-sm mb-4 border-0">
-        <div className="card-header bg-primary text-white fw-bold">Uj zaszlo hozzaadasa</div>
-        <div className="card-body bg-light">
-          <form onSubmit={handleCreate} className="row g-3">
-            <div className="col-md-3">
-              <label className="form-label fw-bold">Orszag neve</label>
-              <input
-                type="text"
-                className="form-control"
-                value={formData.orszag}
-                required
-                onChange={(e) => setFormData((prev) => ({ ...prev, orszag: e.target.value }))}
-              />
-            </div>
-
-            <div className="col-md-2">
-              <label className="form-label fw-bold">Kontinens</label>
-              <select
-                className="form-select"
-                value={formData.kontinens}
-                onChange={(e) => setFormData((prev) => ({ ...prev, kontinens: e.target.value }))}
-                required
-              >
-                {meta.kontinensek.map((k) => (
-                  <option key={k.id} value={k.kontinens}>
-                    {k.kontinens}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label className="form-label fw-bold">Meret</label>
-              <select
-                className="form-select"
-                value={formData.meretId}
-                onChange={(e) => setFormData((prev) => ({ ...prev, meretId: e.target.value }))}
-                required
-              >
-                {meta.meretek.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.meret}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-md-2">
-              <label className="form-label fw-bold">Anyag</label>
-              <select
-                className="form-select"
-                value={formData.anyagId}
-                onChange={(e) => setFormData((prev) => ({ ...prev, anyagId: e.target.value }))}
-                required
-              >
-                {meta.anyagok.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.anyag}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-md-3">
-              <label className="form-label fw-bold">Kep (.png)</label>
-              <input
-                type="file"
-                id="fileInput"
-                className="form-control"
-                accept="image/png"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              />
-            </div>
-
-            <div className="col-12 text-end">
-              <button type="submit" className="btn btn-success px-4">
-                Hozzaadas
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <div className="row g-4 mb-4">
-        <div className="col-lg-6">
-          <div className="card shadow-sm border-0 h-100">
-            <div className="card-header bg-warning-subtle fw-bold">Adott orszag modositasa</div>
-            <div className="card-body">
-              <form onSubmit={handleCountryUpdate} className="row g-3">
-                <div className="col-12">
-                  <label className="form-label fw-bold">Orszag kivalasztasa</label>
-                  <select
-                    className="form-select"
-                    value={countryEdit.orszagId}
-                    onChange={(e) => handleCountrySelect(e.target.value)}
-                  >
-                    <option value="">Valassz orszagot...</option>
-                    {orszagLista.map((o) => (
-                      <option key={o.orszagId} value={o.orszagId}>
-                        {o.nev}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-md-7">
-                  <label className="form-label fw-bold">Uj orszagnev</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={countryEdit.orszag}
-                    onChange={(e) =>
-                      setCountryEdit((prev) => ({ ...prev, orszag: e.target.value }))
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="col-md-5">
-                  <label className="form-label fw-bold">Kontinens</label>
-                  <select
-                    className="form-select"
-                    value={countryEdit.kontinensId}
-                    onChange={(e) =>
-                      setCountryEdit((prev) => ({ ...prev, kontinensId: e.target.value }))
-                    }
-                    required
-                  >
-                    {meta.kontinensek.map((k) => (
-                      <option key={k.id} value={k.id}>
-                        {k.kontinens}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-12 text-end">
-                  <button type="submit" className="btn btn-warning">
-                    Orszag mentese
-                  </button>
-                </div>
-              </form>
-            </div>
+        {uzenet.szoveg && (
+          <div className={`alert alert-${uzenet.tipus} admin-alert`} role="alert">
+            {uzenet.szoveg}
           </div>
-        </div>
+        )}
 
-        <div className="col-lg-6">
-          <div className="card shadow-sm border-0 h-100">
-            <div className="card-header bg-info-subtle fw-bold">
-              Alapadat modositasa (uj meret, uj anyag)
+        <section className="admin-grid admin-grid-two mb-4">
+          <article className="admin-card">
+            <div className="admin-card-header">
+              <h2>Uj custom zaszlo variaciok egyszerre</h2>
+              <p>Nem kell egyesevel felvenni a meret-anyag kombinaciokat.</p>
             </div>
-            <div className="card-body">
-              <form onSubmit={handleCreateMeret} className="row g-2 align-items-end mb-3">
-                <div className="col-6">
-                  <label className="form-label fw-bold">Uj meret</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="pl. 400x200cm"
-                    value={newMeret.meret}
-                    onChange={(e) =>
-                      setNewMeret((prev) => ({ ...prev, meret: e.target.value }))
-                    }
-                    required
-                  />
-                </div>
-                <div className="col-3">
-                  <label className="form-label fw-bold">Szorzo</label>
-                  <input
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    className="form-control"
-                    value={newMeret.szorzo}
-                    onChange={(e) =>
-                      setNewMeret((prev) => ({ ...prev, szorzo: e.target.value }))
-                    }
-                    required
-                  />
-                </div>
-                <div className="col-3 d-grid">
-                  <button type="submit" className="btn btn-info">
-                    Meret rogzitese
-                  </button>
-                </div>
-              </form>
 
-              <form onSubmit={handleCreateAnyag} className="row g-2 align-items-end">
-                <div className="col-6">
-                  <label className="form-label fw-bold">Uj anyag</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="pl. pamut"
-                    value={newAnyag.anyag}
-                    onChange={(e) =>
-                      setNewAnyag((prev) => ({ ...prev, anyag: e.target.value }))
-                    }
-                    required
-                  />
+            <form onSubmit={handleBulkCreate} className="row g-3">
+              <div className="col-lg-4">
+                <label className="form-label fw-semibold">Orszag neve</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={bulkForm.orszag}
+                  onChange={(e) => setBulkForm((prev) => ({ ...prev, orszag: e.target.value }))}
+                  placeholder="pl. Tesztorszag"
+                  required
+                />
+              </div>
+
+              <div className="col-lg-3">
+                <label className="form-label fw-semibold">Kontinens</label>
+                <select
+                  className="form-select"
+                  value={bulkForm.kontinensId}
+                  onChange={(e) => setBulkForm((prev) => ({ ...prev, kontinensId: e.target.value }))}
+                  required
+                >
+                  {meta.kontinensek.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.kontinens}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-lg-5">
+                <label className="form-label fw-semibold">Orszag kep (.png)</label>
+                <input
+                  id="admin-file-input"
+                  type="file"
+                  className="form-control"
+                  accept="image/png"
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                />
+              </div>
+
+              <div className="col-md-6">
+                <div className="admin-pick-box">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h3>Meretek</h3>
+                    <label className="form-check-label small d-flex align-items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={bulkForm.useAllMeretek}
+                        onChange={(e) =>
+                          setBulkForm((prev) => ({ ...prev, useAllMeretek: e.target.checked }))
+                        }
+                      />
+                      Mind
+                    </label>
+                  </div>
+                  <div className="admin-chip-wrap">
+                    {meta.meretek.map((item) => {
+                      const active = bulkForm.meretIds.includes(item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`admin-chip ${active ? "is-active" : ""}`}
+                          disabled={bulkForm.useAllMeretek}
+                          onClick={() => toggleBulkSelection("meretIds", item.id)}
+                        >
+                          {item.meret}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="col-3">
-                  <label className="form-label fw-bold">Szorzo</label>
-                  <input
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    className="form-control"
-                    value={newAnyag.szorzo}
-                    onChange={(e) =>
-                      setNewAnyag((prev) => ({ ...prev, szorzo: e.target.value }))
-                    }
-                    required
-                  />
+              </div>
+
+              <div className="col-md-6">
+                <div className="admin-pick-box">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h3>Anyagok</h3>
+                    <label className="form-check-label small d-flex align-items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={bulkForm.useAllAnyagok}
+                        onChange={(e) =>
+                          setBulkForm((prev) => ({ ...prev, useAllAnyagok: e.target.checked }))
+                        }
+                      />
+                      Mind
+                    </label>
+                  </div>
+                  <div className="admin-chip-wrap">
+                    {meta.anyagok.map((item) => {
+                      const active = bulkForm.anyagIds.includes(item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`admin-chip ${active ? "is-active" : ""}`}
+                          disabled={bulkForm.useAllAnyagok}
+                          onClick={() => toggleBulkSelection("anyagIds", item.id)}
+                        >
+                          {item.anyag}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="col-3 d-grid">
-                  <button type="submit" className="btn btn-info">
-                    Anyag rogzitese
-                  </button>
-                </div>
-              </form>
+              </div>
+
+              <div className="col-12 text-end">
+                <button type="submit" className="btn admin-btn-primary">
+                  Variaciok letrehozasa
+                </button>
+              </div>
+            </form>
+          </article>
+
+          <article className="admin-card">
+            <div className="admin-card-header">
+              <h2>Adott orszag modositasa</h2>
+              <p>Orszagnev es kontinens valtoztatasa egy lepesben.</p>
             </div>
+
+            <form onSubmit={handleCountryUpdate} className="row g-3">
+              <div className="col-12">
+                <label className="form-label fw-semibold">Orszag kivalasztasa</label>
+                <select
+                  className="form-select"
+                  value={countryEdit.orszagId}
+                  onChange={(e) => handleCountrySelect(e.target.value)}
+                >
+                  <option value="">Valassz orszagot...</option>
+                  {orszagLista.map((item) => (
+                    <option key={item.orszagId} value={item.orszagId}>
+                      {item.nev}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-7">
+                <label className="form-label fw-semibold">Orszag neve</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={countryEdit.orszag}
+                  onChange={(e) => setCountryEdit((prev) => ({ ...prev, orszag: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="col-5">
+                <label className="form-label fw-semibold">Kontinens</label>
+                <select
+                  className="form-select"
+                  value={countryEdit.kontinensId}
+                  onChange={(e) =>
+                    setCountryEdit((prev) => ({ ...prev, kontinensId: e.target.value }))
+                  }
+                  required
+                >
+                  {meta.kontinensek.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.kontinens}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-12 text-end">
+                <button type="submit" className="btn admin-btn-secondary">
+                  Orszag mentese
+                </button>
+              </div>
+            </form>
+          </article>
+        </section>
+
+        <section className="admin-grid admin-grid-two mb-4">
+          <article className="admin-card">
+            <div className="admin-card-header">
+              <h2>Alapadatok modositasa</h2>
+              <p>Uj adatok felvetele, es meglevo meret/anyag szerkesztese.</p>
+            </div>
+
+            <div className="row g-4">
+              <div className="col-12 col-xl-6">
+                <h3 className="admin-section-title">Meretek</h3>
+
+                <form onSubmit={handleCreateMeret} className="row g-2 mb-3">
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Uj meret (pl. 400x200cm)"
+                      value={newMeret.meret}
+                      onChange={(e) => setNewMeret((prev) => ({ ...prev, meret: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="col-3">
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      className="form-control"
+                      placeholder="Szorzo"
+                      value={newMeret.szorzo}
+                      onChange={(e) => setNewMeret((prev) => ({ ...prev, szorzo: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="col-3 d-grid">
+                    <button type="submit" className="btn btn-outline-primary btn-sm">
+                      Uj meret
+                    </button>
+                  </div>
+                </form>
+
+                <div className="table-responsive admin-subtable">
+                  <table className="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Meret</th>
+                        <th>Szorzo</th>
+                        <th className="text-end">Mentes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {meta.meretek.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.id}</td>
+                          <td>
+                            <input
+                              className="form-control form-control-sm"
+                              value={meretDrafts[item.id]?.meret || ""}
+                              onChange={(e) =>
+                                setMeretDrafts((prev) => ({
+                                  ...prev,
+                                  [item.id]: { ...prev[item.id], meret: e.target.value },
+                                }))
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              className="form-control form-control-sm"
+                              value={meretDrafts[item.id]?.szorzo || "1"}
+                              onChange={(e) =>
+                                setMeretDrafts((prev) => ({
+                                  ...prev,
+                                  [item.id]: { ...prev[item.id], szorzo: e.target.value },
+                                }))
+                              }
+                            />
+                          </td>
+                          <td className="text-end">
+                            <button
+                              type="button"
+                              className="btn btn-outline-success btn-sm"
+                              onClick={() => handleUpdateMeret(item.id)}
+                            >
+                              Mentes
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="col-12 col-xl-6">
+                <h3 className="admin-section-title">Anyagok</h3>
+
+                <form onSubmit={handleCreateAnyag} className="row g-2 mb-3">
+                  <div className="col-6">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Uj anyag (pl. pamut)"
+                      value={newAnyag.anyag}
+                      onChange={(e) => setNewAnyag((prev) => ({ ...prev, anyag: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="col-3">
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      className="form-control"
+                      placeholder="Szorzo"
+                      value={newAnyag.szorzo}
+                      onChange={(e) => setNewAnyag((prev) => ({ ...prev, szorzo: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="col-3 d-grid">
+                    <button type="submit" className="btn btn-outline-primary btn-sm">
+                      Uj anyag
+                    </button>
+                  </div>
+                </form>
+
+                <div className="table-responsive admin-subtable">
+                  <table className="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Anyag</th>
+                        <th>Szorzo</th>
+                        <th className="text-end">Mentes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {meta.anyagok.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.id}</td>
+                          <td>
+                            <input
+                              className="form-control form-control-sm"
+                              value={anyagDrafts[item.id]?.anyag || ""}
+                              onChange={(e) =>
+                                setAnyagDrafts((prev) => ({
+                                  ...prev,
+                                  [item.id]: { ...prev[item.id], anyag: e.target.value },
+                                }))
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              className="form-control form-control-sm"
+                              value={anyagDrafts[item.id]?.szorzo || "1"}
+                              onChange={(e) =>
+                                setAnyagDrafts((prev) => ({
+                                  ...prev,
+                                  [item.id]: { ...prev[item.id], szorzo: e.target.value },
+                                }))
+                              }
+                            />
+                          </td>
+                          <td className="text-end">
+                            <button
+                              type="button"
+                              className="btn btn-outline-success btn-sm"
+                              onClick={() => handleUpdateAnyag(item.id)}
+                            >
+                              Mentes
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article className="admin-card">
+            <div className="admin-card-header">
+              <h2>Felhasznalok kezelese</h2>
+              <p>Szerepkor modositas es torles egy helyen.</p>
+            </div>
+
+            <div className="table-responsive">
+              <table className="table table-sm align-middle admin-user-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nev</th>
+                    <th>Email</th>
+                    <th>Jog</th>
+                    <th className="text-end">Muvelet</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {felhasznalok.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.id}</td>
+                      <td>{item.nev}</td>
+                      <td>{item.email}</td>
+                      <td style={{ maxWidth: 120 }}>
+                        <select
+                          className="form-select form-select-sm"
+                          value={roleDraft[item.id] || item.jogosultsag}
+                          onChange={(e) => setRoleDraft((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                        >
+                          <option value="user">user</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      </td>
+                      <td className="text-end">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary btn-sm me-2"
+                          disabled={(roleDraft[item.id] || item.jogosultsag) === item.jogosultsag}
+                          onClick={() => handleRoleSave(item.id)}
+                        >
+                          Mentes
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => handleDeleteUser(item.id)}
+                        >
+                          Torles
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!felhasznalok.length && (
+                    <tr>
+                      <td colSpan="5" className="text-center py-4 text-muted">
+                        Nincs felhasznalo.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section className="admin-card mb-4">
+          <div className="admin-card-header">
+            <h2>Orszagok es variaciok</h2>
+            <p>Nyisd le az orszagot a meret/anyag variaciok gyors torlesehez.</p>
           </div>
-        </div>
-      </div>
 
-      <div className="card shadow-sm mb-4 border-0">
-        <div className="card-header bg-secondary text-white fw-bold">Felhasznalok kezelese</div>
-        <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-sm table-striped align-middle mb-0">
-              <thead className="table-light">
+            <table className="table align-middle admin-flag-table mb-0">
+              <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nev</th>
-                  <th>Email</th>
-                  <th>Telefonszam</th>
-                  <th>Jogosultsag</th>
-                  <th className="text-end">Muvelet</th>
+                  <th style={{ width: 56 }} />
+                  <th>Kep</th>
+                  <th>Orszag</th>
+                  <th>Kontinens</th>
+                  <th className="text-center">Variacio</th>
                 </tr>
               </thead>
               <tbody>
-                {felhasznalok.map((u) => (
-                  <tr key={u.id}>
-                    <td>{u.id}</td>
-                    <td>{u.nev}</td>
-                    <td>{u.email}</td>
-                    <td>{u.telefonszam || "-"}</td>
-                    <td style={{ maxWidth: 180 }}>
-                      <select
-                        className="form-select form-select-sm"
-                        value={roleDraft[u.id] || u.jogosultsag}
-                        onChange={(e) =>
-                          setRoleDraft((prev) => ({ ...prev, [u.id]: e.target.value }))
-                        }
-                      >
-                        <option value="user">user</option>
-                        <option value="admin">admin</option>
-                      </select>
-                    </td>
-                    <td className="text-end">
-                      <button
-                        className="btn btn-outline-primary btn-sm me-2"
-                        disabled={(roleDraft[u.id] || u.jogosultsag) === u.jogosultsag}
-                        onClick={() => handleRoleSave(u.id)}
-                      >
-                        Mentes
-                      </button>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => handleDeleteUser(u.id)}
-                      >
-                        Torles
-                      </button>
-                    </td>
-                  </tr>
+                {orszagLista.map((csoport) => (
+                  <React.Fragment key={`${csoport.nev}-${csoport.orszagId}`}>
+                    <tr className="admin-flag-row" onClick={() => toggleRow(csoport.nev)}>
+                      <td className="text-center">{nyitottOrszagok[csoport.nev] ? "v" : ">"}</td>
+                      <td>
+                        <img
+                          src={`/images/${csoport.orszagId}.png`}
+                          alt={csoport.nev}
+                          className="admin-flag-thumb"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src =
+                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='36'%3E%3Crect width='56' height='36' fill='%23e5e7eb'/%3E%3Ctext x='28' y='22' text-anchor='middle' font-size='12' fill='%2363748b'%3E?%3C/text%3E%3C/svg%3E";
+                          }}
+                        />
+                      </td>
+                      <td className="fw-semibold">{csoport.nev}</td>
+                      <td>{csoport.kontinens}</td>
+                      <td className="text-center">
+                        <span className="badge admin-pill">{csoport.variaciok.length} db</span>
+                      </td>
+                    </tr>
+
+                    {nyitottOrszagok[csoport.nev] && (
+                      <tr>
+                        <td colSpan="5" className="p-0">
+                          <div className="p-3 bg-body-tertiary">
+                            <table className="table table-sm table-bordered mb-0 bg-white">
+                              <thead>
+                                <tr>
+                                  <th>ID</th>
+                                  <th>Meret</th>
+                                  <th>Anyag</th>
+                                  <th className="text-end">Muvelet</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {csoport.variaciok.map((item) => (
+                                  <tr key={item.id}>
+                                    <td>{item.id}</td>
+                                    <td>{item.meret_nev}</td>
+                                    <td>{item.anyag_nev}</td>
+                                    <td className="text-end">
+                                      <button
+                                        type="button"
+                                        className="btn btn-outline-danger btn-sm"
+                                        onClick={() => handleDeleteVariant(item.id)}
+                                      >
+                                        Torles
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
-                {felhasznalok.length === 0 && (
-                  <tr>
-                    <td colSpan="6" className="text-center py-4 text-muted">
-                      Nincs megjelenitheto felhasznalo.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <div className="table-responsive shadow-sm">
-        <table className="table table-hover align-middle mb-0 bg-white">
-          <thead className="table-dark">
-            <tr>
-              <th style={{ width: "50px" }} />
-              <th>Kep</th>
-              <th>Orszag</th>
-              <th>Kontinens</th>
-              <th className="text-center">Variaciok</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orszagLista.map((csoport) => (
-              <React.Fragment key={csoport.nev}>
-                <tr onClick={() => toggleRow(csoport.nev)} style={{ cursor: "pointer" }}>
-                  <td className="text-center">{nyitottOrszagok[csoport.nev] ? "▼" : "▶"}</td>
-                  <td>
-                    <img
-                      src={`/images/${csoport.orszagId}.png`}
-                      alt=""
-                      style={{
-                        width: "45px",
-                        height: "30px",
-                        objectFit: "cover",
-                        border: "1px solid #ccc",
-                      }}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src =
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='45' height='30'%3E%3Crect width='45' height='30' fill='%23f0f0f0'/%3E%3Ctext x='22.5' y='18' text-anchor='middle' font-size='12' fill='%23666'%3E?%3C/text%3E%3C/svg%3E";
-                      }}
-                    />
-                  </td>
-                  <td className="fw-bold">{csoport.nev}</td>
-                  <td>{csoport.kontinens}</td>
-                  <td className="text-center">
-                    <span className="badge bg-secondary">{csoport.variaciok.length} db</span>
-                  </td>
-                </tr>
-
-                {nyitottOrszagok[csoport.nev] && (
-                  <tr>
-                    <td colSpan="5" className="p-0">
-                      <div className="p-3 bg-light">
-                        <table className="table table-sm table-bordered bg-white mb-0">
-                          <thead>
-                            <tr className="table-secondary">
-                              <th>ID</th>
-                              <th>Meret</th>
-                              <th>Anyag</th>
-                              <th className="text-center">Muvelet</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {csoport.variaciok.map((v) => (
-                              <tr key={v.id}>
-                                <td>{v.id}</td>
-                                <td>{v.meret_nev}</td>
-                                <td>{v.anyag_nev}</td>
-                                <td className="text-center">
-                                  <button
-                                    className="btn btn-outline-danger btn-sm"
-                                    onClick={() => handleDelete(v.id)}
-                                  >
-                                    Torles
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+        </section>
       </div>
     </div>
   );
 };
 
 export default AdminPanel;
+
