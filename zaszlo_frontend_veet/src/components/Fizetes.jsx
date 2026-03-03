@@ -20,8 +20,8 @@ const Fizetes = ({ user, accessToken }) => {
     iranyitoszam: user?.iranyitoszam || "",
     varos: user?.varos || "",
     utca: user?.utca || "",
+    adoszam: user?.adoszam || "",
     fizetesiModId: "",
-    megjegyzes: "",
   });
 
   useEffect(() => {
@@ -31,9 +31,13 @@ const Fizetes = ({ user, accessToken }) => {
         nev: user.nev || prev.nev,
         email: user.email || prev.email,
         telefonszam: user.telefonszam || prev.telefonszam,
-        iranyitoszam: user.iranyitoszam || prev.iranyitoszam,
-        varos: user.varos || prev.varos,
-        utca: user.utca || prev.utca,
+        iranyitoszam:
+          user.iranyitoszam === null || user.iranyitoszam === undefined
+            ? prev.iranyitoszam
+            : String(user.iranyitoszam),
+        varos: user.varos ?? prev.varos,
+        utca: user.utca ?? prev.utca,
+        adoszam: user.adoszam ?? prev.adoszam,
       }));
     }
   }, [user]);
@@ -55,12 +59,16 @@ const Fizetes = ({ user, accessToken }) => {
 
         setRendelesAdatok((prev) => ({
           ...prev,
-          nev: profile.nev || prev.nev,
-          email: profile.email || prev.email,
-          telefonszam: profile.telefonszam || prev.telefonszam,
-          iranyitoszam: profile.iranyitoszam || prev.iranyitoszam,
-          varos: profile.varos || prev.varos,
-          utca: profile.utca || prev.utca,
+          nev: profile.nev ?? prev.nev,
+          email: profile.email ?? prev.email,
+          telefonszam: profile.telefonszam ?? prev.telefonszam,
+          iranyitoszam:
+            profile.iranyitoszam === null || profile.iranyitoszam === undefined
+              ? prev.iranyitoszam
+              : String(profile.iranyitoszam),
+          varos: profile.varos ?? prev.varos,
+          utca: profile.utca ?? prev.utca,
+          adoszam: profile.adoszam ?? prev.adoszam,
         }));
       } catch (error) {
         if (error.response?.status === 401) {
@@ -144,6 +152,7 @@ const Fizetes = ({ user, accessToken }) => {
         varos: rendelesAdatok.varos,
         utca: rendelesAdatok.utca,
         telefon: rendelesAdatok.telefonszam,
+        adoszam: rendelesAdatok.adoszam,
       },
     };
 
@@ -241,6 +250,16 @@ const Fizetes = ({ user, accessToken }) => {
                     />
                   </Col>
 
+                  <Col md={6} className="mb-3">
+                    <Form.Label className="small fw-bold text-muted">Adoszam (opcionalis)</Form.Label>
+                    <Form.Control
+                      name="adoszam"
+                      value={rendelesAdatok.adoszam}
+                      onChange={handleInputChange}
+                      className="rounded-3"
+                    />
+                  </Col>
+
                   <Col md={4} className="mb-3">
                     <Form.Label className="small fw-bold text-muted">Iranyitoszam</Form.Label>
                     <Form.Control
@@ -273,19 +292,6 @@ const Fizetes = ({ user, accessToken }) => {
                       className="rounded-3"
                     />
                   </Col>
-
-                  <Col md={12} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Megjegyzes (opcionalis)</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={2}
-                      name="megjegyzes"
-                      value={rendelesAdatok.megjegyzes}
-                      onChange={handleInputChange}
-                      placeholder="Pl. a kapucsengo nem jo..."
-                      className="rounded-3"
-                    />
-                  </Col>
                 </Row>
 
                 <h5 className="fw-bold mt-4 mb-3">Fizetesi mod</h5>
@@ -310,7 +316,10 @@ const Fizetes = ({ user, accessToken }) => {
           </Col>
 
           <Col lg={5}>
-            <Card className="border-0 shadow-sm rounded-4 sticky-top" style={{ top: "100px" }}>
+            <Card
+              className="border-0 shadow-sm rounded-4"
+              style={{ position: "sticky", top: "100px", zIndex: 1 }}
+            >
               <Card.Body className="p-4">
                 <h5 className="fw-bold mb-4 d-flex align-items-center gap-2">
                   <IoMdCart /> Rendelesed

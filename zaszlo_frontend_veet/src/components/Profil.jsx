@@ -9,8 +9,22 @@ import {
   IoMdCreate,
   IoMdCheckmark,
   IoMdClose,
+  IoMdSettings,
 } from "react-icons/io";
 import { Container, Row, Col, Card, Badge, Spinner, Form, Button } from "react-bootstrap";
+
+const normalizeProfileData = (profile = {}) => ({
+  ...profile,
+  nev: profile.nev || "",
+  telefonszam: profile.telefonszam || "",
+  iranyitoszam:
+    profile.iranyitoszam === null || profile.iranyitoszam === undefined
+      ? ""
+      : String(profile.iranyitoszam),
+  varos: profile.varos || "",
+  utca: profile.utca || "",
+  adoszam: profile.adoszam || "",
+});
 
 const Profil = ({ accessToken, onUserUpdate }) => {
   const [userData, setUserData] = useState(null);
@@ -32,8 +46,9 @@ const Profil = ({ accessToken, onUserUpdate }) => {
           headers: { Authorization: `Bearer ${authToken}` },
         });
 
-        setUserData(response.data.user);
-        setFormData(response.data.user || {});
+        const normalized = normalizeProfileData(response.data.user || {});
+        setUserData(normalized);
+        setFormData(normalized);
       } catch (error) {
         navigate("/login");
       } finally {
@@ -61,18 +76,20 @@ const Profil = ({ accessToken, onUserUpdate }) => {
         iranyitoszam: formData.iranyitoszam || "",
         varos: formData.varos || "",
         utca: formData.utca || "",
+        adoszam: formData.adoszam || "",
       };
 
       const response = await httpCommon.put("/auth/profil/update", payload, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
-      setUserData(response.data.user);
-      setFormData(response.data.user || {});
+      const normalized = normalizeProfileData(response.data.user || {});
+      setUserData(normalized);
+      setFormData(normalized);
       setEditMode(false);
 
       if (onUserUpdate) {
-        onUserUpdate(response.data.user);
+        onUserUpdate(normalized);
       }
 
       alert("Adatok sikeresen mentve!");
@@ -98,6 +115,13 @@ const Profil = ({ accessToken, onUserUpdate }) => {
       </Container>
     );
   }
+
+  const addressMain = [userData.iranyitoszam, userData.varos]
+    .filter((item) => item !== null && item !== undefined && String(item).trim() !== "")
+    .join(" ");
+  const addressText = [addressMain, userData.utca]
+    .filter((item) => item !== null && item !== undefined && String(item).trim() !== "")
+    .join(", ");
 
   return (
     <Container className="py-5">
@@ -143,9 +167,17 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                         onChange={handleChange}
                       />
                     </Col>
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="small fw-bold">Adoszam</Form.Label>
+                      <Form.Control name="adoszam" value={formData.adoszam || ""} onChange={handleChange} />
+                    </Col>
                     <Col md={4} className="mb-3">
                       <Form.Label className="small fw-bold">Iranyitoszam</Form.Label>
-                      <Form.Control name="iranyitoszam" value={formData.iranyitoszam || ""} onChange={handleChange} />
+                      <Form.Control
+                        name="iranyitoszam"
+                        value={formData.iranyitoszam || ""}
+                        onChange={handleChange}
+                      />
                     </Col>
                     <Col md={8} className="mb-3">
                       <Form.Label className="small fw-bold">Varos</Form.Label>
@@ -197,13 +229,21 @@ const Profil = ({ accessToken, onUserUpdate }) => {
 
                   <div className="d-flex align-items-center gap-3 mb-4">
                     <div className="bg-light p-2 rounded-3 text-primary">
+                      <IoMdSettings size={24} />
+                    </div>
+                    <div>
+                      <small className="text-muted d-block text-uppercase small fw-bold">Adoszam</small>
+                      <span className="fs-6 fw-medium">{userData.adoszam || <i>Nincs megadva</i>}</span>
+                    </div>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-3 mb-4">
+                    <div className="bg-light p-2 rounded-3 text-primary">
                       <IoMdHome size={24} />
                     </div>
                     <div>
                       <small className="text-muted d-block text-uppercase small fw-bold">Szallitasi cim</small>
-                      <span className="fs-6 fw-medium">
-                        {userData.varos ? `${userData.iranyitoszam} ${userData.varos}, ${userData.utca}` : <i>Nincs megadva</i>}
-                      </span>
+                      <span className="fs-6 fw-medium">{addressText || <i>Nincs megadva</i>}</span>
                     </div>
                   </div>
 

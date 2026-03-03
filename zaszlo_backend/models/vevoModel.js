@@ -2,10 +2,10 @@ const db = require("../config/db");
 
 class Vevo {
   static async register(userData) {
-    const { nev, email, jelszo, telefonszam, iranyitoszam, varos, utca } = userData;
+    const { nev, email, jelszo, telefonszam, iranyitoszam, varos, utca, adoszam } = userData;
     const [result] = await db.query(
-      "INSERT INTO vevo (nev, email, jelszo, jogosultsag, telefonszam, iranyitoszam, varos, utca) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [nev, email, jelszo, "user", telefonszam, iranyitoszam, varos, utca]
+      "INSERT INTO vevo (nev, email, jelszo, jogosultsag, telefonszam, iranyitoszam, varos, utca, adoszam) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [nev, email, jelszo, "user", telefonszam || null, iranyitoszam || null, varos || null, utca || null, adoszam || null]
     );
     return result.insertId;
   }
@@ -17,18 +17,19 @@ class Vevo {
 
   static async getById(id) {
     const [rows] = await db.query(
-      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca FROM vevo WHERE id = ?",
+      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca, adoszam FROM vevo WHERE id = ?",
       [id]
     );
     return rows[0];
   }
 
   static async updateProfile(id, profileData) {
-    const { nev, telefonszam, iranyitoszam, varos, utca } = profileData;
+    const { nev, telefonszam, iranyitoszam, varos, utca, adoszam } = profileData;
+    const iranyitoszamValue = iranyitoszam ? Number(iranyitoszam) : null;
 
     await db.query(
-      "UPDATE vevo SET nev = ?, telefonszam = ?, iranyitoszam = ?, varos = ?, utca = ? WHERE id = ?",
-      [nev, telefonszam || null, iranyitoszam || null, varos || null, utca || null, id]
+      "UPDATE vevo SET nev = ?, telefonszam = ?, iranyitoszam = ?, varos = ?, utca = ?, adoszam = ? WHERE id = ?",
+      [nev, telefonszam || null, iranyitoszamValue, varos || null, utca || null, adoszam || null, id]
     );
 
     return this.getById(id);
@@ -36,7 +37,7 @@ class Vevo {
 
   static async getAllForAdmin() {
     const [rows] = await db.query(
-      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca FROM vevo ORDER BY id DESC"
+      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca, adoszam FROM vevo ORDER BY id DESC"
     );
     return rows;
   }

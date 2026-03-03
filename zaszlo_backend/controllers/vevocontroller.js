@@ -10,9 +10,16 @@ const toInt = (value) => {
   return parsed;
 };
 
+const toTrimmedString = (value) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  return String(value).trim();
+};
+
 exports.register = async (req, res, next) => {
   try {
-    const { nev, email, jelszo, telefonszam, iranyitoszam, varos, utca } = req.body;
+    const { nev, email, jelszo, telefonszam, iranyitoszam, varos, utca, adoszam } = req.body;
 
     if (!nev || !email || !jelszo) {
       return res.status(400).json({ message: "A nev, email es jelszo kotelezo!" });
@@ -32,6 +39,7 @@ exports.register = async (req, res, next) => {
       iranyitoszam,
       varos,
       utca,
+      adoszam,
       jelszo: hashedPassword,
     });
 
@@ -128,14 +136,19 @@ exports.profil = async (req, res, next) => {
 
 exports.updateProfil = async (req, res, next) => {
   try {
-    const nev = typeof req.body.nev === "string" ? req.body.nev.trim() : "";
-    const telefonszam = typeof req.body.telefonszam === "string" ? req.body.telefonszam.trim() : "";
-    const iranyitoszam = typeof req.body.iranyitoszam === "string" ? req.body.iranyitoszam.trim() : "";
-    const varos = typeof req.body.varos === "string" ? req.body.varos.trim() : "";
-    const utca = typeof req.body.utca === "string" ? req.body.utca.trim() : "";
+    const nev = toTrimmedString(req.body.nev);
+    const telefonszam = toTrimmedString(req.body.telefonszam);
+    const iranyitoszam = toTrimmedString(req.body.iranyitoszam);
+    const varos = toTrimmedString(req.body.varos);
+    const utca = toTrimmedString(req.body.utca);
+    const adoszam = toTrimmedString(req.body.adoszam);
 
     if (!nev) {
       return res.status(400).json({ message: "A nev megadasa kotelezo." });
+    }
+
+    if (iranyitoszam && !/^[0-9]+$/.test(iranyitoszam)) {
+      return res.status(400).json({ message: "Az iranyitoszam csak szamokat tartalmazhat." });
     }
 
     const user = await Felhasznalo.updateProfile(req.user.id, {
@@ -144,6 +157,7 @@ exports.updateProfil = async (req, res, next) => {
       iranyitoszam,
       varos,
       utca,
+      adoszam,
     });
 
     return res.json({
