@@ -8,6 +8,7 @@ import httpCommon from "../http-common";
 const Fizetes = ({ user, accessToken }) => {
     const { kosar, vegosszeg, setKosar } = useContext(KosarContext);
     const navigate = useNavigate();
+    const authToken = accessToken || localStorage.getItem("token");
     const [loading, setLoading] = useState(false);
     const [rendelesSikeres, setRendelesSikeres] = useState(false);
 
@@ -38,6 +39,13 @@ const Fizetes = ({ user, accessToken }) => {
         }
     }, [user]);
 
+    useEffect(() => {
+        if (!authToken) {
+            alert("Rendelés leadásához jelentkezz be.");
+            navigate("/login");
+        }
+    }, [authToken, navigate]);
+
     // Ha üres a kosár és nem most lett sikeres a rendelés, menjünk vissza a boltba
     useEffect(() => {
         if (kosar.length === 0 && !rendelesSikeres) {
@@ -52,6 +60,12 @@ const Fizetes = ({ user, accessToken }) => {
 
 const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!authToken) {
+        alert("Rendelés leadásához jelentkezz be.");
+        navigate("/login");
+        return;
+    }
+
     setLoading(true);
 
     // A backend a 'fizetesiMod' és 'kosar' kulcsokat várja a req.body-ban
@@ -71,7 +85,7 @@ const handleSubmit = async (e) => {
     try {
         // JAVÍTÁS: /rendelesek HELYETT /szamlak
         await httpCommon.post("/szamlak", vegsoRendeles, {
-            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+            headers: { Authorization: `Bearer ${authToken}` }
         });
 
         setRendelesSikeres(true);
@@ -79,6 +93,11 @@ const handleSubmit = async (e) => {
     } catch (error) {
         console.error("Hiba a rendelés során:", error);
         // Részletesebb hibaüzenet a konzolon, ha a backend válaszol valamit
+        if (error.response?.status === 401) {
+            alert("A rendelés leadásához be kell jelentkezned.");
+            navigate("/login");
+            return;
+        }
         if (error.response) {
             console.log("Backend hibaüzenet:", error.response.data);
         }
@@ -87,6 +106,10 @@ const handleSubmit = async (e) => {
         setLoading(false);
     }
 };
+    if (!authToken) {
+        return null;
+    }
+
     if (rendelesSikeres) {
         return (
             <Container className="py-5 text-center animate-slide-up">

@@ -86,10 +86,10 @@ function App() {
           <Route path="/" element={<Fooldal />} />
           <Route path="/kereso" element={<Kereso />} />
           <Route path="/termek/:country" element={<Termek />} />
-          <Route path="/kosar" element={<Kosar />} />
+          <Route path="/kosar" element={<Kosar accessToken={accessToken} />} />
           
-          {/* FONTOS: A Fizetes-nek is átadhatjuk az accessToken-t propként a biztonság kedvéért */}
-          <Route path="/fizetes" element={<Fizetes accessToken={accessToken} />} />
+          {/* FONTOS: A Fizetes-nek is átadjuk a user-t és az accessToken-t */}
+          <Route path="/fizetes" element={<Fizetes user={user} accessToken={accessToken} />} />
 
           <Route path="/kapcsolat" element={<Kapcsolat />} />
           <Route path="/aszf" element={<Aszf />} />

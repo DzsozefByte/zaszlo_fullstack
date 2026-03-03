@@ -4,16 +4,27 @@ import { Button, Card, Table, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IoMdTrash, IoMdAdd, IoMdRemove, IoMdCart, IoMdCloseCircle } from "react-icons/io";
 
-const Kosar = () => {
+const Kosar = ({ accessToken }) => {
     // ITT ADTUK HOZZÁ A setKosar-t
     const { kosar, torlesKosarbol, dbModositas, vegosszeg, setKosar } = useContext(KosarContext);
     const navigate = useNavigate();
+    const isLoggedIn = Boolean(accessToken || localStorage.getItem("token"));
 
     // Teljes kosár ürítése függvény
     const handleKosarUrites = () => {
         if (window.confirm("Biztosan ki szeretnéd üríteni a teljes kosarat?")) {
             setKosar([]); // Ez töröl mindent
         }
+    };
+
+    const handleTovabbPenztarhoz = () => {
+        if (!isLoggedIn) {
+            alert("A rendelés leadásához be kell jelentkezned.");
+            navigate("/login");
+            return;
+        }
+
+        navigate("/fizetes");
     };
 
     if (kosar.length === 0) {
@@ -118,7 +129,7 @@ const Kosar = () => {
                                 variant="primary" 
                                 size="lg" 
                                 className="w-100 rounded-pill fw-bold shadow-sm mb-3"
-                                onClick={() => navigate("/fizetes")}
+                                onClick={handleTovabbPenztarhoz}
                             >
                                 Tovább a pénztárhoz
                             </Button>
