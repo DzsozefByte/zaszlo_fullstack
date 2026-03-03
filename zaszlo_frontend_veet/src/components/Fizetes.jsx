@@ -317,7 +317,7 @@ const Fizetes = ({ user, accessToken }) => {
 
           <Col lg={5}>
             <Card
-              className="border-0 shadow-sm rounded-4"
+              className="border-0 shadow-sm rounded-4 checkout-summary-card"
               style={{ position: "sticky", top: "100px", zIndex: 1 }}
             >
               <Card.Body className="p-4">
