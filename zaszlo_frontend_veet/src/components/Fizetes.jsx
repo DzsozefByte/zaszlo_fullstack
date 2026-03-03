@@ -158,7 +158,7 @@ const handleSubmit = async (e) => {
                                 <h5 className="fw-bold mt-4 mb-3">Fizetési mód</h5>
                                 <div className="d-flex flex-column gap-2">
                                     <Form.Check type="radio" label="Utánvét (fizetés a futárnál)" name="fizetesiMod" value="utanvet" checked={rendelesAdatok.fizetesiMod === "utanvet"} onChange={handleInputChange} />
-                                    <Form.Check type="radio" label="Bankkártyás fizetés (Hamarosan)" name="fizetesiMod" value="kartya" disabled onChange={handleInputChange} />
+                                    <Form.Check type="radio" label="Bankkártyás fizetés" name="fizetesiMod" value="kartya" onChange={handleInputChange} />
                                 </div>
                             </Card.Body>
                         </Card>
