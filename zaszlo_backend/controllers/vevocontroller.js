@@ -2,6 +2,14 @@ const bcrypt = require("bcrypt");
 const Felhasznalo = require("../models/vevoModel");
 const jwt = require("jsonwebtoken");
 
+const toInt = (value) => {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+};
+
 exports.register = async (req, res, next) => {
   try {
     const { nev, email, jelszo, telefonszam, iranyitoszam, varos, utca } = req.body;
@@ -142,6 +150,80 @@ exports.updateProfil = async (req, res, next) => {
       message: "Profil adatok sikeresen mentve.",
       user,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.adminGetUsers = async (req, res, next) => {
+  try {
+    const users = await Felhasznalo.getAllForAdmin();
+    return res.json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.adminUpdateUserRole = async (req, res, next) => {
+  try {
+    const userId = toInt(req.params.id);
+    const jogosultsag = typeof req.body.jogosultsag === "string" ? req.body.jogosultsag.trim() : "";
+
+    if (!userId || !["user", "admin"].includes(jogosultsag)) {
+      return res.status(400).json({ message: "Ervenytelen felhasznalo vagy jogosultsag." });
+    }
+
+    const user = await Felhasznalo.getById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Felhasznalo nem talalhato." });
+    }
+
+    if (req.user.id === userId && jogosultsag !== "admin") {
+      return res.status(400).json({ message: "A sajat admin jogosultsagodat nem veheted el." });
+    }
+
+    if (user.jogosultsag === "admin" && jogosultsag !== "admin") {
+      const adminCount = await Felhasznalo.countAdmins();
+      if (adminCount <= 1) {
+        return res.status(400).json({ message: "Az utolso admin jogosultsaga nem modosithato userre." });
+      }
+    }
+
+    const updatedUser = await Felhasznalo.updateRole(userId, jogosultsag);
+    return res.json({
+      message: "Felhasznalo jogosultsaga sikeresen modositva.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.adminDeleteUser = async (req, res, next) => {
+  try {
+    const userId = toInt(req.params.id);
+    if (!userId) {
+      return res.status(400).json({ message: "Ervenytelen felhasznalo azonosito." });
+    }
+
+    if (req.user.id === userId) {
+      return res.status(400).json({ message: "Sajat fiok nem torolheto admin feluleten." });
+    }
+
+    const user = await Felhasznalo.getById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Felhasznalo nem talalhato." });
+    }
+
+    if (user.jogosultsag === "admin") {
+      const adminCount = await Felhasznalo.countAdmins();
+      if (adminCount <= 1) {
+        return res.status(400).json({ message: "Az utolso admin nem torolheto." });
+      }
+    }
+
+    await Felhasznalo.deleteById(userId);
+    return res.json({ message: "Felhasznalo sikeresen torolve." });
   } catch (error) {
     next(error);
   }

@@ -33,6 +33,30 @@ class Vevo {
 
     return this.getById(id);
   }
+
+  static async getAllForAdmin() {
+    const [rows] = await db.query(
+      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca FROM vevo ORDER BY id DESC"
+    );
+    return rows;
+  }
+
+  static async updateRole(id, jogosultsag) {
+    await db.query("UPDATE vevo SET jogosultsag = ? WHERE id = ?", [jogosultsag, id]);
+    return this.getById(id);
+  }
+
+  static async deleteById(id) {
+    const [result] = await db.query("DELETE FROM vevo WHERE id = ?", [id]);
+    return result.affectedRows;
+  }
+
+  static async countAdmins() {
+    const [rows] = await db.query(
+      "SELECT COUNT(*) AS count FROM vevo WHERE jogosultsag = 'admin'"
+    );
+    return rows[0]?.count || 0;
+  }
 }
 
 module.exports = Vevo;
