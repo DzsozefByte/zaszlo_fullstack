@@ -5,6 +5,7 @@ const zaszlo = require("../controllers/zaszloController");
 const { verifyToken, isAdmin } = require("../middleware/auth");
 
 router.get("/", zaszlo.getAllZaszlok);
+router.get("/popular", zaszlo.getPopularZaszlok);
 router.get("/search", zaszlo.filterZaszlok);
 
 router.get("/admin-list", verifyToken, isAdmin, zaszlo.getAdminZaszlok);

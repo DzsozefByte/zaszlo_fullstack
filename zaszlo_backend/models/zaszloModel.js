@@ -6,6 +6,28 @@ class Zaszlok {
     return rows;
   }
 
+  static async getPopular(limit = 9) {
+    const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 9;
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        o.id,
+        o.orszag,
+        SUM(rr.mennyiseg) AS vasarlas_db
+      FROM rendeles_reszletek rr
+      JOIN zaszlok z ON z.id = rr.zaszlo_id
+      JOIN orszagok o ON o.id = z.orszagId
+      GROUP BY o.id, o.orszag
+      ORDER BY vasarlas_db DESC, o.orszag ASC
+      LIMIT ?
+      `,
+      [safeLimit]
+    );
+
+    return rows;
+  }
+
   static async getAdminList() {
     const [rows] = await db.query(`
       SELECT

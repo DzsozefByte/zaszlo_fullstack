@@ -90,6 +90,7 @@ const FlagSection = ({ title, items }) => {
 // --- FŐ KOMPONENS: Fooldal ---
 const Fooldal = () => {
   const [zaszlok, setZaszlok] = useState([]);
+  const [popularFlags, setPopularFlags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // ITT VOLT A HIBA: Definiálnunk kell a navigate-et a komponensen belül
@@ -98,10 +99,30 @@ const Fooldal = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await httpCommon.get("/zaszlok");
-      setZaszlok(response.data);
+      const [allFlagsResult, popularFlagsResult] = await Promise.allSettled([
+        httpCommon.get("/zaszlok"),
+        httpCommon.get("/zaszlok/popular?limit=12"),
+      ]);
+
+      if (allFlagsResult.status === "fulfilled") {
+        const allFlags = Array.isArray(allFlagsResult.value.data) ? allFlagsResult.value.data : [];
+        setZaszlok(allFlags);
+      } else {
+        setZaszlok([]);
+      }
+
+      if (popularFlagsResult.status === "fulfilled") {
+        const popular = Array.isArray(popularFlagsResult.value.data)
+          ? popularFlagsResult.value.data
+          : [];
+        setPopularFlags(popular);
+      } else {
+        setPopularFlags([]);
+      }
     } catch (error) {
       console.error("Hiba az adatok lekérése során:", error);
+      setZaszlok([]);
+      setPopularFlags([]);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +132,6 @@ const Fooldal = () => {
     fetchData();
   }, []);
 
-  const popularCountries = ["Magyarország", "Németország", "Franciaország", "Olaszország", "Egyesült Államok", "Egyesült Királyság", "Spanyolország", "Kanada", "Japán"];
   const euCountries = [
     "Ausztria","Belgium","Bulgária","Ciprus","Csehország","Dánia","Észtország","Finnország","Franciaország",
     "Görögország","Hollandia","Horvátország","Írország","Lengyelország","Lettország","Litvánia","Luxemburg",
@@ -119,9 +139,11 @@ const Fooldal = () => {
     "Szlovákia","Szlovénia"
   ];
 
-  const popularFlags = zaszlok.filter(z => popularCountries.includes(z.orszag));
-  const euFlags = zaszlok.filter(z => euCountries.includes(z.orszag));
-  const otherFlags = zaszlok.filter(z => !popularCountries.includes(z.orszag) && !euCountries.includes(z.orszag));
+  const popularCountrySet = new Set(popularFlags.map((z) => z.orszag));
+  const euFlags = zaszlok.filter((z) => euCountries.includes(z.orszag) && !popularCountrySet.has(z.orszag));
+  const otherFlags = zaszlok.filter(
+    (z) => !popularCountrySet.has(z.orszag) && !euCountries.includes(z.orszag)
+  );
 
   return (
     <div className="homepage-wrapper">

@@ -52,6 +52,14 @@ const parseIdArray = (value) => {
   return [...new Set(value.map(Number).filter((item) => Number.isInteger(item) && item > 0))];
 };
 
+const toLimit = (value, defaultValue = 9, max = 24) => {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return defaultValue;
+  }
+  return Math.min(parsed, max);
+};
+
 exports.uploadImage = [
   upload.single("image"),
   (req, res) => {
@@ -71,6 +79,18 @@ exports.getAllZaszlok = async (req, res) => {
     return res.json(zaszlok);
   } catch (error) {
     return res.status(500).json({ message: "Hiba tortent az orszagok lekerdezese kozben." });
+  }
+};
+
+exports.getPopularZaszlok = async (req, res) => {
+  try {
+    const limit = toLimit(req.query.limit);
+    const zaszlok = await Zaszlo.getPopular(limit);
+    return res.json(zaszlok);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Hiba tortent a nepszeru zaszlok lekerdezese kozben." });
   }
 };
 
