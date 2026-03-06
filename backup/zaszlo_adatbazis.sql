@@ -43,7 +43,7 @@ CREATE TABLE `anyagok` (
   `szorzo` float NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `anyag` (`anyag`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -68,7 +68,7 @@ CREATE TABLE `fizetesi_mod` (
   `nev` varchar(50) COLLATE utf8mb4_hungarian_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nev` (`nev`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,7 +136,7 @@ CREATE TABLE `meretek` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `meret` (`meret`),
   UNIQUE KEY `szorzo` (`szorzo`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -164,7 +164,7 @@ CREATE TABLE `orszagok` (
   UNIQUE KEY `orszag` (`orszag`),
   KEY `FK_orszagok_kont_Id` (`kont_Id`),
   CONSTRAINT `FK_orszagok_kont_Id` FOREIGN KEY (`kont_Id`) REFERENCES `kontinensek` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -173,7 +173,7 @@ CREATE TABLE `orszagok` (
 
 LOCK TABLES `orszagok` WRITE;
 /*!40000 ALTER TABLE `orszagok` DISABLE KEYS */;
-INSERT INTO `orszagok` VALUES (1,'Afganisztán',3),(2,'Albánia',2),(3,'Algéria',1),(4,'Andorra',2),(5,'Angola',1),(6,'Antigua és Barbuda',4),(7,'Argentína',5),(8,'Örményország',3),(9,'Ausztrália',6),(10,'Ausztria',2),(11,'Azerbajdzsán',3),(12,'Bahama-szigetek',4),(13,'Bahrein',3),(14,'Banglades',3),(15,'Barbados',4),(16,'Fehéroroszország',2),(17,'Belgium',2),(18,'Belize',4),(19,'Benin',1),(20,'Bhután',3),(21,'Bolívia',5),(22,'Bosznia és Hercegovina',2),(23,'Botswana',1),(24,'Brazília',5),(25,'Brunei',3),(26,'Bulgária',2),(27,'Burkina Faso',1),(28,'Burundi',1),(29,'Côte d’Ivoire',1),(30,'Kambodzsa',3),(31,'Kamerun',1),(32,'Kanada',4),(33,'Zöld-foki Köztársaság',1),(34,'Közép-afrikai Köztársaság',1),(35,'Csád',1),(36,'Chile',5),(37,'Kína',3),(38,'Kolumbia',5),(39,'Komorok',1),(40,'Kongo, Demokratikus Köztársaság',1),(41,'Kongo, Köztársaság',1),(42,'Costa Rica',4),(43,'Horvátország',2),(44,'Kuba',4),(45,'Ciprus',3),(46,'Csehország',2),(47,'Dánia',2),(48,'Dzsibuti',1),(49,'Dominika',4),(50,'Dominikai Köztársaság',4),(51,'Ecuador',5),(52,'Egyiptom',1),(53,'El Salvador',4),(54,'Egyenlítői-Guinea',1),(55,'Eritrea',1),(56,'Észtország',2),(57,'Eswatini',1),(58,'Etiópia',1),(59,'Fiji',6),(60,'Finnország',2),(61,'Franciaország',2),(62,'Gabon',1),(63,'Gambia',1),(64,'Grúzia',3),(65,'Németország',2),(66,'Ghána',1),(67,'Görögország',2),(68,'Grenada',4),(69,'Guatemala',4),(70,'Guinea',1),(71,'Guinea-Bissau',1),(72,'Guyana',5),(73,'Haiti',4),(74,'Honduras',4),(75,'Magyarország',2),(76,'Izland',2),(77,'India',3),(78,'Indonézia',3),(79,'Irán',3),(80,'Irak',3),(81,'Írország',2),(82,'Izrael',3),(83,'Olaszország',2),(84,'Jamaica',4),(85,'Japán',3),(86,'Jordánia',3),(87,'Kazahsztán',3),(88,'Kenya',1),(89,'Kiribati',6),(90,'Kuvait',3),(91,'Kirgizisztán',3),(92,'Laosz',3),(93,'Lettország',2),(94,'Libanon',3),(95,'Lesotho',1),(96,'Libéria',1),(97,'Líbia',1),(98,'Liechtenstein',2),(99,'Litvánia',2),(100,'Luxemburg',2),(101,'Észak-Macedónia',2),(102,'Madagaszkár',1),(103,'Malawi',1),(104,'Malajzia',3),(105,'Maldív-szigetek',3),(106,'Mali',1),(107,'Málta',2),(108,'Marshall-szigetek',6),(109,'Mauritánia',1),(110,'Mauritius',1),(111,'Mexikó',4),(112,'Mikronézia',6),(113,'Moldova',2),(114,'Monaco',2),(115,'Mongólia',3),(116,'Montenegró',2),(117,'Marokkó',1),(118,'Mozambik',1),(119,'Mianmar',3),(120,'Namíbia',1),(121,'Nauru',6),(122,'Nepál',3),(123,'Hollandia',2),(124,'Új-Zéland',6),(125,'Nicaragua',4),(126,'Niger',1),(127,'Nigéria',1),(128,'Észak-Korea',3),(129,'Norvégia',2),(130,'Omán',3),(131,'Pakisztán',3),(132,'Palau',6),(133,'Panama',4),(134,'Pápua Új-Guinea',6),(135,'Paraguay',5),(136,'Peru',5),(137,'Fülöp-szigetek',3),(138,'Lengyelország',2),(139,'Portugália',2),(140,'Katar',3),(141,'Románia',2),(142,'Oroszország',2),(143,'Ruanda',1),(144,'Szent Kitts és Nevis',4),(145,'Saint Lucia',4),(146,'Saint Vincent és a Grenadine‑szigetek',4),(147,'Samoa',6),(148,'San Marino',2),(149,'Sao Tomé és Príncipe',1),(150,'Szaúd-Arábia',3),(151,'Szenegál',1),(152,'Szerbia',2),(153,'Seychelles',1),(154,'Sierra Leone',1),(155,'Szingapúr',3),(156,'Szlovákia',2),(157,'Szlovénia',2),(158,'Salamon-szigetek',6),(159,'Szomália',1),(160,'Dél-Afrika',1),(161,'Dél-Korea',3),(162,'Dél-Szudán',1),(163,'Spanyolország',2),(164,'Sri Lanka',3),(165,'Szudán',1),(166,'Suriname',5),(167,'Svédország',2),(168,'Svájc',2),(169,'Szíria',3),(170,'Tádzsikisztán',3),(171,'Tanzánia',1),(172,'Thaiföld',3),(173,'Togo',1),(174,'Tonga',6),(175,'Trinidad és Tobago',4),(176,'Tunézia',1),(177,'Törökország',3),(178,'Türkmenisztán',3),(179,'Tuvalu',6),(180,'Uganda',1),(181,'Ukrajna',2),(182,'Egyesült Arab Emírségek',3),(183,'Egyesült Királyság',2),(184,'Egyesült Államok',4),(185,'Uruguay',5),(186,'Üzbegisztán',3),(187,'Vanuatu',6),(188,'Vatikán',2),(189,'Venezuela',5),(190,'Vietnam',3),(191,'Jemen',3),(192,'Zambia',1),(193,'Zimbabwe',1);
+INSERT INTO `orszagok` VALUES (1,'Afganisztán',3),(2,'Albánia',2),(3,'Algéria',1),(4,'Andorra',2),(5,'Angola',1),(6,'Antigua és Barbuda',4),(7,'Argentína',5),(8,'Örményország',3),(9,'Ausztrália',6),(10,'Ausztria',2),(11,'Azerbajdzsán',3),(12,'Bahama-szigetek',4),(13,'Bahrein',3),(14,'Banglades',3),(15,'Barbados',4),(16,'Fehéroroszország',2),(17,'Belgium',2),(18,'Belize',4),(19,'Benin',1),(20,'Bhután',3),(21,'Bolívia',5),(22,'Bosznia és Hercegovina',2),(23,'Botswana',1),(24,'Brazília',5),(25,'Brunei',3),(26,'Bulgária',2),(27,'Burkina Faso',1),(28,'Burundi',1),(29,'Côte d’Ivoire',1),(30,'Kambodzsa',3),(31,'Kamerun',1),(32,'Kanada',4),(33,'Zöld-foki Köztársaság',1),(34,'Közép-afrikai Köztársaság',1),(35,'Csád',1),(36,'Chile',5),(37,'Kína',3),(38,'Kolumbia',5),(39,'Comore-szigetek',1),(40,'Kongo, Demokratikus Köztársaság',1),(41,'Kongo, Köztársaság',1),(42,'Costa Rica',4),(43,'Horvátország',2),(44,'Kuba',4),(45,'Ciprus',3),(46,'Csehország',2),(47,'Dánia',2),(48,'Dzsibuti',1),(49,'Dominika',4),(50,'Dominikai Köztársaság',4),(51,'Ecuador',5),(52,'Egyiptom',1),(53,'El Salvador',4),(54,'Egyenlítői-Guinea',1),(55,'Eritrea',1),(56,'Észtország',2),(57,'Eswatini',1),(58,'Etiópia',1),(59,'Fiji',6),(60,'Finnország',2),(61,'Franciaország',2),(62,'Gabon',1),(63,'Gambia',1),(64,'Grúzia',3),(65,'Németország',2),(66,'Ghána',1),(67,'Görögország',2),(68,'Grenada',4),(69,'Guatemala',4),(70,'Guinea',1),(71,'Guinea-Bissau',1),(72,'Guyana',5),(73,'Haiti',4),(74,'Honduras',4),(75,'Magyarország',2),(76,'Izland',2),(77,'India',3),(78,'Indonézia',3),(79,'Irán',3),(80,'Irak',3),(81,'Írország',2),(82,'Izrael',3),(83,'Olaszország',2),(84,'Jamaica',4),(85,'Japán',3),(86,'Jordánia',3),(87,'Kazahsztán',3),(88,'Kenya',1),(89,'Kiribati',6),(90,'Kuvait',3),(91,'Kirgizisztán',3),(92,'Laosz',3),(93,'Lettország',2),(94,'Libanon',3),(95,'Lesotho',1),(96,'Libéria',1),(97,'Líbia',1),(98,'Liechtenstein',2),(99,'Litvánia',2),(100,'Luxemburg',2),(101,'Észak-Macedónia',2),(102,'Madagaszkár',1),(103,'Malawi',1),(104,'Malajzia',3),(105,'Maldív-szigetek',3),(106,'Mali',1),(107,'Málta',2),(108,'Marshall-szigetek',6),(109,'Mauritánia',1),(110,'Mauritius',1),(111,'Mexikó',4),(112,'Mikronézia',6),(113,'Moldova',2),(114,'Monaco',2),(115,'Mongólia',3),(116,'Montenegró',2),(117,'Marokkó',1),(118,'Mozambik',1),(119,'Mianmar',3),(120,'Namíbia',1),(121,'Nauru',6),(122,'Nepál',3),(123,'Hollandia',2),(124,'Új-Zéland',6),(125,'Nicaragua',4),(126,'Niger',1),(127,'Nigéria',1),(128,'Észak-Korea',3),(129,'Norvégia',2),(130,'Omán',3),(131,'Pakisztán',3),(132,'Palau',6),(133,'Panama',4),(134,'Pápua Új-Guinea',6),(135,'Paraguay',5),(136,'Peru',5),(137,'Fülöp-szigetek',3),(138,'Lengyelország',2),(139,'Portugália',2),(140,'Katar',3),(141,'Románia',2),(142,'Oroszország',2),(143,'Ruanda',1),(144,'Szent Kitts és Nevis',4),(145,'Saint Lucia',4),(146,'Saint Vincent és a Grenadine‑szigetek',4),(147,'Samoa',6),(148,'San Marino',2),(149,'Sao Tomé és Príncipe',1),(150,'Szaúd-Arábia',3),(151,'Szenegál',1),(152,'Szerbia',2),(153,'Seychelles',1),(154,'Sierra Leone',1),(155,'Szingapúr',3),(156,'Szlovákia',2),(157,'Szlovénia',2),(158,'Salamon-szigetek',6),(159,'Szomália',1),(160,'Dél-Afrika',1),(161,'Dél-Korea',3),(162,'Dél-Szudán',1),(163,'Spanyolország',2),(164,'Sri Lanka',3),(165,'Szudán',1),(166,'Suriname',5),(167,'Svédország',2),(168,'Svájc',2),(169,'Szíria',3),(170,'Tádzsikisztán',3),(171,'Tanzánia',1),(172,'Thaiföld',3),(173,'Togo',1),(174,'Tonga',6),(175,'Trinidad és Tobago',4),(176,'Tunézia',1),(177,'Törökország',3),(178,'Türkmenisztán',3),(179,'Tuvalu',6),(180,'Uganda',1),(181,'Ukrajna',2),(182,'Egyesült Arab Emírségek',3),(183,'Egyesült Királyság',2),(184,'Egyesült Államok',4),(185,'Uruguay',5),(186,'Üzbegisztán',3),(187,'Vanuatu',6),(188,'Vatikán',2),(189,'Venezuela',5),(190,'Vietnam',3),(191,'Jemen',3),(192,'Zambia',1),(193,'Zimbabwe',1);
 /*!40000 ALTER TABLE `orszagok` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -197,7 +197,7 @@ CREATE TABLE `rendeles_reszletek` (
   KEY `FK_rendeles_reszletek_zaszlo_id` (`zaszlo_id`),
   CONSTRAINT `FK_rendeles_reszletek_szamla_id` FOREIGN KEY (`szamla_id`) REFERENCES `szamla` (`szamla_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_rendeles_reszletek_zaszlo_id` FOREIGN KEY (`zaszlo_id`) REFERENCES `zaszlok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -206,7 +206,7 @@ CREATE TABLE `rendeles_reszletek` (
 
 LOCK TABLES `rendeles_reszletek` WRITE;
 /*!40000 ALTER TABLE `rendeles_reszletek` DISABLE KEYS */;
-INSERT INTO `rendeles_reszletek` VALUES (16,24,39,'150x90cm','nylon',1,10800),(17,25,2,'150x90cm','selyem',2,8100),(18,25,10,'60x40cm','poliészter',1,1800),(19,25,9,'300x150cm','rPET',3,21600),(20,26,61,'60x40cm','poliészter',1,1800),(21,29,32,'200x100cm','selyem',2,10800),(22,29,183,'200x100cm','poliészter',1,7200),(23,29,184,'200x100cm','poliészter',1,7200),(24,29,204,'60x40cm','poliészter',1,1800),(25,29,85,'60x40cm','poliészter',1,1800),(26,30,32,'60x40cm','poliészter',1,1800),(27,31,85,'60x40cm','poliészter',1,1800),(28,32,10,'150x90cm','selyem',1,8100),(29,33,5,'60x40cm','poliészter',1,1800),(30,34,183,'300x150cm','selyem',1,16200),(31,35,61,'60x40cm','poliészter',1,1800),(32,35,85,'60x40cm','poliészter',1,1800);
+INSERT INTO `rendeles_reszletek` VALUES (46,44,1197,'300x150cm','poliészter',2,5400),(47,44,1494,'200x100cm','selyem',5,5400),(48,44,1293,'200x100cm','poliészter',2,3600),(49,44,3660,'300x150cm','rPET',1,10800),(73,46,3680,'300x150cm','rPET',58,10800),(75,48,392,'150x90cm','rPET',3,5400),(76,48,1773,'200x100cm','poliészter',2,3600),(77,48,3041,'60x40cm','poliészter',2,1800);
 /*!40000 ALTER TABLE `rendeles_reszletek` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +230,7 @@ CREATE TABLE `szamla` (
   KEY `FK_szamla_vevo_id` (`vevo_id`),
   CONSTRAINT `FK_szamla_fizetesi_mod` FOREIGN KEY (`fizetesi_mod`) REFERENCES `fizetesi_mod` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_szamla_vevo_id` FOREIGN KEY (`vevo_id`) REFERENCES `vevo` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -239,7 +239,7 @@ CREATE TABLE `szamla` (
 
 LOCK TABLES `szamla` WRITE;
 /*!40000 ALTER TABLE `szamla` DISABLE KEYS */;
-INSERT INTO `szamla` VALUES (17,2,'2026-01-29','2026-01-29','2026-01-29',14,'SZ-662971'),(18,1,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-888158'),(19,2,'2026-01-29','2026-01-29','2026-01-29',2,'SZ-700203'),(22,2,'2026-01-30','2026-01-30','2026-01-30',14,'SZ-286436'),(24,2,'2026-02-02','2026-02-02','2026-02-02',14,'SZ-586531'),(25,2,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-747113'),(26,1,'2026-02-02','2026-02-02','2026-02-02',1,'SZ-910250'),(29,2,'2026-02-11','2026-02-11','2026-02-11',37,'SZ-124333'),(30,1,'2026-02-12','2026-02-12','2026-02-12',14,'SZ-135376'),(31,1,'2026-02-23','2026-02-23','2026-02-23',1,'SZ-532032'),(32,1,'2026-02-23','2026-02-23','2026-02-23',1,'SZ-670650'),(33,1,'2026-02-23','2026-02-23','2026-02-23',1,'SZ-323980'),(34,1,'2026-02-23','2026-02-23','2026-02-23',39,'SZ-524571'),(35,1,'2026-02-23','2026-02-23','2026-02-23',40,'SZ-263708');
+INSERT INTO `szamla` VALUES (44,2,'2026-03-04','2026-03-04','2026-03-04',14,'SZ-102136'),(46,1,'2026-03-04','2026-03-04','2026-03-04',2,'SZ-477822'),(48,2,'2026-03-05','2026-03-05','2026-03-05',1,'SZ-660543');
 /*!40000 ALTER TABLE `szamla` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -265,7 +265,7 @@ CREATE TABLE `vevo` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `jelszo` (`jelszo`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -274,7 +274,7 @@ CREATE TABLE `vevo` (
 
 LOCK TABLES `vevo` WRITE;
 /*!40000 ALTER TABLE `vevo` DISABLE KEYS */;
-INSERT INTO `vevo` VALUES (1,'Kerekes Ádám','5420 Túrkeve Molnár utca 1',NULL,'$2a$10$W42TqnyQyAECCUwl9Lzutu4et8q/eMm9df9Oln18R/gJ.4EFIxGmC','user','k.adam12220@gmail.com',NULL,NULL,NULL,NULL),(2,'Csala Martin','5400 Mezőtúr Futó utca 17',NULL,'$2a$10$FDRK4xkHOog12QQZkQdeDuhEwy7D2eU.uxbJqSD7cfmUT92s.h/6y','user','csalamartin2@gmail.com',NULL,NULL,NULL,NULL),(14,'Sipos József','5400 Mezőtúr Szabadság Tér 24/4 3.em.11',NULL,'$2a$10$XYxZKNj2fsOBfQYq1d7/ruT6YwtTx8FdjRsykbCsDGnCA8ECdarvi','admin','ssjocijr@gmail.com',NULL,NULL,NULL,NULL),(33,'Ábrahám Mihály','5420 Túrkeve Kisújszállási utca 38',NULL,'$2b$10$V9JupDmGXHjHQnmMs6D2H.NLl5WbkZVvOGSVLDrbsfLhGsXpiu5JW','admin','mihalyabraham23@gmail.com',NULL,NULL,NULL,NULL),(37,'Muzsai Tamás',NULL,NULL,'$2b$10$RihJLhWybAgjJ4Rdx8i33OkIZGukIZ/BKdcdnxznUyOcdOLcwRftG','user','Mtomika2006@gmail.com',NULL,NULL,NULL,NULL),(39,'Kovács Adél',NULL,NULL,'$2b$10$5R.LASSDWNMVlyYjRbT4.eSr8LHhAG.6yPg3NzQanGa7y0Dfr/yKC','user','k.adel.88@freemail.hu',NULL,NULL,NULL,NULL),(40,'Teszt Elek',NULL,NULL,'$2b$10$0Cj0B7gu20oMN8i2C4aucOMAN8ZrQD38O9zUSVD7rkndU.Utk3Xru','user','TesztElek@gmail.com','+36404527865',69420,'Zedváros','Petőfi utca 12');
+INSERT INTO `vevo` VALUES (1,'Kerekes Ádám','5420 Túrkeve Molnár utca 1',NULL,'$2a$10$W42TqnyQyAECCUwl9Lzutu4et8q/eMm9df9Oln18R/gJ.4EFIxGmC','user','k.adam12220@gmail.com','+36309200610',5420,'Túrkeve','Molnár utca 1'),(2,'Kirk Martin','5400 Mezőtúr Futó utca 17','676767676767','$2a$10$FDRK4xkHOog12QQZkQdeDuhEwy7D2eU.uxbJqSD7cfmUT92s.h/6y','user','csalamartin2@gmail.com','+36209975653',5400,'Mezőtúr','Futó utca 17'),(14,'Sipos József','5400 Mezőtúr Szabadság Tér 24/4 3.em.11',NULL,'$2a$10$XYxZKNj2fsOBfQYq1d7/ruT6YwtTx8FdjRsykbCsDGnCA8ECdarvi','admin','ssjocijr@gmail.com','+36202727876',5400,'Mezőtúr','Szabadság tér 24/4 3. emelet 11. ajtó'),(33,'Ábrahám Mihály','5420 Túrkeve Kisújszállási utca 38',NULL,'$2b$10$V9JupDmGXHjHQnmMs6D2H.NLl5WbkZVvOGSVLDrbsfLhGsXpiu5JW','admin','mihalyabraham23@gmail.com',NULL,NULL,NULL,NULL),(37,'Muzsai Tamás',NULL,NULL,'$2b$10$RihJLhWybAgjJ4Rdx8i33OkIZGukIZ/BKdcdnxznUyOcdOLcwRftG','user','Mtomika2006@gmail.com',NULL,5400,'Mezőtúr','Rigó utca 14. 2/4.'),(40,'Teszt Elek',NULL,NULL,'$2b$10$0Cj0B7gu20oMN8i2C4aucOMAN8ZrQD38O9zUSVD7rkndU.Utk3Xru','user','TesztElek@gmail.com','+36404527865',5420,'Túrkeve','Ady Endre utca 5'),(41,'Telefon Tamás',NULL,NULL,'$2b$10$lgGr7zeh2GnIVVVdY5ds2eeniJ763D03Hbh9XoipH14xaH5WF89gu','user','TelefonTomi@gmail.com','+36204247651',5400,'Mezőtúr ','Weöres Sándor utca 12');
 /*!40000 ALTER TABLE `vevo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -315,7 +315,7 @@ CREATE TABLE `zaszlok` (
   CONSTRAINT `FK_zaszlok_anyag` FOREIGN KEY (`anyag`) REFERENCES `anyagok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_zaszlok_meret` FOREIGN KEY (`meret`) REFERENCES `meretek` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_zaszlok_orszagId` FOREIGN KEY (`orszagId`) REFERENCES `orszagok` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3902 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3973 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_hungarian_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -391,4 +391,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-02-24 11:18:23
+-- Dump completed on 2026-03-06 12:17:45
