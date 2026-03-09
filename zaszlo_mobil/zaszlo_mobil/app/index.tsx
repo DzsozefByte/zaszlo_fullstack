@@ -21,6 +21,68 @@ import type {
 const DEFAULT_WEB_URL =
   Platform.OS === "android" ? "http://10.0.2.2:5173" : "http://localhost:5173";
 
+const MOBILE_WEBVIEW_TWEAKS = `
+  (function () {
+    var styleId = "zaszlo-mobile-webview-style";
+    var css = [
+      "html, body, #root { max-width: 100vw !important; overflow-x: hidden !important; }",
+      "body { overflow-x: hidden !important; }",
+      "* { box-sizing: border-box !important; }",
+      ".navbar .navbar-nav.me-auto { display: none !important; }",
+      ".user-pill .d-none.d-sm-block { display: block !important; max-width: 88px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }",
+      ".container, .container-fluid, .row, [class*='col-'] { max-width: 100% !important; }",
+      ".row { margin-left: 0 !important; margin-right: 0 !important; }",
+      ".table-responsive { overflow-x: visible !important; }",
+      "table { width: 100% !important; table-layout: fixed !important; }",
+      "th, td { white-space: normal !important; word-break: break-word !important; font-size: 0.78rem !important; padding: 0.4rem !important; }",
+      ".mini-cart-panel { width: min(92vw, 320px) !important; max-width: min(92vw, 320px) !important; right: 0 !important; left: auto !important; }",
+      ".mini-cart-panel .list-group-item { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }",
+      "@media (max-width: 991.98px) {",
+      "  .navbar .navbar-toggler { display: none !important; }",
+      "  .navbar .navbar-collapse { display: block !important; visibility: visible !important; height: auto !important; }",
+      "}"
+    ].join("");
+
+    var applyStyle = function () {
+      var existing = document.getElementById(styleId);
+      if (!existing) {
+        var style = document.createElement("style");
+        style.id = styleId;
+        style.textContent = css;
+        document.head.appendChild(style);
+      }
+    };
+
+    var applyState = function () {
+      var navContent = document.getElementById("navContent");
+      if (navContent) {
+        navContent.classList.add("show");
+      }
+    };
+
+    var applyTweaks = function () {
+      applyStyle();
+      applyState();
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", applyTweaks, { once: true });
+    } else {
+      applyTweaks();
+    }
+
+    var observer = new MutationObserver(function () {
+      applyTweaks();
+    });
+
+    var target = document.documentElement || document.body;
+    if (target) {
+      observer.observe(target, { childList: true, subtree: true });
+    }
+  })();
+  true;
+`;
+
 type BottomAction = {
   key: string;
   label: string;
@@ -56,7 +118,7 @@ export default function HomeScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const initialUri = useMemo(() => resolvedUrl, [resolvedUrl]);
-  const bottomSpace = 126 + insets.bottom;
+  const bottomBarHeight = 78 + Math.max(insets.bottom, 10);
 
   const handleNavigationChange = useCallback((navState: WebViewNavigation) => {
     setCanGoBack(navState.canGoBack);
@@ -113,23 +175,10 @@ export default function HomeScreen() {
   const bottomActions = useMemo<BottomAction[]>(
     () => [
       {
-        key: "back",
-        label: "Vissza",
-        icon: "arrow-back-outline",
-        onPress: () => webViewRef.current?.goBack(),
-        disabled: !canGoBack,
-      },
-      {
         key: "home",
         label: "Fooldal",
         icon: "home-outline",
         onPress: handleGoHome,
-      },
-      {
-        key: "refresh",
-        label: "Frissit",
-        icon: "refresh-outline",
-        onPress: handleRetry,
       },
       {
         key: "products",
@@ -150,10 +199,17 @@ export default function HomeScreen() {
         onPress: () => handleOpenRoute("/profil"),
       },
       {
-        key: "checkout",
-        label: "Fizetes",
-        icon: "card-outline",
-        onPress: () => handleOpenRoute("/fizetes"),
+        key: "back",
+        label: "Vissza",
+        icon: "arrow-back-outline",
+        onPress: () => webViewRef.current?.goBack(),
+        disabled: !canGoBack,
+      },
+      {
+        key: "refresh",
+        label: "Frissit",
+        icon: "refresh-outline",
+        onPress: handleRetry,
       },
     ],
     [canGoBack, handleGoHome, handleRetry, handleOpenRoute]
@@ -212,7 +268,7 @@ export default function HomeScreen() {
         </View>
       ) : (
         <>
-          <View style={[styles.webArea, { paddingBottom: bottomSpace }]}>
+          <View style={styles.webArea}>
             {loadProgress > 0 && loadProgress < 1 ? (
               <View style={styles.progressBarTrack}>
                 <View style={[styles.progressBarFill, { width: `${Math.round(loadProgress * 100)}%` }]} />
@@ -224,6 +280,7 @@ export default function HomeScreen() {
               ref={webViewRef}
               source={{ uri: sourceUri }}
               originWhitelist={["http://*", "https://*"]}
+              injectedJavaScriptBeforeContentLoaded={MOBILE_WEBVIEW_TWEAKS}
               sharedCookiesEnabled
               thirdPartyCookiesEnabled
               domStorageEnabled
@@ -247,7 +304,7 @@ export default function HomeScreen() {
           </View>
 
           <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-            <View style={styles.bottomBarGrid}>
+            <View style={styles.bottomBarList}>
               {bottomActions.map((item) => (
                 <Pressable
                   key={item.key}
@@ -277,7 +334,7 @@ export default function HomeScreen() {
       )}
 
       {errorMessage ? (
-        <View style={[styles.errorOverlay, { bottom: Platform.OS === "web" ? 24 : bottomSpace + 8 }]}>
+        <View style={[styles.errorOverlay, { bottom: Platform.OS === "web" ? 24 : bottomBarHeight + 8 }]}>
           <Text style={styles.errorTitle}>Betoltesi hiba</Text>
           <Text style={styles.errorText}>{errorMessage}</Text>
           <Pressable accessibilityRole="button" onPress={handleRetry} style={styles.retryButton}>
@@ -315,6 +372,7 @@ const styles = StyleSheet.create({
   },
   webArea: {
     flex: 1,
+    backgroundColor: "#ffffff",
   },
   progressBarTrack: {
     height: 3,
@@ -329,33 +387,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     backgroundColor: "#ffffff",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#d7deea",
     paddingHorizontal: 10,
-    paddingTop: 10,
+    paddingTop: 8,
   },
-  bottomBarGrid: {
+  bottomBarList: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "center",
     justifyContent: "space-between",
-    gap: 8,
   },
   bottomActionButton: {
-    minHeight: 44,
-    width: "23.5%",
+    minHeight: 48,
+    width: "16.1%",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 9,
     backgroundColor: "#f3f7fc",
     borderWidth: 1,
     borderColor: "#d5e2f3",
-    paddingVertical: 4,
-    paddingHorizontal: 2,
+    paddingVertical: 3,
+    paddingHorizontal: 1,
   },
   bottomActionButtonPressed: {
     transform: [{ scale: 0.97 }],
@@ -369,9 +422,10 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   bottomActionText: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "700",
     color: "#133a62",
+    marginTop: 1,
   },
   bottomActionTextDisabled: {
     color: "#a6b0be",
