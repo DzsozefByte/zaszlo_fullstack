@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
   BackHandler,
@@ -9,7 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import type {
   WebViewErrorEvent,
@@ -19,6 +20,14 @@ import type {
 
 const DEFAULT_WEB_URL =
   Platform.OS === "android" ? "http://10.0.2.2:5173" : "http://localhost:5173";
+
+type BottomAction = {
+  key: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+  disabled?: boolean;
+};
 
 const normalizeUrl = (value: string) => {
   const trimmed = value.trim();
@@ -34,6 +43,7 @@ const normalizeUrl = (value: string) => {
 };
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const configuredWebUrl = normalizeUrl(process.env.EXPO_PUBLIC_WEBAPP_URL ?? "");
   const resolvedUrl = configuredWebUrl || DEFAULT_WEB_URL;
   const isFallbackUrl = !configuredWebUrl;
@@ -46,6 +56,7 @@ export default function HomeScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const initialUri = useMemo(() => resolvedUrl, [resolvedUrl]);
+  const bottomSpace = 126 + insets.bottom;
 
   const handleNavigationChange = useCallback((navState: WebViewNavigation) => {
     setCanGoBack(navState.canGoBack);
@@ -73,6 +84,20 @@ export default function HomeScreen() {
     setWebViewKey((prev) => prev + 1);
   }, [initialUri]);
 
+  const handleOpenRoute = useCallback(
+    (routePath: string) => {
+      setErrorMessage(null);
+      try {
+        setSourceUri(new URL(routePath, initialUri).toString());
+      } catch {
+        const normalizedBase = initialUri.endsWith("/") ? initialUri.slice(0, -1) : initialUri;
+        const normalizedPath = routePath.startsWith("/") ? routePath : `/${routePath}`;
+        setSourceUri(`${normalizedBase}${normalizedPath}`);
+      }
+    },
+    [initialUri]
+  );
+
   const openInBrowser = useCallback(async () => {
     try {
       if (Platform.OS === "web" && typeof window !== "undefined") {
@@ -84,6 +109,55 @@ export default function HomeScreen() {
       setErrorMessage("Nem sikerult megnyitni a megadott URL-t.");
     }
   }, [sourceUri]);
+
+  const bottomActions = useMemo<BottomAction[]>(
+    () => [
+      {
+        key: "back",
+        label: "Vissza",
+        icon: "arrow-back-outline",
+        onPress: () => webViewRef.current?.goBack(),
+        disabled: !canGoBack,
+      },
+      {
+        key: "home",
+        label: "Fooldal",
+        icon: "home-outline",
+        onPress: handleGoHome,
+      },
+      {
+        key: "refresh",
+        label: "Frissit",
+        icon: "refresh-outline",
+        onPress: handleRetry,
+      },
+      {
+        key: "products",
+        label: "Termekek",
+        icon: "grid-outline",
+        onPress: () => handleOpenRoute("/kereso"),
+      },
+      {
+        key: "cart",
+        label: "Kosar",
+        icon: "cart-outline",
+        onPress: () => handleOpenRoute("/kosar"),
+      },
+      {
+        key: "profile",
+        label: "Profil",
+        icon: "person-circle-outline",
+        onPress: () => handleOpenRoute("/profil"),
+      },
+      {
+        key: "checkout",
+        label: "Fizetes",
+        icon: "card-outline",
+        onPress: () => handleOpenRoute("/fizetes"),
+      },
+    ],
+    [canGoBack, handleGoHome, handleRetry, handleOpenRoute]
+  );
 
   useEffect(() => {
     if (Platform.OS !== "android") {
@@ -104,7 +178,7 @@ export default function HomeScreen() {
 
   if (!sourceUri) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Hianyzo webes URL</Text>
           <Text style={styles.errorText}>
@@ -116,7 +190,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       {isFallbackUrl ? (
         <View style={styles.noticeBar}>
           <Text style={styles.noticeText}>
@@ -138,61 +212,72 @@ export default function HomeScreen() {
         </View>
       ) : (
         <>
-      <View style={styles.toolbar}>
-        <Pressable
-          accessibilityRole="button"
-          disabled={!canGoBack}
-          onPress={() => webViewRef.current?.goBack()}
-          style={[styles.toolbarButton, !canGoBack && styles.toolbarButtonDisabled]}
-        >
-          <Text style={styles.toolbarButtonText}>Vissza</Text>
-        </Pressable>
+          <View style={[styles.webArea, { paddingBottom: bottomSpace }]}>
+            {loadProgress > 0 && loadProgress < 1 ? (
+              <View style={styles.progressBarTrack}>
+                <View style={[styles.progressBarFill, { width: `${Math.round(loadProgress * 100)}%` }]} />
+              </View>
+            ) : null}
 
-        <Pressable accessibilityRole="button" onPress={handleGoHome} style={styles.toolbarButton}>
-          <Text style={styles.toolbarButtonText}>Fooldal</Text>
-        </Pressable>
-
-        <Pressable accessibilityRole="button" onPress={handleRetry} style={styles.toolbarButton}>
-          <Text style={styles.toolbarButtonText}>Ujratoltes</Text>
-        </Pressable>
-      </View>
-
-      {loadProgress > 0 && loadProgress < 1 ? (
-        <View style={styles.progressBarTrack}>
-          <View style={[styles.progressBarFill, { width: `${Math.round(loadProgress * 100)}%` }]} />
-        </View>
-      ) : null}
-
-      <WebView
-        key={webViewKey}
-        ref={webViewRef}
-        source={{ uri: sourceUri }}
-        originWhitelist={["http://*", "https://*"]}
-        sharedCookiesEnabled
-        thirdPartyCookiesEnabled
-        domStorageEnabled
-        javaScriptEnabled
-        allowsBackForwardNavigationGestures
-        setSupportMultipleWindows={false}
-        pullToRefreshEnabled
-        onError={handleError}
-        onLoadStart={() => setErrorMessage(null)}
-        onLoadProgress={handleProgress}
-        onNavigationStateChange={handleNavigationChange}
-        startInLoadingState
-        renderLoading={() => (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#0f4c81" />
-            <Text style={styles.loaderText}>Betoltes...</Text>
+            <WebView
+              key={webViewKey}
+              ref={webViewRef}
+              source={{ uri: sourceUri }}
+              originWhitelist={["http://*", "https://*"]}
+              sharedCookiesEnabled
+              thirdPartyCookiesEnabled
+              domStorageEnabled
+              javaScriptEnabled
+              allowsBackForwardNavigationGestures
+              setSupportMultipleWindows={false}
+              pullToRefreshEnabled
+              onError={handleError}
+              onLoadStart={() => setErrorMessage(null)}
+              onLoadProgress={handleProgress}
+              onNavigationStateChange={handleNavigationChange}
+              startInLoadingState
+              renderLoading={() => (
+                <View style={styles.loaderContainer}>
+                  <ActivityIndicator size="large" color="#0f4c81" />
+                  <Text style={styles.loaderText}>Betoltes...</Text>
+                </View>
+              )}
+              style={styles.webView}
+            />
           </View>
-        )}
-        style={styles.webView}
-      />
+
+          <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+            <View style={styles.bottomBarGrid}>
+              {bottomActions.map((item) => (
+                <Pressable
+                  key={item.key}
+                  accessibilityRole="button"
+                  disabled={item.disabled}
+                  onPress={item.onPress}
+                  style={({ pressed }) => [
+                    styles.bottomActionButton,
+                    item.disabled && styles.bottomActionButtonDisabled,
+                    pressed && !item.disabled && styles.bottomActionButtonPressed,
+                  ]}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={19}
+                    color={item.disabled ? "#a6b0be" : "#0f4c81"}
+                    style={styles.bottomActionIcon}
+                  />
+                  <Text style={[styles.bottomActionText, item.disabled && styles.bottomActionTextDisabled]}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </>
       )}
 
       {errorMessage ? (
-        <View style={styles.errorOverlay}>
+        <View style={[styles.errorOverlay, { bottom: Platform.OS === "web" ? 24 : bottomSpace + 8 }]}>
           <Text style={styles.errorTitle}>Betoltesi hiba</Text>
           <Text style={styles.errorText}>{errorMessage}</Text>
           <Pressable accessibilityRole="button" onPress={handleRetry} style={styles.retryButton}>
@@ -228,31 +313,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 8,
   },
-  toolbar: {
-    flexDirection: "row",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-    paddingTop: 8,
-    backgroundColor: "#ffffff",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#d8dfea",
-  },
-  toolbarButton: {
+  webArea: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#0f4c81",
-    borderRadius: 8,
-    paddingVertical: 10,
-  },
-  toolbarButtonDisabled: {
-    backgroundColor: "#a9bdd1",
-  },
-  toolbarButtonText: {
-    color: "#ffffff",
-    fontSize: 13,
-    fontWeight: "600",
   },
   progressBarTrack: {
     height: 3,
@@ -265,6 +327,54 @@ const styles = StyleSheet.create({
   webView: {
     flex: 1,
     backgroundColor: "#ffffff",
+  },
+  bottomBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#ffffff",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#d7deea",
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+  bottomBarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  bottomActionButton: {
+    minHeight: 44,
+    width: "23.5%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+    backgroundColor: "#f3f7fc",
+    borderWidth: 1,
+    borderColor: "#d5e2f3",
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
+  bottomActionButtonPressed: {
+    transform: [{ scale: 0.97 }],
+    opacity: 0.9,
+  },
+  bottomActionButtonDisabled: {
+    backgroundColor: "#f7f8fb",
+    borderColor: "#e4e7ee",
+  },
+  bottomActionIcon: {
+    marginBottom: 1,
+  },
+  bottomActionText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#133a62",
+  },
+  bottomActionTextDisabled: {
+    color: "#a6b0be",
   },
   loaderContainer: {
     flex: 1,
@@ -281,7 +391,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 20,
     right: 20,
-    bottom: 24,
     padding: 16,
     borderRadius: 12,
     backgroundColor: "#ffffff",

@@ -201,7 +201,7 @@ const Header = ({ user, logout }) => {
                 </span>
               </div>
 
-              <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2 py-3 profile-dropdown">
+              <ul className="dropdown-menu dropdown-menu-lg-end shadow border-0 mt-3 p-2 py-3 profile-dropdown">
                 {user ? (
                   <>
                     <div className="px-3 pb-2">
@@ -372,6 +372,9 @@ const Header = ({ user, logout }) => {
           }
           .profile-dropdown {
             min-width: min(92vw, 260px);
+            max-width: calc(100vw - 1rem);
+            left: 0 !important;
+            right: auto !important;
           }
           .mini-cart-panel {
             right: 0;
