@@ -24,6 +24,10 @@ const DEFAULT_WEB_URL =
 const MOBILE_WEBVIEW_TWEAKS = `
   (function () {
     var styleId = "zaszlo-mobile-webview-style";
+    var routeHooksReady = false;
+    var firstScrollDone = false;
+    var lastScrolledPath = "";
+    var autoScrollPrefixes = ["/", "/kereso", "/termek", "/kosar", "/profil", "/szamlak", "/fizetes", "/login", "/register"];
     var css = [
       "html, body, #root { max-width: 100vw !important; overflow-x: hidden !important; }",
       "body { overflow-x: hidden !important; }",
@@ -37,9 +41,28 @@ const MOBILE_WEBVIEW_TWEAKS = `
       "th, td { white-space: normal !important; word-break: break-word !important; font-size: 0.78rem !important; padding: 0.4rem !important; }",
       ".mini-cart-panel { width: min(92vw, 320px) !important; max-width: min(92vw, 320px) !important; right: 0 !important; left: auto !important; }",
       ".mini-cart-panel .list-group-item { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }",
+      ".termek-page { background: #f4f7fb !important; }",
+      ".termek-page .termek-layout { margin-top: 0.6rem !important; row-gap: 0.9rem !important; }",
+      ".termek-page .termek-media-card { min-height: 230px !important; padding: 1.05rem !important; border-radius: 16px !important; }",
+      ".termek-page .termek-image { max-height: 185px !important; width: auto !important; }",
+      ".termek-page .termek-illustration-badge { padding: 0.5rem !important; }",
+      ".termek-page .termek-title { font-size: clamp(1.35rem, 6vw, 1.8rem) !important; line-height: 1.15 !important; margin-bottom: 0.8rem !important; }",
+      ".termek-page .termek-config-card { border-radius: 16px !important; padding: 0.95rem !important; box-shadow: 0 8px 22px rgba(15,76,129,0.08) !important; }",
+      ".termek-page .termek-config-card h4 { font-size: 1.02rem !important; margin-bottom: 0.85rem !important; }",
+      ".termek-page .termek-size-select { height: 46px !important; font-size: 0.95rem !important; }",
+      ".termek-page .termek-materials { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem !important; }",
+      ".termek-page .termek-material-btn { width: 100% !important; min-height: 40px !important; border-radius: 10px !important; font-size: 0.9rem !important; }",
+      ".termek-page .termek-price-row { margin-bottom: 0.75rem !important; padding: 0.7rem !important; border: 1px solid #e2e9f3 !important; border-radius: 12px !important; background: #f8fbff !important; }",
+      ".termek-page .termek-price { font-size: clamp(1.35rem, 6.2vw, 1.85rem) !important; line-height: 1.05 !important; }",
+      ".termek-page .termek-add-btn { min-height: 50px !important; padding-top: 0.65rem !important; padding-bottom: 0.65rem !important; font-size: 1rem !important; }",
+      ".termek-page .termek-benefits { display: grid !important; grid-template-columns: 1fr !important; gap: 0.4rem !important; margin-top: 0.1rem !important; }",
+      ".termek-page .termek-benefit-item { padding: 0.45rem 0.55rem !important; border-radius: 10px !important; background: #eef5fc !important; border: 1px solid #dfebf8 !important; }",
       "@media (max-width: 991.98px) {",
       "  .navbar .navbar-toggler { display: none !important; }",
       "  .navbar .navbar-collapse { display: block !important; visibility: visible !important; height: auto !important; }",
+      "  .termek-page .breadcrumb { display: none !important; }",
+      "  .termek-page .termek-layout > .termek-media-col { order: 1; }",
+      "  .termek-page .termek-layout > .termek-config-col { order: 2; }",
       "}"
     ].join("");
 
@@ -60,9 +83,77 @@ const MOBILE_WEBVIEW_TWEAKS = `
       }
     };
 
+    var shouldAutoScroll = function (pathname) {
+      return autoScrollPrefixes.some(function (prefix) {
+        return prefix === "/" ? pathname === "/" : pathname === prefix || pathname.indexOf(prefix + "/") === 0;
+      });
+    };
+
+    var scrollToTopIfNeeded = function (force) {
+      var pathname = (window.location && window.location.pathname) || "/";
+      if (!shouldAutoScroll(pathname)) {
+        return;
+      }
+      if (!force && pathname === lastScrolledPath) {
+        return;
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      if (document.documentElement) {
+        document.documentElement.scrollTop = 0;
+      }
+      if (document.body) {
+        document.body.scrollTop = 0;
+      }
+      var root = document.getElementById("root");
+      if (root) {
+        root.scrollTop = 0;
+      }
+
+      lastScrolledPath = pathname;
+    };
+
+    var ensureRouteHooks = function () {
+      if (routeHooksReady) {
+        return;
+      }
+      routeHooksReady = true;
+
+      var scheduleScroll = function (force) {
+        setTimeout(function () {
+          scrollToTopIfNeeded(force);
+        }, 0);
+      };
+
+      window.addEventListener("popstate", function () {
+        scheduleScroll(false);
+      });
+
+      window.addEventListener("hashchange", function () {
+        scheduleScroll(false);
+      });
+
+      var originalPushState = history.pushState;
+      history.pushState = function () {
+        originalPushState.apply(this, arguments);
+        scheduleScroll(false);
+      };
+
+      var originalReplaceState = history.replaceState;
+      history.replaceState = function () {
+        originalReplaceState.apply(this, arguments);
+        scheduleScroll(false);
+      };
+    };
+
     var applyTweaks = function () {
       applyStyle();
       applyState();
+      ensureRouteHooks();
+      if (!firstScrollDone) {
+        firstScrollDone = true;
+        scrollToTopIfNeeded(true);
+      }
     };
 
     if (document.readyState === "loading") {

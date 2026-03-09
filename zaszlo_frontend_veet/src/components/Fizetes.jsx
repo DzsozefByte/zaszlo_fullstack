@@ -99,7 +99,7 @@ const Fizetes = ({ user, accessToken }) => {
             fizetesiModId: isSelectedStillValid ? prev.fizetesiModId : String(methods[0]?.id || ""),
           };
         });
-      } catch (error) {
+      } catch {
         setFizetesiModok([]);
       }
     };
@@ -189,7 +189,7 @@ const Fizetes = ({ user, accessToken }) => {
           <IoMdCheckmarkCircle size={100} />
         </div>
         <h2 className="fw-bold">Koszonjuk a vasarlast!</h2>
-        <p className="text-muted fs-5">Rendelesedet rogzitettuk, hamarosan kuldjuk a visszaigazolo e-mailt.</p>
+        <p className="text-muted fs-5">Rendelesedet rogzitettuk, hamarosan feldolgozzuk.</p>
         <Button variant="primary" size="lg" className="mt-4 rounded-pill px-5" onClick={() => navigate("/")}>
           Vissza a fooldalra
         </Button>

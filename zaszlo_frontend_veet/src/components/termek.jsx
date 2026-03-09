@@ -79,8 +79,8 @@ const Termek = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#f9fafb", minHeight: "90vh" }}>
-      <div className="container py-4">
+    <div className="termek-page" style={{ backgroundColor: "#f9fafb", minHeight: "90vh" }}>
+      <div className="container py-4 termek-container">
         <BreadcrumbNav
           items={[
             { label: "Kezdolap", to: "/" },
@@ -89,19 +89,19 @@ const Termek = () => {
           ]}
         />
 
-        <div className="row g-5 mt-2">
-          <div className="col-lg-6">
+        <div className="row g-5 mt-2 termek-layout">
+          <div className="col-lg-6 termek-media-col">
             <div
-              className="p-5 bg-white shadow-sm rounded-4 d-flex align-items-center justify-content-center position-relative"
+              className="p-5 bg-white shadow-sm rounded-4 d-flex align-items-center justify-content-center position-relative termek-media-card"
               style={{ minHeight: "400px" }}
             >
               <img
                 src={`/images/${orszagId}.png`}
                 alt={`${product.orszag} zaszlo`}
-                className="img-fluid"
+                className="img-fluid termek-image"
                 style={{ maxHeight: "350px", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }}
               />
-              <div className="position-absolute bottom-0 start-0 p-3">
+              <div className="position-absolute bottom-0 start-0 p-3 termek-illustration-badge">
                 <span className="badge bg-light text-dark border">
                   <IoMdInformationCircleOutline /> Illusztracio
                 </span>
@@ -109,18 +109,18 @@ const Termek = () => {
             </div>
           </div>
 
-          <div className="col-lg-6">
-            <h1 className="display-5 fw-bold mb-3">{product.orszag} zaszlo</h1>
+          <div className="col-lg-6 termek-config-col">
+            <h1 className="display-5 fw-bold mb-3 termek-title">{product.orszag} zaszlo</h1>
 
-            <div className="p-4 bg-white rounded-4 shadow-sm border mb-4">
+            <div className="p-4 bg-white rounded-4 shadow-sm border mb-4 termek-config-card">
               <h4 className="fw-bold mb-4">Konfiguracio</h4>
 
-              <div className="mb-3">
+              <div className="mb-3 termek-size-wrap">
                 <label className="form-label fw-semibold text-muted text-uppercase small">
                   Meret kivalasztasa
                 </label>
                 <select
-                  className="form-select form-select-lg"
+                  className="form-select form-select-lg termek-size-select"
                   value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
                 >
@@ -132,17 +132,17 @@ const Termek = () => {
                 </select>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-4 termek-materials-wrap">
                 <label className="form-label fw-semibold text-muted text-uppercase small">
                   Anyag tipusa
                 </label>
-                <div className="d-flex gap-2 flex-wrap">
+                <div className="d-flex gap-2 flex-wrap termek-materials">
                   {availableMaterials.map((material) => (
                     <button
                       key={material}
                       className={`btn ${
                         selectedMaterial === material ? "btn-primary" : "btn-outline-secondary"
-                      }`}
+                      } termek-material-btn`}
                       onClick={() => setSelectedMaterial(material)}
                     >
                       {material}
@@ -153,17 +153,17 @@ const Termek = () => {
 
               <hr className="my-4" />
 
-              <div className="d-flex justify-content-between align-items-end mb-3">
+              <div className="d-flex justify-content-between align-items-end mb-3 termek-price-row">
                 <div>
                   <span className="d-block text-muted small">Fizetendo osszeg:</span>
-                  <span className="display-6 fw-bold text-dark">{vegsoAr.toLocaleString()} Ft</span>
+                  <span className="display-6 fw-bold text-dark termek-price">{vegsoAr.toLocaleString()} Ft</span>
                 </div>
               </div>
 
               <Button
                 variant="primary"
                 size="lg"
-                className="w-100 py-3 rounded-pill fw-bold shadow-sm"
+                className="w-100 py-3 rounded-pill fw-bold shadow-sm termek-add-btn"
                 onClick={handleAddToCart}
               >
                 <IoMdCart className="me-2" size={24} />
@@ -171,16 +171,16 @@ const Termek = () => {
               </Button>
             </div>
 
-            <div className="d-flex gap-4 text-muted small">
-              <div className="d-flex align-items-center">
+            <div className="d-flex gap-4 text-muted small termek-benefits">
+              <div className="d-flex align-items-center termek-benefit-item">
                 <IoMdCheckmarkCircleOutline className="text-success me-2" size={20} />
                 Raktaron
               </div>
-              <div className="d-flex align-items-center">
+              <div className="d-flex align-items-center termek-benefit-item">
                 <IoMdCheckmarkCircleOutline className="text-success me-2" size={20} />
                 1-2 napos szallitas
               </div>
-              <div className="d-flex align-items-center">
+              <div className="d-flex align-items-center termek-benefit-item">
                 <IoMdCheckmarkCircleOutline className="text-success me-2" size={20} />
                 Premium anyag
               </div>
