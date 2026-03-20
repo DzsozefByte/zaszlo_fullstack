@@ -83,8 +83,8 @@ const Termek = () => {
       <div className="container py-4 termek-container">
         <BreadcrumbNav
           items={[
-            { label: "Kezdolap", to: "/" },
-            { label: "Termekek", to: "/kereso" },
+            { label: "Kezdőlap", to: "/" },
+            { label: "Termékek", to: "/kereso" },
             { label: product.orszag, active: true },
           ]}
         />
@@ -97,28 +97,28 @@ const Termek = () => {
             >
               <img
                 src={`/images/${orszagId}.png`}
-                alt={`${product.orszag} zaszlo`}
+                alt={`${product.orszag} zászló`}
                 className="img-fluid termek-image"
                 style={{ maxHeight: "350px", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }}
               />
               <div className="position-absolute bottom-0 start-0 p-3 termek-illustration-badge">
                 <span className="badge bg-light text-dark border">
-                  <IoMdInformationCircleOutline /> Illusztracio
+                  <IoMdInformationCircleOutline /> Illusztráció
                 </span>
               </div>
             </div>
           </div>
 
           <div className="col-lg-6 termek-config-col">
-            <h1 className="display-5 fw-bold mb-3 termek-title">{product.orszag} zaszlo</h1>
+            <h1 className="display-5 fw-bold mb-3 termek-title">{product.orszag} zászló</h1>
 
             <div className="p-4 bg-white rounded-4 shadow-sm border mb-4 termek-config-card">
-              <h4 className="fw-bold mb-4">Konfiguracio</h4>
+              <h4 className="fw-bold mb-4">Konfiguráció</h4>
 
               <div className="mb-3 termek-size-wrap">
-                <label className="form-label fw-semibold text-muted text-uppercase small">
-                  Meret kivalasztasa
-                </label>
+                  <label className="form-label fw-semibold text-muted text-uppercase small">
+                    Méret kiválasztása
+                  </label>
                 <select
                   className="form-select form-select-lg termek-size-select"
                   value={selectedSize}
@@ -133,9 +133,9 @@ const Termek = () => {
               </div>
 
               <div className="mb-4 termek-materials-wrap">
-                <label className="form-label fw-semibold text-muted text-uppercase small">
-                  Anyag tipusa
-                </label>
+                  <label className="form-label fw-semibold text-muted text-uppercase small">
+                    Anyag típusa
+                  </label>
                 <div className="d-flex gap-2 flex-wrap termek-materials">
                   {availableMaterials.map((material) => (
                     <button
@@ -155,7 +155,7 @@ const Termek = () => {
 
               <div className="d-flex justify-content-between align-items-end mb-3 termek-price-row">
                 <div>
-                  <span className="d-block text-muted small">Fizetendo osszeg:</span>
+                  <span className="d-block text-muted small">Fizetendő összeg:</span>
                   <span className="display-6 fw-bold text-dark termek-price">{vegsoAr.toLocaleString()} Ft</span>
                 </div>
               </div>
@@ -167,22 +167,22 @@ const Termek = () => {
                 onClick={handleAddToCart}
               >
                 <IoMdCart className="me-2" size={24} />
-                Kosarba rakom
+                Kosárba rakom
               </Button>
             </div>
 
             <div className="d-flex gap-4 text-muted small termek-benefits">
               <div className="d-flex align-items-center termek-benefit-item">
                 <IoMdCheckmarkCircleOutline className="text-success me-2" size={20} />
-                Raktaron
+                Raktáron
               </div>
               <div className="d-flex align-items-center termek-benefit-item">
                 <IoMdCheckmarkCircleOutline className="text-success me-2" size={20} />
-                1-2 napos szallitas
+                1-2 napos szállítás
               </div>
               <div className="d-flex align-items-center termek-benefit-item">
                 <IoMdCheckmarkCircleOutline className="text-success me-2" size={20} />
-                Premium anyag
+                Prémium anyag
               </div>
             </div>
           </div>

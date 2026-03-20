@@ -28,7 +28,7 @@ const Szamlak = ({ accessToken }) => {
         });
         setSzamlak(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
-        setError("Nem sikerult a szamlak betoltese. Kerjuk, probalkozz kesobb!");
+        setError("Nem sikerült a számlák betöltése. Kérjük, próbálkozz később!");
         console.error(err);
       } finally {
         setLoading(false);
@@ -45,14 +45,14 @@ const Szamlak = ({ accessToken }) => {
   if (!accessToken) {
     return (
       <Container className="py-5">
-        <Alert variant="warning">A szamlak megtekintesehez be kell jelentkezned!</Alert>
+        <Alert variant="warning">A számlák megtekintéséhez be kell jelentkezned!</Alert>
       </Container>
     );
   }
 
   return (
     <Container className="py-5 min-vh-100">
-      <h2 className="mb-4 fw-bold">Korabbi vasarlasaim es szamlaim</h2>
+      <h2 className="mb-4 fw-bold">Korábbi vásárlásaim és számláim</h2>
 
       {loading ? (
         <div className="text-center py-5">
@@ -62,7 +62,7 @@ const Szamlak = ({ accessToken }) => {
         <Alert variant="danger">{error}</Alert>
       ) : szamlak.length === 0 ? (
         <div className="text-center py-5 bg-light rounded">
-          <p className="text-muted mb-0">Meg nincsenek rogzitett szamlaid.</p>
+        <p className="text-muted mb-0">Még nincsenek rögzített számláid.</p>
         </div>
       ) : (
         <div className="shadow-sm rounded bg-white p-3">
@@ -70,11 +70,11 @@ const Szamlak = ({ accessToken }) => {
             <thead className="table-light">
               <tr>
                 <th style={{ width: 48 }} />
-                <th>Szamlaszam</th>
-                <th>Datum</th>
-                <th>Fizetesi mod</th>
-                <th className="text-end">Vegosszeg</th>
-                <th>Allapot</th>
+                <th>Számlaszám</th>
+                <th>Dátum</th>
+                <th>Fizetési mód</th>
+                <th className="text-end">Végösszeg</th>
+                <th>Állapot</th>
               </tr>
             </thead>
             <tbody>
@@ -95,20 +95,20 @@ const Szamlak = ({ accessToken }) => {
                     <tr>
                       <td colSpan="6" className="bg-light">
                         <div className="p-2">
-                          <div className="small text-muted mb-2">
-                            Teljesites kelte: {formatDate(szamla.teljesites_kelte)} | Fizetesi hatarido: {" "}
+                            <div className="small text-muted mb-2">
+                            Teljesítés kelte: {formatDate(szamla.teljesites_kelte)} | Fizetési határidő: {" "}
                             {formatDate(szamla.fizetesi_hatarido)}
                           </div>
                           <Table size="sm" bordered className="mb-0 bg-white">
                             <thead>
-                              <tr>
-                                <th>Orszag</th>
-                                <th>Meret</th>
-                                <th>Anyag</th>
-                                <th className="text-end">Db</th>
-                                <th className="text-end">Egysegar</th>
-                                <th className="text-end">Tetel osszeg</th>
-                              </tr>
+                                <tr>
+                                  <th>Ország</th>
+                                  <th>Méret</th>
+                                  <th>Anyag</th>
+                                  <th className="text-end">Db</th>
+                                  <th className="text-end">Egységár</th>
+                                  <th className="text-end">Tétel összeg</th>
+                                </tr>
                             </thead>
                             <tbody>
                               {(szamla.tetelek || []).map((tetel, index) => (
@@ -125,8 +125,8 @@ const Szamlak = ({ accessToken }) => {
                               ))}
                               {!szamla.tetelek?.length && (
                                 <tr>
-                                  <td colSpan="6" className="text-center text-muted py-3">
-                                    Ehhez a szamlahoz nem talalhato tetelsor.
+                                    <td colSpan="6" className="text-center text-muted py-3">
+                                      Ehhez a számlához nem található tételsor.
                                   </td>
                                 </tr>
                               )}

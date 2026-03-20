@@ -10,14 +10,14 @@ const Kosar = ({ accessToken }) => {
   const isLoggedIn = Boolean(accessToken || localStorage.getItem("token"));
 
   const handleKosarUrites = () => {
-    if (window.confirm("Biztosan ki szeretned uriteni a teljes kosarat?")) {
+    if (window.confirm("Biztosan ki szeretnéd üríteni a teljes kosarát?")) {
       setKosar([]);
     }
   };
 
   const handleTovabbPenztarhoz = () => {
     if (!isLoggedIn) {
-      alert("A rendeles leadasahoz be kell jelentkezned.");
+      alert("A rendelés leadásához be kell jelentkezned.");
       navigate("/login");
       return;
     }
@@ -31,10 +31,10 @@ const Kosar = ({ accessToken }) => {
         <div className="mb-4">
           <IoMdCart size={80} className="text-light bg-secondary p-3 rounded-circle opacity-50" />
         </div>
-        <h2 className="fw-bold">A kosarad jelenleg ures</h2>
-        <p className="text-muted">Nezz szet a kinalatunkban es valaszd ki kedvenc zaszloidat!</p>
+        <h2 className="fw-bold">A kosarad jelenleg üres</h2>
+        <p className="text-muted">Nézz szét a kínálatunkban, és válaszd ki kedvenc zászlóidat!</p>
         <Button variant="primary" size="lg" className="mt-3 rounded-pill px-5 shadow-sm" onClick={() => navigate("/")}>
-          Vasarlas megkezdese
+          Vásárlás megkezdése
         </Button>
       </Container>
     );
@@ -44,10 +44,10 @@ const Kosar = ({ accessToken }) => {
     <Container className="py-4 py-md-5">
       <div className="d-flex justify-content-between align-items-center mb-4 kosar-title-wrap">
         <h2 className="fw-bold d-flex align-items-center gap-2 m-0">
-          <IoMdCart /> Kosar tartalma
+          <IoMdCart /> Kosár tartalma
         </h2>
         <Button variant="outline-danger" size="sm" onClick={handleKosarUrites} className="rounded-pill">
-          <IoMdCloseCircle className="me-1" /> Kosar uritese
+           <IoMdCloseCircle className="me-1" /> Kosár ürítése
         </Button>
       </div>
 
@@ -57,10 +57,10 @@ const Kosar = ({ accessToken }) => {
             <Table responsive hover className="align-middle mb-0 d-none d-md-table">
               <thead className="bg-light">
                 <tr>
-                  <th className="border-0 px-4 py-3">Termek</th>
-                  <th className="border-0 py-3">Reszletek</th>
-                  <th className="border-0 py-3 text-center">Mennyiseg</th>
-                  <th className="border-0 py-3">Osszesen</th>
+                  <th className="border-0 px-4 py-3">Termék</th>
+                  <th className="border-0 py-3">Részletek</th>
+                  <th className="border-0 py-3 text-center">Mennyiség</th>
+                  <th className="border-0 py-3">Összesen</th>
                   <th className="border-0 py-3 text-end px-4"></th>
                 </tr>
               </thead>
@@ -142,7 +142,7 @@ const Kosar = ({ accessToken }) => {
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                      <small className="text-muted">Ar/db: {item.ar.toLocaleString()} Ft</small>
+                      <small className="text-muted">Ár/db: {item.ar.toLocaleString()} Ft</small>
                       <div className="d-flex align-items-center border rounded-pill py-1 px-2">
                         <button
                           className="btn btn-link btn-sm text-dark p-0"
@@ -169,18 +169,18 @@ const Kosar = ({ accessToken }) => {
         <Col lg={4}>
           <Card className="border-0 shadow-sm rounded-4 kosar-summary-card" style={{ top: "100px" }}>
             <Card.Body className="p-4">
-              <h5 className="fw-bold mb-4">Osszesites</h5>
+              <h5 className="fw-bold mb-4">Összesítés</h5>
               <div className="d-flex justify-content-between mb-2">
-                <span className="text-muted">Termekek osszesen:</span>
+                <span className="text-muted">Termékek összesen:</span>
                 <span className="fw-medium">{vegosszeg.toLocaleString()} Ft</span>
               </div>
               <div className="d-flex justify-content-between mb-4">
-                <span className="text-muted">Szallitas:</span>
+                <span className="text-muted">Szállítás:</span>
                 <span className="text-success fw-medium">Ingyenes</span>
               </div>
               <hr className="opacity-10" />
               <div className="d-flex justify-content-between mb-4 mt-2">
-                <span className="fs-5 fw-bold">Fizetendo:</span>
+                <span className="fs-5 fw-bold">Fizetendő:</span>
                 <span className="fs-5 fw-bold text-primary">{vegosszeg.toLocaleString()} Ft</span>
               </div>
               <Button
@@ -189,10 +189,10 @@ const Kosar = ({ accessToken }) => {
                 className="w-100 rounded-pill fw-bold shadow-sm mb-3"
                 onClick={handleTovabbPenztarhoz}
               >
-                Tovabb a penztarhoz
+                Tovább a pénztárhoz
               </Button>
               <Button variant="link" className="w-100 text-decoration-none text-muted small" onClick={() => navigate("/")}>
-                Vasarlas folytatasa
+                Vásárlás folytatása
               </Button>
             </Card.Body>
           </Card>

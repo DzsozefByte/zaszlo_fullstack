@@ -44,7 +44,7 @@ const Fizetes = ({ user, accessToken }) => {
 
   useEffect(() => {
     if (!authToken) {
-      alert("Rendeles leadasahoz jelentkezz be.");
+      alert("Rendelés leadásához jelentkezz be.");
       navigate("/login");
       return;
     }
@@ -72,7 +72,7 @@ const Fizetes = ({ user, accessToken }) => {
         }));
       } catch (error) {
         if (error.response?.status === 401) {
-          alert("A rendeleshez ujra be kell jelentkezned.");
+          alert("A rendeléshez újra be kell jelentkezned.");
           navigate("/login");
         }
       }
@@ -124,7 +124,7 @@ const Fizetes = ({ user, accessToken }) => {
     e.preventDefault();
 
     if (!authToken) {
-      alert("Rendeles leadasahoz jelentkezz be.");
+      alert("Rendelés leadásához jelentkezz be.");
       navigate("/login");
       return;
     }
@@ -136,7 +136,7 @@ const Fizetes = ({ user, accessToken }) => {
     );
 
     if (!selectedPaymentMethod) {
-      alert("Valassz ervenyes fizetesi modot.");
+      alert("Válassz érvényes fizetési módot.");
       setLoading(false);
       return;
     }
@@ -167,12 +167,12 @@ const Fizetes = ({ user, accessToken }) => {
       console.error("Hiba a rendeles soran:", error);
 
       if (error.response?.status === 401) {
-        alert("A rendeles leadasahoz be kell jelentkezned.");
+        alert("A rendelés leadásához be kell jelentkezned.");
         navigate("/login");
         return;
       }
 
-      alert("Hiba tortent a rendeles feldolgozasakor. Probald ujra.");
+      alert("Hiba történt a rendelés feldolgozásakor. Próbáld újra.");
     } finally {
       setLoading(false);
     }
@@ -188,10 +188,10 @@ const Fizetes = ({ user, accessToken }) => {
         <div className="mb-4 text-success">
           <IoMdCheckmarkCircle size={100} />
         </div>
-        <h2 className="fw-bold">Koszonjuk a vasarlast!</h2>
-        <p className="text-muted fs-5">Rendelesedet rogzitettuk, hamarosan feldolgozzuk.</p>
+        <h2 className="fw-bold">Köszönjük a vásárlást!</h2>
+        <p className="text-muted fs-5">Rendelésedet rögzítettük, hamarosan feldolgozzuk.</p>
         <Button variant="primary" size="lg" className="mt-4 rounded-pill px-5" onClick={() => navigate("/")}>
-          Vissza a fooldalra
+          Vissza a főoldalra
         </Button>
       </Container>
     );
@@ -200,7 +200,7 @@ const Fizetes = ({ user, accessToken }) => {
   return (
     <Container className="py-5">
       <h2 className="fw-bold mb-4 d-flex align-items-center gap-2">
-        <IoMdCash className="text-primary" /> Penztar
+        <IoMdCash className="text-primary" /> Pénztár
       </h2>
 
       <Form onSubmit={handleSubmit}>
@@ -209,12 +209,12 @@ const Fizetes = ({ user, accessToken }) => {
             <Card className="border-0 shadow-sm rounded-4 p-3">
               <Card.Body>
                 <h5 className="fw-bold mb-4 d-flex align-items-center gap-2">
-                  <IoMdPin className="text-primary" /> Szallitasi adatok
+                  <IoMdPin className="text-primary" /> Szállítási adatok
                 </h5>
 
                 <Row>
                   <Col md={12} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Teljes nev</Form.Label>
+                  <Form.Label className="small fw-bold text-muted">Teljes név</Form.Label>
                     <Form.Control
                       required
                       name="nev"
@@ -226,7 +226,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
 
                   <Col md={6} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Email cim</Form.Label>
+                    <Form.Label className="small fw-bold text-muted">Email cím</Form.Label>
                     <Form.Control
                       required
                       type="email"
@@ -239,7 +239,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
 
                   <Col md={6} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Telefonszam</Form.Label>
+                    <Form.Label className="small fw-bold text-muted">Telefonszám</Form.Label>
                     <Form.Control
                       required
                       name="telefonszam"
@@ -251,7 +251,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
 
                   <Col md={6} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Adoszam (opcionalis)</Form.Label>
+                    <Form.Label className="small fw-bold text-muted">Adószám (opcionális)</Form.Label>
                     <Form.Control
                       name="adoszam"
                       value={rendelesAdatok.adoszam}
@@ -261,7 +261,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
 
                   <Col md={4} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Iranyitoszam</Form.Label>
+                    <Form.Label className="small fw-bold text-muted">Irányítószám</Form.Label>
                     <Form.Control
                       required
                       name="iranyitoszam"
@@ -272,7 +272,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
 
                   <Col md={8} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Varos</Form.Label>
+                    <Form.Label className="small fw-bold text-muted">Város</Form.Label>
                     <Form.Control
                       required
                       name="varos"
@@ -283,7 +283,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
 
                   <Col md={12} className="mb-3">
-                    <Form.Label className="small fw-bold text-muted">Utca, hazszam, emelet/ajto</Form.Label>
+                    <Form.Label className="small fw-bold text-muted">Utca, házszám, emelet/ajtó</Form.Label>
                     <Form.Control
                       required
                       name="utca"
@@ -294,7 +294,7 @@ const Fizetes = ({ user, accessToken }) => {
                   </Col>
                 </Row>
 
-                <h5 className="fw-bold mt-4 mb-3">Fizetesi mod</h5>
+                <h5 className="fw-bold mt-4 mb-3">Fizetési mód</h5>
                 <div className="d-flex flex-column gap-2">
                   {fizetesiModok.map((item) => (
                     <Form.Check
@@ -308,7 +308,7 @@ const Fizetes = ({ user, accessToken }) => {
                     />
                   ))}
                   {!fizetesiModok.length && (
-                    <div className="text-danger small">Jelenleg nincs elerheto fizetesi mod.</div>
+                    <div className="text-danger small">Jelenleg nincs elérhető fizetési mód.</div>
                   )}
                 </div>
               </Card.Body>
@@ -322,7 +322,7 @@ const Fizetes = ({ user, accessToken }) => {
             >
               <Card.Body className="p-4">
                 <h5 className="fw-bold mb-4 d-flex align-items-center gap-2">
-                  <IoMdCart /> Rendelesed
+                  <IoMdCart /> Rendelésed
                 </h5>
 
                 <div className="mb-4" style={{ maxHeight: "250px", overflowY: "auto" }}>
@@ -347,16 +347,16 @@ const Fizetes = ({ user, accessToken }) => {
 
                 <ListGroup variant="flush" className="mb-4">
                   <ListGroup.Item className="d-flex justify-content-between border-0 px-0 py-1">
-                    <span className="text-muted">Reszosszeg:</span>
+                  <span className="text-muted">Részösszeg:</span>
                     <span>{vegosszeg.toLocaleString()} Ft</span>
                   </ListGroup.Item>
                   <ListGroup.Item className="d-flex justify-content-between border-0 px-0 py-1">
-                    <span className="text-muted">Szallitas:</span>
+                    <span className="text-muted">Szállítás:</span>
                     <span className="text-success fw-bold">Ingyenes</span>
                   </ListGroup.Item>
                   <hr />
                   <ListGroup.Item className="d-flex justify-content-between border-0 px-0 py-1">
-                    <span className="fs-5 fw-bold">Fizetendo:</span>
+                    <span className="fs-5 fw-bold">Fizetendő:</span>
                     <span className="fs-5 fw-bold text-primary">{vegosszeg.toLocaleString()} Ft</span>
                   </ListGroup.Item>
                 </ListGroup>
@@ -368,10 +368,10 @@ const Fizetes = ({ user, accessToken }) => {
                   className="w-100 rounded-pill fw-bold shadow py-3"
                   disabled={loading || !fizetesiModok.length || !rendelesAdatok.fizetesiModId}
                 >
-                  {loading ? "Feldolgozas..." : "Rendeles veglegesitese"}
+                  {loading ? "Feldolgozás..." : "Rendelés véglegesítése"}
                 </Button>
                 <p className="text-center text-muted small mt-3">
-                  A "Rendeles veglegesitese" gombra kattintva elfogadod az ASZF-et.
+                  A "Rendelés véglegesítése" gombra kattintva elfogadod az ÁSZF-et.
                 </p>
               </Card.Body>
             </Card>

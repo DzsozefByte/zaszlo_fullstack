@@ -72,7 +72,7 @@ const Header = ({ user, logout }) => {
         <Link className="navbar-brand d-flex align-items-center me-3" to="/">
           <img src="/images/logo.png" alt="Logo" style={{ height: "42px", width: "auto" }} />
           <span className="fw-bold ms-2 text-dark d-none d-sm-inline" style={{ fontSize: "1.15rem" }}>
-            Zaszlomania
+            Zászlómánia
           </span>
         </Link>
 
@@ -83,7 +83,7 @@ const Header = ({ user, logout }) => {
           data-bs-target="#navContent"
           aria-controls="navContent"
           aria-expanded="false"
-          aria-label="Navigacio valtas"
+          aria-label="Navigáció váltás"
         >
           <span className="navbar-toggler-icon" />
         </button>
@@ -92,12 +92,12 @@ const Header = ({ user, logout }) => {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0 fw-semibold text-uppercase small">
             <li className="nav-item">
               <Link className="nav-link px-3" to="/">
-                Kezdolap
+                Kezdőlap
               </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link px-3" to="/kereso">
-                Termekek
+                Termékek
               </Link>
             </li>
             <li className="nav-item dropdown">
@@ -125,7 +125,7 @@ const Header = ({ user, logout }) => {
                 <input
                   className="form-control bg-light border-0 rounded-end-pill py-2"
                   type="search"
-                  placeholder="Kereses orszagra..."
+                placeholder="Keresés országra..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
@@ -159,7 +159,7 @@ const Header = ({ user, logout }) => {
                 <input
                   className="form-control bg-light border-0 rounded-end-pill py-2"
                   type="search"
-                  placeholder="Kereses..."
+                placeholder="Keresés..."
                   style={{ width: "200px" }}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -196,9 +196,9 @@ const Header = ({ user, logout }) => {
                 >
                   <IoMdPerson size={18} />
                 </div>
-                <span className="small fw-bold text-dark d-none d-sm-block">
-                  {user ? user.nev.split(" ")[0] : "Fiok"}
-                </span>
+                  <span className="small fw-bold text-dark d-none d-sm-block">
+                    {user ? user.nev.split(" ")[0] : "Fiók"}
+                  </span>
               </div>
 
               <ul className="dropdown-menu dropdown-menu-lg-end shadow border-0 mt-3 p-2 py-3 profile-dropdown">
@@ -214,14 +214,14 @@ const Header = ({ user, logout }) => {
                       <hr className="dropdown-divider mx-2 opacity-50" />
                     </li>
                     <li>
-                      <Link className="dropdown-item rounded-3 py-2 small" to="/profil">
-                        <IoMdSettings size={18} className="me-2 text-muted" /> Fiok beallitasok
-                      </Link>
+                        <Link className="dropdown-item rounded-3 py-2 small" to="/profil">
+                          <IoMdSettings size={18} className="me-2 text-muted" /> Fiók beállítások
+                        </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item rounded-3 py-2 small" to="/szamlak">
-                        <IoMdSettings size={18} className="me-2 text-muted" /> Szamlak
-                      </Link>
+                        <Link className="dropdown-item rounded-3 py-2 small" to="/szamlak">
+                          <IoMdSettings size={18} className="me-2 text-muted" /> Számlák
+                        </Link>
                     </li>
                     {user.szerep === "admin" && (
                       <li>
@@ -231,19 +231,19 @@ const Header = ({ user, logout }) => {
                       </li>
                     )}
                     <li>
-                      <button className="dropdown-item rounded-3 py-2 small text-danger mt-1" onClick={handleLogout}>
-                        <IoMdLogOut size={18} className="me-2" /> Kijelentkezes
-                      </button>
+                        <button className="dropdown-item rounded-3 py-2 small text-danger mt-1" onClick={handleLogout}>
+                          <IoMdLogOut size={18} className="me-2" /> Kijelentkezés
+                        </button>
                     </li>
                   </>
                 ) : (
                   <div className="p-2">
-                    <p className="small text-muted text-center mb-3">Jelentkezz be a vasarlashoz!</p>
+                    <p className="small text-muted text-center mb-3">Jelentkezz be a vásárláshoz!</p>
                     <Link className="btn btn-outline-primary w-100 rounded-pill mb-2 btn-sm fw-bold py-2" to="/login">
-                      Bejelentkezes
+                      Bejelentkezés
                     </Link>
                     <Link className="btn btn-primary w-100 rounded-pill btn-sm fw-bold text-white py-2" to="/register">
-                      Regisztracio
+                      Regisztráció
                     </Link>
                   </div>
                 )}
@@ -282,7 +282,7 @@ const Header = ({ user, logout }) => {
                     {kosar.length === 0 ? (
                       <div className="p-5 text-center">
                         <IoMdCart size={40} className="text-light mb-2" />
-                        <p className="text-muted small">A kosarad meg ures.</p>
+                        <p className="text-muted small">A kosarad még üres.</p>
                       </div>
                     ) : (
                       <ul className="list-group list-group-flush">
@@ -321,7 +321,7 @@ const Header = ({ user, logout }) => {
                   {kosar.length > 0 && (
                     <div className="p-3 bg-light">
                       <div className="d-flex justify-content-between align-items-center mb-3">
-                        <span className="text-muted small fw-bold text-uppercase">Fizetendo:</span>
+                        <span className="text-muted small fw-bold text-uppercase">Fizetendő:</span>
                         <span className="fw-bold text-primary fs-5">{vegosszeg.toLocaleString()} Ft</span>
                       </div>
                       <Button
@@ -332,7 +332,7 @@ const Header = ({ user, logout }) => {
                           navigate("/kosar");
                         }}
                       >
-                        Penztarhoz
+                      Pénztárhoz
                       </Button>
                     </div>
                   )}

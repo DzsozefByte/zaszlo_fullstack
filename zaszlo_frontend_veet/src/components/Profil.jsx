@@ -103,7 +103,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
     return (
       <Container className="py-5 mt-5 text-center">
         <Spinner animation="border" variant="primary" />
-        <p className="mt-3 text-muted">Adataid betoltese...</p>
+        <p className="mt-3 text-muted">Adataid betöltése...</p>
       </Container>
     );
   }
@@ -111,7 +111,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
   if (!userData) {
     return (
       <Container className="py-5 mt-5 text-center">
-        <p className="text-muted">A profil nem erheto el.</p>
+        <p className="text-muted">A profil nem érhető el.</p>
       </Container>
     );
   }
@@ -145,21 +145,21 @@ const Profil = ({ accessToken, onUserUpdate }) => {
               </div>
               <h3 className="mb-1 fw-bold">{userData.nev}</h3>
               <Badge bg="light" text="dark" className="rounded-pill px-3 py-2 text-uppercase shadow-sm">
-                {userData.jogosultsag || "vasarlo"}
+                {userData.jogosultsag || "vásárló"}
               </Badge>
             </div>
 
             <Card.Body className="p-4 p-md-5">
               {editMode ? (
                 <Form>
-                  <h5 className="mb-4 fw-bold border-bottom pb-2">Szemelyes adatok szerkesztese</h5>
+                  <h5 className="mb-4 fw-bold border-bottom pb-2">Személyes adatok szerkesztése</h5>
                   <Row>
                     <Col md={6} className="mb-3">
-                      <Form.Label className="small fw-bold">Teljes nev</Form.Label>
+                      <Form.Label className="small fw-bold">Teljes név</Form.Label>
                       <Form.Control name="nev" value={formData.nev || ""} onChange={handleChange} />
                     </Col>
                     <Col md={6} className="mb-3">
-                      <Form.Label className="small fw-bold">Telefonszam</Form.Label>
+                      <Form.Label className="small fw-bold">Telefonszám</Form.Label>
                       <Form.Control
                         name="telefonszam"
                         placeholder="+36 30 123 4567"
@@ -168,11 +168,11 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                       />
                     </Col>
                     <Col md={6} className="mb-3">
-                      <Form.Label className="small fw-bold">Adoszam</Form.Label>
+                      <Form.Label className="small fw-bold">Adószám</Form.Label>
                       <Form.Control name="adoszam" value={formData.adoszam || ""} onChange={handleChange} />
                     </Col>
                     <Col md={4} className="mb-3">
-                      <Form.Label className="small fw-bold">Iranyitoszam</Form.Label>
+                      <Form.Label className="small fw-bold">Irányítószám</Form.Label>
                       <Form.Control
                         name="iranyitoszam"
                         value={formData.iranyitoszam || ""}
@@ -180,11 +180,11 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                       />
                     </Col>
                     <Col md={8} className="mb-3">
-                      <Form.Label className="small fw-bold">Varos</Form.Label>
+                      <Form.Label className="small fw-bold">Város</Form.Label>
                       <Form.Control name="varos" value={formData.varos || ""} onChange={handleChange} />
                     </Col>
                     <Col md={12} className="mb-4">
-                      <Form.Label className="small fw-bold">Utca, hazszam</Form.Label>
+                      <Form.Label className="small fw-bold">Utca, házszám</Form.Label>
                       <Form.Control name="utca" value={formData.utca || ""} onChange={handleChange} />
                     </Col>
                   </Row>
@@ -201,7 +201,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                         setFormData(userData);
                       }}
                     >
-                      <IoMdClose className="me-1" /> Megse
+                      <IoMdClose className="me-1" /> Mégse
                     </Button>
                   </div>
                 </Form>
@@ -212,7 +212,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                       <IoMdMail size={24} />
                     </div>
                     <div>
-                      <small className="text-muted d-block text-uppercase small fw-bold">Email cim</small>
+                      <small className="text-muted d-block text-uppercase small fw-bold">Email cím</small>
                       <span className="fs-6 fw-medium">{userData.email}</span>
                     </div>
                   </div>
@@ -222,7 +222,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                       <IoMdCall size={24} />
                     </div>
                     <div>
-                      <small className="text-muted d-block text-uppercase small fw-bold">Telefonszam</small>
+                      <small className="text-muted d-block text-uppercase small fw-bold">Telefonszám</small>
                       <span className="fs-6 fw-medium">{userData.telefonszam || <i>Nincs megadva</i>}</span>
                     </div>
                   </div>
@@ -232,7 +232,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                       <IoMdSettings size={24} />
                     </div>
                     <div>
-                      <small className="text-muted d-block text-uppercase small fw-bold">Adoszam</small>
+                      <small className="text-muted d-block text-uppercase small fw-bold">Adószám</small>
                       <span className="fs-6 fw-medium">{userData.adoszam || <i>Nincs megadva</i>}</span>
                     </div>
                   </div>
@@ -242,17 +242,17 @@ const Profil = ({ accessToken, onUserUpdate }) => {
                       <IoMdHome size={24} />
                     </div>
                     <div>
-                      <small className="text-muted d-block text-uppercase small fw-bold">Szallitasi cim</small>
+                      <small className="text-muted d-block text-uppercase small fw-bold">Szállítási cím</small>
                       <span className="fs-6 fw-medium">{addressText || <i>Nincs megadva</i>}</span>
                     </div>
                   </div>
 
                   <div className="d-grid gap-2 mt-5">
                     <Button type="button" variant="primary" className="rounded-pill fw-bold" onClick={() => setEditMode(true)}>
-                      Adatok modositasa
+                      Adatok módosítása
                     </Button>
                     <Button type="button" variant="outline-secondary" className="rounded-pill" onClick={() => navigate("/")}>
-                      Vissza a kezdolapra
+                      Vissza a kezdőlapra
                     </Button>
                   </div>
                 </div>
