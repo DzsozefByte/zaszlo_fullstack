@@ -1,19 +1,40 @@
 export default function Rolunk() {
-    return (
-        <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-            <h1>Rólunk</h1>
-            <p>Üdvözöljük a Zászlómánia weboldalán! Cégünk elkötelezett amellett, hogy kiváló minőségű zászlókat és kapcsolódó termékeket kínáljon vásárlóinak. Küldetésünk, hogy mindenki számára elérhetővé tegyük a zászlók világát.</p>
-            <h2>Csapatunk</h2>
-            <p>Csapatunk tapasztalt szakemberekből áll, akik szenvedélyesen dolgoznak azon, hogy a legjobb termékeket és szolgáltatásokat nyújtsák ügyfeleinknek. Minden tagunk elkötelezett a minőség és az ügyfélelégedettség iránt.</p>
-            <h2>Értékeink</h2>
-            <ul>
-                <li><strong>Minőség:</strong> Csak a legjobb anyagokból készült zászlókat kínáljuk, hogy hosszú élettartamot és kiváló megjelenést biztosítsunk.</li>
-                <li><strong>Választék:</strong> Széles termékkínálatunkban mindenki megtalálhatja a számára legmegfelelőbb zászlót.</li>
-                <li><strong>Ügyfélszolgálat:</strong> Elkötelezettek vagyunk amellett, hogy gyors és segítőkész ügyfélszolgálatot nyújtsunk minden vásárlónknak.</li>
-            </ul>
-            <h2>Kapcsolat</h2>
-            <p>Ha bármilyen kérdése van rólunk vagy termékeinkről, kérjük, lépjen kapcsolatba velünk a 
-            <a href="/kapcsolat"> Kapcsolat</a> oldalon található elérhetőségeinken. Örömmel állunk rendelkezésére!</p>
-        </div>
-    );
+  return (
+    <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
+      <h1>Rólunk</h1>
+      <p>
+        Üdvözlünk a Zászlómánia weboldalán. Célunk, hogy átlátható, gyors és igényes vásárlási
+        felületen lehessen zászlókat rendelni, a megfelelő méretben és anyagválasztással.
+      </p>
+
+      <h2>Csapatunk</h2>
+      <p>
+        Olyan megoldásokra fókuszálunk, amelyek egyszerűsítik a keresést, a választást és a
+        rendelés teljes folyamatát. A fejlesztésben a jól használható felület és a tiszta
+        vásárlási élmény az első.
+      </p>
+
+      <h2>Értékeink</h2>
+      <ul>
+        <li>
+          <strong>Minőség:</strong> Fontos, hogy a megjelenés és a kivitel is megbízható legyen.
+        </li>
+        <li>
+          <strong>Választék:</strong> A különböző országok, méretek és anyagok között gyorsan lehessen
+          eligazodni.
+        </li>
+        <li>
+          <strong>Áttekinthetőség:</strong> Egyszerű, rendezett felületet építünk, ahol a fontos
+          információk könnyen megtalálhatók.
+        </li>
+      </ul>
+
+      <h2>Miért minket válassz</h2>
+      <p>
+        A webshopot úgy alakítjuk, hogy a hangsúly a termékeken, a szűréseken és a gyors
+        megrendelésen legyen. Ezért a felesleges vagy félig kész oldalak helyett most egy tisztább
+        és könnyebben használható elrendezést kapsz.
+      </p>
+    </div>
+  );
 }

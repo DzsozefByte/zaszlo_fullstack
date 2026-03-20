@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import httpCommon from "../http-common.js";
 import "./AdminPanel.css";
 
+const USER_PAGE_SIZE = 20;
+const USER_PAGE_WINDOW = 5;
+
 const AdminPanel = ({ accessToken }) => {
   const [csoportositott, setCsoportositott] = useState({});
   const [nyitottOrszagok, setNyitottOrszagok] = useState({});
@@ -9,7 +12,16 @@ const AdminPanel = ({ accessToken }) => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [meta, setMeta] = useState({ meretek: [], anyagok: [], kontinensek: [] });
+  const [orszagKereses, setOrszagKereses] = useState("");
   const [felhasznalok, setFelhasznalok] = useState([]);
+  const [userPage, setUserPage] = useState(1);
+  const [userRefreshKey, setUserRefreshKey] = useState(0);
+  const [userPagination, setUserPagination] = useState({
+    page: 1,
+    limit: USER_PAGE_SIZE,
+    total: 0,
+    totalPages: 1,
+  });
   const [roleDraft, setRoleDraft] = useState({});
   const [meretDrafts, setMeretDrafts] = useState({});
   const [anyagDrafts, setAnyagDrafts] = useState({});
@@ -41,6 +53,39 @@ const AdminPanel = ({ accessToken }) => {
     () => Object.values(csoportositott).sort((a, b) => a.nev.localeCompare(b.nev, "hu")),
     [csoportositott]
   );
+
+  const szurtOrszagLista = useMemo(() => {
+    const normalizalt = orszagKereses.trim().toLocaleLowerCase("hu");
+    if (!normalizalt) {
+      return orszagLista;
+    }
+
+    return orszagLista.filter((item) =>
+      `${item.nev} ${item.kontinens}`.toLocaleLowerCase("hu").includes(normalizalt)
+    );
+  }, [orszagKereses, orszagLista]);
+
+  const userPageButtons = useMemo(() => {
+    const totalPages = Math.max(1, userPagination.totalPages || 1);
+    const currentPage = Math.min(userPagination.page || 1, totalPages);
+    let start = Math.max(1, currentPage - Math.floor(USER_PAGE_WINDOW / 2));
+    let end = Math.min(totalPages, start + USER_PAGE_WINDOW - 1);
+
+    start = Math.max(1, end - USER_PAGE_WINDOW + 1);
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }, [userPagination.page, userPagination.totalPages]);
+
+  const userRangeLabel = useMemo(() => {
+    if (!userPagination.total || !felhasznalok.length) {
+      return `0 / ${userPagination.total || 0}`;
+    }
+
+    const start = (userPagination.page - 1) * userPagination.limit + 1;
+    const end = start + felhasznalok.length - 1;
+
+    return `${start}-${end} / ${userPagination.total}`;
+  }, [felhasznalok.length, userPagination.limit, userPagination.page, userPagination.total]);
 
   const extractError = (err, fallback) => err?.response?.data?.message || fallback;
 
@@ -109,22 +154,47 @@ const AdminPanel = ({ accessToken }) => {
     }));
   }, [authConfig, initAnyagDrafts, initMeretDrafts]);
 
-  const fetchFelhasznalok = useCallback(async () => {
-    const res = await httpCommon.get("/auth/admin/users", authConfig);
-    const users = res.data?.users || [];
-    setFelhasznalok(users);
-    setRoleDraft(
-      users.reduce((acc, user) => {
-        acc[user.id] = user.jogosultsag;
-        return acc;
-      }, {})
-    );
-  }, [authConfig]);
+  const fetchFelhasznalok = useCallback(
+    async (page = 1) => {
+      const res = await httpCommon.get("/auth/admin/users", {
+        ...authConfig,
+        params: {
+          page,
+          limit: USER_PAGE_SIZE,
+        },
+      });
+      const users = res.data?.users || [];
+      const pagination = res.data?.pagination || {
+        page,
+        limit: USER_PAGE_SIZE,
+        total: users.length,
+        totalPages: 1,
+      };
+
+      setFelhasznalok(users);
+      setUserPagination({
+        page: pagination.page || 1,
+        limit: pagination.limit || USER_PAGE_SIZE,
+        total: pagination.total || 0,
+        totalPages: pagination.totalPages || 1,
+      });
+      setUserPage((prev) => (prev === (pagination.page || 1) ? prev : (pagination.page || 1)));
+      setRoleDraft((prev) =>
+        users.reduce((acc, user) => {
+          acc[user.id] = prev[user.id] || user.jogosultsag;
+          return acc;
+        }, {})
+      );
+
+      return { users, pagination };
+    },
+    [authConfig]
+  );
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([fetchMeta(), fetchZaszlok(), fetchFelhasznalok()]);
+        await Promise.all([fetchMeta(), fetchZaszlok()]);
       } catch (err) {
         showMessage("danger", extractError(err, "Hiba a kezdő adatok betöltése során."));
       }
@@ -133,7 +203,21 @@ const AdminPanel = ({ accessToken }) => {
     if (accessToken) {
       loadData();
     }
-  }, [accessToken, fetchFelhasznalok, fetchMeta, fetchZaszlok]);
+  }, [accessToken, fetchMeta, fetchZaszlok]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        await fetchFelhasznalok(userPage);
+      } catch (err) {
+        showMessage("danger", extractError(err, "Hiba történt a felhasználók betöltése során."));
+      }
+    };
+
+    if (accessToken) {
+      loadUsers();
+    }
+  }, [accessToken, fetchFelhasznalok, userPage, userRefreshKey]);
 
   const toggleRow = (orszagId) => {
     setNyitottOrszagok((prev) => ({ ...prev, [orszagId]: !prev[orszagId] }));
@@ -386,7 +470,7 @@ const AdminPanel = ({ accessToken }) => {
         { jogosultsag: roleDraft[userId] },
         authConfig
       );
-      await fetchFelhasznalok();
+      setUserRefreshKey((prev) => prev + 1);
       showMessage("success", `Felhasználó (#${userId}) jogosultsága frissítve.`);
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt a jogosultság módosításakor."));
@@ -399,7 +483,11 @@ const AdminPanel = ({ accessToken }) => {
     }
     try {
       await httpCommon.delete(`/auth/admin/users/${userId}`, authConfig);
-      await fetchFelhasznalok();
+      if (felhasznalok.length === 1 && userPage > 1) {
+        setUserPage((prev) => prev - 1);
+      } else {
+        setUserRefreshKey((prev) => prev + 1);
+      }
       showMessage("success", `Felhasználó (#${userId}) törölve.`);
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt a felhasználó törlésekor."));
@@ -835,6 +923,45 @@ const AdminPanel = ({ accessToken }) => {
               <p>Szerepkör módosítás és törlés egy helyen.</p>
             </div>
 
+            <div className="admin-toolbar mb-3">
+              <div className="admin-toolbar-copy">
+                <strong>Lapozott lista</strong>
+                <span>{userRangeLabel} felhasználó megjelenítve.</span>
+              </div>
+              <div className="admin-pagination" aria-label="Felhasználó oldalak">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  disabled={userPagination.page <= 1}
+                  onClick={() => setUserPage((prev) => Math.max(1, prev - 1))}
+                >
+                  Előző
+                </button>
+                {userPageButtons.map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    className={`btn btn-sm ${
+                      pageNumber === userPagination.page ? "admin-btn-primary" : "btn-outline-secondary"
+                    }`}
+                    onClick={() => setUserPage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  disabled={userPagination.page >= userPagination.totalPages}
+                  onClick={() =>
+                    setUserPage((prev) => Math.min(userPagination.totalPages || 1, prev + 1))
+                  }
+                >
+                  Következő
+                </button>
+              </div>
+            </div>
+
             <div className="table-responsive">
               <table className="table table-sm align-middle admin-user-table">
                 <thead>
@@ -900,6 +1027,22 @@ const AdminPanel = ({ accessToken }) => {
             <p>Nyisd le az országot a méret/anyag variációk gyors törléséhez.</p>
           </div>
 
+          <div className="admin-toolbar mb-3">
+            <div className="admin-toolbar-copy">
+              <strong>Ország keresése</strong>
+              <span>{szurtOrszagLista.length} ország látszik a listában.</span>
+            </div>
+            <div className="admin-search-wrap">
+              <input
+                type="search"
+                className="form-control"
+                value={orszagKereses}
+                onChange={(e) => setOrszagKereses(e.target.value)}
+                placeholder="Keresés országra vagy kontinensre..."
+              />
+            </div>
+          </div>
+
           <div className="table-responsive">
             <table className="table align-middle admin-flag-table mb-0">
               <thead>
@@ -913,7 +1056,7 @@ const AdminPanel = ({ accessToken }) => {
                 </tr>
               </thead>
               <tbody>
-                {orszagLista.map((csoport) => (
+                {szurtOrszagLista.map((csoport) => (
                   <React.Fragment key={`${csoport.nev}-${csoport.orszagId}`}>
                     <tr className="admin-flag-row" onClick={() => toggleRow(csoport.orszagId)}>
                       <td className="text-center">{nyitottOrszagok[csoport.orszagId] ? "v" : ">"}</td>
@@ -986,6 +1129,13 @@ const AdminPanel = ({ accessToken }) => {
                     )}
                   </React.Fragment>
                 ))}
+                {!szurtOrszagLista.length && (
+                  <tr>
+                    <td colSpan="6" className="text-center py-4 text-muted">
+                      Nincs találat a megadott keresésre.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

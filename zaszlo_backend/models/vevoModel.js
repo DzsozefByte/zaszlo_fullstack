@@ -74,11 +74,17 @@ class Vevo {
     return this.getById(id);
   }
 
-  static async getAllForAdmin() {
+  static async getPageForAdmin(limit, offset) {
     const [rows] = await db.query(
-      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca, adoszam FROM vevo ORDER BY id DESC"
+      "SELECT id, nev, email, jogosultsag, telefonszam, iranyitoszam, varos, utca, adoszam FROM vevo ORDER BY id DESC LIMIT ? OFFSET ?",
+      [limit, offset]
     );
     return rows;
+  }
+
+  static async countAll() {
+    const [rows] = await db.query("SELECT COUNT(*) AS count FROM vevo");
+    return rows[0]?.count || 0;
   }
 
   static async updateRole(id, jogosultsag) {

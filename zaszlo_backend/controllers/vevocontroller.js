@@ -10,6 +10,14 @@ const toInt = (value) => {
   return parsed;
 };
 
+const toPositiveIntOrDefault = (value, fallback) => {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+};
+
 const toTrimmedString = (value) => {
   if (value === null || value === undefined) {
     return "";
@@ -171,8 +179,23 @@ exports.updateProfil = async (req, res, next) => {
 
 exports.adminGetUsers = async (req, res, next) => {
   try {
-    const users = await Felhasznalo.getAllForAdmin();
-    return res.json({ users });
+    const limit = Math.min(toPositiveIntOrDefault(req.query.limit, 20), 100);
+    const requestedPage = toPositiveIntOrDefault(req.query.page, 1);
+    const total = await Felhasznalo.countAll();
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const page = Math.min(requestedPage, totalPages);
+    const offset = (page - 1) * limit;
+    const users = await Felhasznalo.getPageForAdmin(limit, offset);
+
+    return res.json({
+      users,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     next(error);
   }
