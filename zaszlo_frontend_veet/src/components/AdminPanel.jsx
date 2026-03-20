@@ -10,10 +10,6 @@ const AdminPanel = ({ accessToken }) => {
 
   const [meta, setMeta] = useState({ meretek: [], anyagok: [], kontinensek: [] });
   const [felhasznalok, setFelhasznalok] = useState([]);
-  const [fizetesiModok, setFizetesiModok] = useState([]);
-  const [ujFizetesiModNev, setUjFizetesiModNev] = useState("");
-  const [szamlak, setSzamlak] = useState([]);
-  const [nyitottSzamlak, setNyitottSzamlak] = useState({});
   const [roleDraft, setRoleDraft] = useState({});
   const [meretDrafts, setMeretDrafts] = useState({});
   const [anyagDrafts, setAnyagDrafts] = useState({});
@@ -47,8 +43,6 @@ const AdminPanel = ({ accessToken }) => {
   );
 
   const extractError = (err, fallback) => err?.response?.data?.message || fallback;
-  const formatDate = (value) => (value ? new Date(value).toLocaleDateString("hu-HU") : "-");
-  const formatCurrency = (value) => `${Number(value || 0).toLocaleString("hu-HU")} Ft`;
 
   const showMessage = (tipus, szoveg) => {
     setUzenet({ tipus, szoveg });
@@ -127,28 +121,12 @@ const AdminPanel = ({ accessToken }) => {
     );
   };
 
-  const fetchFizetesiModok = async () => {
-    const res = await httpCommon.get("/szamlak/payment-methods", authConfig);
-    setFizetesiModok(res.data || []);
-  };
-
-  const fetchAdminSzamlak = async () => {
-    const res = await httpCommon.get("/szamlak/admin", authConfig);
-    setSzamlak(res.data || []);
-  };
-
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([
-          fetchMeta(),
-          fetchZaszlok(),
-          fetchFelhasznalok(),
-          fetchFizetesiModok(),
-          fetchAdminSzamlak(),
-        ]);
+        await Promise.all([fetchMeta(), fetchZaszlok(), fetchFelhasznalok()]);
       } catch (err) {
-        showMessage("danger", extractError(err, "Hiba a kezdo adatok betoltese soran."));
+        showMessage("danger", extractError(err, "Hiba a kezdő adatok betöltése során."));
       }
     };
 
@@ -159,10 +137,6 @@ const AdminPanel = ({ accessToken }) => {
 
   const toggleRow = (orszagId) => {
     setNyitottOrszagok((prev) => ({ ...prev, [orszagId]: !prev[orszagId] }));
-  };
-
-  const toggleSzamla = (szamlaId) => {
-    setNyitottSzamlak((prev) => ({ ...prev, [szamlaId]: !prev[szamlaId] }));
   };
 
   const toggleBulkSelection = (key, id) => {
@@ -179,7 +153,7 @@ const AdminPanel = ({ accessToken }) => {
 
   const handleBulkCreate = async (e) => {
     e.preventDefault();
-    showMessage("info", "Feldolgozas...");
+    showMessage("info", "Feldolgozás...");
 
     const meretIds = bulkForm.useAllMeretek
       ? meta.meretek.map((meret) => meret.id)
@@ -189,7 +163,7 @@ const AdminPanel = ({ accessToken }) => {
       : bulkForm.anyagIds;
 
     if (!meretIds.length || !anyagIds.length) {
-      showMessage("warning", "Valassz legalabb 1 meretet es 1 anyagot.");
+      showMessage("warning", "Válassz legalább 1 méretet és 1 anyagot.");
       return;
     }
 
@@ -226,25 +200,25 @@ const AdminPanel = ({ accessToken }) => {
       await fetchZaszlok();
       showMessage(
         "success",
-        `Kesz. Letrejott: ${res.data?.createdCount || 0} variacio, atugorva: ${
+        `Kész. Létrejött: ${res.data?.createdCount || 0} variáció, átugorva: ${
           res.data?.skippedCount || 0
         }.`
       );
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a variaciok letrehozasakor."));
+      showMessage("danger", extractError(err, "Hiba történt a variációk létrehozásakor."));
     }
   };
 
   const handleDeleteVariant = async (id) => {
-    if (!window.confirm("Biztosan torolni szeretned ezt a variaciot?")) {
+    if (!window.confirm("Biztosan törölni szeretnéd ezt a variációt?")) {
       return;
     }
     try {
       await httpCommon.delete(`/zaszlok/${id}`, authConfig);
       await fetchZaszlok();
-      showMessage("success", "Variacio sikeresen torolve.");
+      showMessage("success", "Variáció sikeresen törölve.");
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba a torles soran."));
+      showMessage("danger", extractError(err, "Hiba a törlés során."));
     }
   };
 
@@ -270,7 +244,7 @@ const AdminPanel = ({ accessToken }) => {
   const handleCountryUpdate = async (e) => {
     e.preventDefault();
     if (!countryEdit.orszagId) {
-      showMessage("warning", "Valassz orszagot a modositas elott.");
+      showMessage("warning", "Válassz országot a módosítás előtt.");
       return;
     }
 
@@ -284,16 +258,16 @@ const AdminPanel = ({ accessToken }) => {
         authConfig
       );
       await fetchZaszlok();
-      showMessage("success", "Orszag adatai sikeresen modositva.");
+      showMessage("success", "Ország adatai sikeresen módosítva.");
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent az orszag modositasakor."));
+      showMessage("danger", extractError(err, "Hiba történt az ország módosításakor."));
     }
   };
 
   const handleDeleteCountry = async (orszagId, orszagNev) => {
     if (
       !window.confirm(
-        `Biztosan torolni szeretned a(z) ${orszagNev} orszagot az osszes variaciojaval egyutt?`
+        `Biztosan törölni szeretnéd a(z) ${orszagNev} országot az összes variációjával együtt?`
       )
     ) {
       return;
@@ -305,9 +279,9 @@ const AdminPanel = ({ accessToken }) => {
       if (String(countryEdit.orszagId) === String(orszagId)) {
         setCountryEdit({ orszagId: "", orszag: "", kontinensId: "" });
       }
-      showMessage("success", `${orszagNev} es minden variacioja torolve.`);
+      showMessage("success", `${orszagNev} és minden variációja törölve.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent az orszag tomeges torlese soran."));
+      showMessage("danger", extractError(err, "Hiba történt az ország tömeges törlése során."));
     }
   };
 
@@ -321,9 +295,9 @@ const AdminPanel = ({ accessToken }) => {
       );
       setNewMeret({ meret: "", szorzo: "1" });
       await fetchMeta();
-      showMessage("success", "Uj meret sikeresen letrehozva.");
+      showMessage("success", "Új méret sikeresen létrehozva.");
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent az uj meret mentese soran."));
+      showMessage("danger", extractError(err, "Hiba történt az új méret mentése során."));
     }
   };
 
@@ -339,22 +313,22 @@ const AdminPanel = ({ accessToken }) => {
         authConfig
       );
       await fetchMeta();
-      showMessage("success", `Meret (#${id}) sikeresen modositva.`);
+      showMessage("success", `Méret (#${id}) sikeresen módosítva.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a meret modositasakor."));
+      showMessage("danger", extractError(err, "Hiba történt a méret módosításakor."));
     }
   };
 
   const handleDeleteMeret = async (id) => {
-    if (!window.confirm(`Biztosan torolni szeretned a(z) #${id} meretet?`)) {
+    if (!window.confirm(`Biztosan törölni szeretnéd a(z) #${id} méretet?`)) {
       return;
     }
     try {
       await httpCommon.delete(`/zaszlok/admin/sizes/${id}`, authConfig);
       await Promise.all([fetchMeta(), fetchZaszlok()]);
-      showMessage("success", `Meret (#${id}) torolve.`);
+      showMessage("success", `Méret (#${id}) törölve.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a meret torlesekor."));
+      showMessage("danger", extractError(err, "Hiba történt a méret törlésekor."));
     }
   };
 
@@ -368,9 +342,9 @@ const AdminPanel = ({ accessToken }) => {
       );
       setNewAnyag({ anyag: "", szorzo: "1" });
       await fetchMeta();
-      showMessage("success", "Uj anyag sikeresen letrehozva.");
+      showMessage("success", "Új anyag sikeresen létrehozva.");
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent az uj anyag mentese soran."));
+      showMessage("danger", extractError(err, "Hiba történt az új anyag mentése során."));
     }
   };
 
@@ -386,64 +360,22 @@ const AdminPanel = ({ accessToken }) => {
         authConfig
       );
       await fetchMeta();
-      showMessage("success", `Anyag (#${id}) sikeresen modositva.`);
+      showMessage("success", `Anyag (#${id}) sikeresen módosítva.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent az anyag modositasakor."));
+      showMessage("danger", extractError(err, "Hiba történt az anyag módosításakor."));
     }
   };
 
   const handleDeleteAnyag = async (id) => {
-    if (!window.confirm(`Biztosan torolni szeretned a(z) #${id} anyagot?`)) {
+    if (!window.confirm(`Biztosan törölni szeretnéd a(z) #${id} anyagot?`)) {
       return;
     }
     try {
       await httpCommon.delete(`/zaszlok/admin/materials/${id}`, authConfig);
       await Promise.all([fetchMeta(), fetchZaszlok()]);
-      showMessage("success", `Anyag (#${id}) torolve.`);
+      showMessage("success", `Anyag (#${id}) törölve.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent az anyag torlesekor."));
-    }
-  };
-
-  const handleCreateFizetesiMod = async (e) => {
-    e.preventDefault();
-    try {
-      await httpCommon.post(
-        "/szamlak/admin/payment-methods",
-        { nev: ujFizetesiModNev },
-        authConfig
-      );
-      setUjFizetesiModNev("");
-      await fetchFizetesiModok();
-      showMessage("success", "Uj fizetesi mod sikeresen letrehozva.");
-    } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a fizetesi mod mentese soran."));
-    }
-  };
-
-  const handleDeleteFizetesiMod = async (id, nev) => {
-    if (!window.confirm(`Biztosan torolni szeretned a(z) ${nev} fizetesi modot?`)) {
-      return;
-    }
-    try {
-      await httpCommon.delete(`/szamlak/admin/payment-methods/${id}`, authConfig);
-      await fetchFizetesiModok();
-      showMessage("success", `Fizetesi mod torolve: ${nev}.`);
-    } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a fizetesi mod torlesekor."));
-    }
-  };
-
-  const handleDeleteSzamla = async (id, szamlaszam) => {
-    if (!window.confirm(`Biztosan torolni szeretned a(z) ${szamlaszam} szamlat?`)) {
-      return;
-    }
-    try {
-      await httpCommon.delete(`/szamlak/admin/${id}`, authConfig);
-      await fetchAdminSzamlak();
-      showMessage("success", `Szamla torolve: ${szamlaszam}.`);
-    } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a szamla torlesekor."));
+      showMessage("danger", extractError(err, "Hiba történt az anyag törlésekor."));
     }
   };
 
@@ -455,22 +387,22 @@ const AdminPanel = ({ accessToken }) => {
         authConfig
       );
       await fetchFelhasznalok();
-      showMessage("success", `Felhasznalo (#${userId}) jogosultsaga frissitve.`);
+      showMessage("success", `Felhasználó (#${userId}) jogosultsága frissítve.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a jogosultsag modositasakor."));
+      showMessage("danger", extractError(err, "Hiba történt a jogosultság módosításakor."));
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Biztosan torolni szeretned ezt a felhasznalot?")) {
+    if (!window.confirm("Biztosan törölni szeretnéd ezt a felhasználót?")) {
       return;
     }
     try {
       await httpCommon.delete(`/auth/admin/users/${userId}`, authConfig);
       await fetchFelhasznalok();
-      showMessage("success", `Felhasznalo (#${userId}) torolve.`);
+      showMessage("success", `Felhasználó (#${userId}) törölve.`);
     } catch (err) {
-      showMessage("danger", extractError(err, "Hiba tortent a felhasznalo torlesekor."));
+      showMessage("danger", extractError(err, "Hiba történt a felhasználó törlésekor."));
     }
   };
 
@@ -482,9 +414,10 @@ const AdminPanel = ({ accessToken }) => {
       <div className="container-fluid px-3 px-lg-4 admin-container">
         <header className="admin-hero">
           <p className="admin-eyebrow">Admin Studio</p>
-          <h1>Zaszlo adminisztracio</h1>
+          <h1>Zászló adminisztráció</h1>
           <p className="admin-subtitle">
-            Szerkeszd a bazisadatokat, kezeld a felhasznalokat, es hozz letre tomegesen variaciokat.
+            Szerkeszd a bázisadatokat, kezeld a felhasználókat, és hozz létre tömegesen
+            variációkat.
           </p>
         </header>
 
@@ -497,19 +430,19 @@ const AdminPanel = ({ accessToken }) => {
         <section className="admin-grid admin-grid-two mb-4">
           <article className="admin-card">
             <div className="admin-card-header">
-              <h2>Uj custom zaszlo variaciok egyszerre</h2>
-              <p>Nem kell egyesevel felvenni a meret-anyag kombinaciokat.</p>
+              <h2>Új custom zászló variációk egyszerre</h2>
+              <p>Nem kell egyesével felvenni a méret-anyag kombinációkat.</p>
             </div>
 
             <form onSubmit={handleBulkCreate} className="row g-3">
               <div className="col-lg-4">
-                <label className="form-label fw-semibold">Orszag neve</label>
+                <label className="form-label fw-semibold">Ország neve</label>
                 <input
                   type="text"
                   className="form-control"
                   value={bulkForm.orszag}
                   onChange={(e) => setBulkForm((prev) => ({ ...prev, orszag: e.target.value }))}
-                  placeholder="pl. Tesztorszag"
+                  placeholder="pl. Tesztország"
                   required
                 />
               </div>
@@ -531,7 +464,7 @@ const AdminPanel = ({ accessToken }) => {
               </div>
 
               <div className="col-lg-5">
-                <label className="form-label fw-semibold">Orszag kep (.png)</label>
+                <label className="form-label fw-semibold">Ország kép (.png)</label>
                 <input
                   id="admin-file-input"
                   type="file"
@@ -544,7 +477,7 @@ const AdminPanel = ({ accessToken }) => {
               <div className="col-md-6">
                 <div className="admin-pick-box">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h3>Meretek</h3>
+                    <h3>Méretek</h3>
                     <label className="form-check-label small d-flex align-items-center gap-2">
                       <input
                         type="checkbox"
@@ -613,7 +546,7 @@ const AdminPanel = ({ accessToken }) => {
 
               <div className="col-12 text-end">
                 <button type="submit" className="btn admin-btn-primary">
-                  Variaciok letrehozasa
+                  Variációk létrehozása
                 </button>
               </div>
             </form>
@@ -621,19 +554,19 @@ const AdminPanel = ({ accessToken }) => {
 
           <article className="admin-card">
             <div className="admin-card-header">
-              <h2>Adott orszag modositasa</h2>
-              <p>Orszagnev es kontinens valtoztatasa egy lepesben.</p>
+              <h2>Adott ország módosítása</h2>
+              <p>Országnév és kontinens változtatása egy lépésben.</p>
             </div>
 
             <form onSubmit={handleCountryUpdate} className="row g-3">
               <div className="col-12">
-                <label className="form-label fw-semibold">Orszag kivalasztasa</label>
+                <label className="form-label fw-semibold">Ország kiválasztása</label>
                 <select
                   className="form-select"
                   value={countryEdit.orszagId}
                   onChange={(e) => handleCountrySelect(e.target.value)}
                 >
-                  <option value="">Valassz orszagot...</option>
+                  <option value="">Válassz országot...</option>
                   {orszagLista.map((item) => (
                     <option key={item.orszagId} value={item.orszagId}>
                       {item.nev}
@@ -643,7 +576,7 @@ const AdminPanel = ({ accessToken }) => {
               </div>
 
               <div className="col-7">
-                <label className="form-label fw-semibold">Orszag neve</label>
+                <label className="form-label fw-semibold">Ország neve</label>
                 <input
                   type="text"
                   className="form-control"
@@ -678,10 +611,10 @@ const AdminPanel = ({ accessToken }) => {
                   disabled={!countryEdit.orszagId}
                   onClick={() => handleDeleteCountry(countryEdit.orszagId, countryEdit.orszag)}
                 >
-                  Orszag torlese
+                  Ország törlése
                 </button>
                 <button type="submit" className="btn admin-btn-secondary">
-                  Orszag mentese
+                  Ország mentése
                 </button>
               </div>
             </form>
@@ -691,20 +624,20 @@ const AdminPanel = ({ accessToken }) => {
         <section className="admin-grid admin-grid-two mb-4">
           <article className="admin-card">
             <div className="admin-card-header">
-              <h2>Alapadatok modositasa</h2>
-              <p>Meret, anyag es fizetesi mod alapadatok kezelese egy helyen.</p>
+              <h2>Alapadatok módosítása</h2>
+              <p>Méret és anyag alapadatok kezelése egy helyen.</p>
             </div>
 
             <div className="row g-4">
-              <div className="col-12 col-xl-4">
-                <h3 className="admin-section-title">Meretek</h3>
+              <div className="col-12 col-xl-6">
+                <h3 className="admin-section-title">Méretek</h3>
 
                 <form onSubmit={handleCreateMeret} className="row g-2 mb-3">
                   <div className="col-6">
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Uj meret (pl. 400x200cm)"
+                      placeholder="Új méret (pl. 400x200cm)"
                       value={newMeret.meret}
                       onChange={(e) => setNewMeret((prev) => ({ ...prev, meret: e.target.value }))}
                       required
@@ -716,7 +649,7 @@ const AdminPanel = ({ accessToken }) => {
                       min="0.1"
                       step="0.1"
                       className="form-control"
-                      placeholder="Szorzo"
+                      placeholder="Szorzó"
                       value={newMeret.szorzo}
                       onChange={(e) => setNewMeret((prev) => ({ ...prev, szorzo: e.target.value }))}
                       required
@@ -724,7 +657,7 @@ const AdminPanel = ({ accessToken }) => {
                   </div>
                   <div className="col-3 d-grid">
                     <button type="submit" className="btn btn-outline-primary btn-sm">
-                      Uj meret
+                      Új méret
                     </button>
                   </div>
                 </form>
@@ -734,9 +667,9 @@ const AdminPanel = ({ accessToken }) => {
                     <thead>
                       <tr>
                         <th>ID</th>
-                        <th>Meret</th>
-                        <th>Szorzo</th>
-                        <th className="text-end">Muvelet</th>
+                        <th>Méret</th>
+                        <th>Szorzó</th>
+                        <th className="text-end">Művelet</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -777,14 +710,14 @@ const AdminPanel = ({ accessToken }) => {
                                 className="btn btn-outline-success btn-sm"
                                 onClick={() => handleUpdateMeret(item.id)}
                               >
-                                Mentes
+                                Mentés
                               </button>
                               <button
                                 type="button"
                                 className="btn btn-outline-danger btn-sm"
                                 onClick={() => handleDeleteMeret(item.id)}
                               >
-                                Torles
+                                Törlés
                               </button>
                             </div>
                           </td>
@@ -795,7 +728,7 @@ const AdminPanel = ({ accessToken }) => {
                 </div>
               </div>
 
-              <div className="col-12 col-xl-4">
+              <div className="col-12 col-xl-6">
                 <h3 className="admin-section-title">Anyagok</h3>
 
                 <form onSubmit={handleCreateAnyag} className="row g-2 mb-3">
@@ -803,7 +736,7 @@ const AdminPanel = ({ accessToken }) => {
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Uj anyag (pl. pamut)"
+                      placeholder="Új anyag (pl. pamut)"
                       value={newAnyag.anyag}
                       onChange={(e) => setNewAnyag((prev) => ({ ...prev, anyag: e.target.value }))}
                       required
@@ -815,7 +748,7 @@ const AdminPanel = ({ accessToken }) => {
                       min="0.1"
                       step="0.1"
                       className="form-control"
-                      placeholder="Szorzo"
+                      placeholder="Szorzó"
                       value={newAnyag.szorzo}
                       onChange={(e) => setNewAnyag((prev) => ({ ...prev, szorzo: e.target.value }))}
                       required
@@ -823,7 +756,7 @@ const AdminPanel = ({ accessToken }) => {
                   </div>
                   <div className="col-3 d-grid">
                     <button type="submit" className="btn btn-outline-primary btn-sm">
-                      Uj anyag
+                      Új anyag
                     </button>
                   </div>
                 </form>
@@ -834,8 +767,8 @@ const AdminPanel = ({ accessToken }) => {
                       <tr>
                         <th>ID</th>
                         <th>Anyag</th>
-                        <th>Szorzo</th>
-                        <th className="text-end">Muvelet</th>
+                        <th>Szorzó</th>
+                        <th className="text-end">Művelet</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -876,14 +809,14 @@ const AdminPanel = ({ accessToken }) => {
                                 className="btn btn-outline-success btn-sm"
                                 onClick={() => handleUpdateAnyag(item.id)}
                               >
-                                Mentes
+                                Mentés
                               </button>
                               <button
                                 type="button"
                                 className="btn btn-outline-danger btn-sm"
                                 onClick={() => handleDeleteAnyag(item.id)}
                               >
-                                Torles
+                                Törlés
                               </button>
                             </div>
                           </td>
@@ -893,71 +826,13 @@ const AdminPanel = ({ accessToken }) => {
                   </table>
                 </div>
               </div>
-
-              <div className="col-12 col-xl-4">
-                <h3 className="admin-section-title">Fizetesi modok</h3>
-
-                <form onSubmit={handleCreateFizetesiMod} className="row g-2 mb-3">
-                  <div className="col-8">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Uj fizetesi mod neve"
-                      value={ujFizetesiModNev}
-                      onChange={(e) => setUjFizetesiModNev(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="col-4 d-grid">
-                    <button type="submit" className="btn btn-outline-primary btn-sm">
-                      Uj mod
-                    </button>
-                  </div>
-                </form>
-
-                <div className="table-responsive admin-subtable">
-                  <table className="table table-sm align-middle mb-0">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Megnevezes</th>
-                        <th className="text-end">Muvelet</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fizetesiModok.map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.nev}</td>
-                          <td className="text-end">
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() => handleDeleteFizetesiMod(item.id, item.nev)}
-                            >
-                              Torles
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {!fizetesiModok.length && (
-                        <tr>
-                          <td colSpan="3" className="text-center text-muted py-3">
-                            Nincs megjelenitheto fizetesi mod.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           </article>
 
           <article className="admin-card">
             <div className="admin-card-header">
-              <h2>Felhasznalok kezelese</h2>
-              <p>Szerepkor modositas es torles egy helyen.</p>
+              <h2>Felhasználók kezelése</h2>
+              <p>Szerepkör módosítás és törlés egy helyen.</p>
             </div>
 
             <div className="table-responsive">
@@ -965,10 +840,10 @@ const AdminPanel = ({ accessToken }) => {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Nev</th>
+                    <th>Név</th>
                     <th>Email</th>
-                    <th>Jog</th>
-                    <th className="text-end">Muvelet</th>
+                    <th>Jogosultság</th>
+                    <th className="text-end">Művelet</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -994,14 +869,14 @@ const AdminPanel = ({ accessToken }) => {
                           disabled={(roleDraft[item.id] || item.jogosultsag) === item.jogosultsag}
                           onClick={() => handleRoleSave(item.id)}
                         >
-                          Mentes
+                          Mentés
                         </button>
                         <button
                           type="button"
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => handleDeleteUser(item.id)}
                         >
-                          Torles
+                          Törlés
                         </button>
                       </td>
                     </tr>
@@ -1009,7 +884,7 @@ const AdminPanel = ({ accessToken }) => {
                   {!felhasznalok.length && (
                     <tr>
                       <td colSpan="5" className="text-center py-4 text-muted">
-                        Nincs felhasznalo.
+                        Nincs felhasználó.
                       </td>
                     </tr>
                   )}
@@ -1021,8 +896,8 @@ const AdminPanel = ({ accessToken }) => {
 
         <section className="admin-card mb-4">
           <div className="admin-card-header">
-            <h2>Orszagok es variaciok</h2>
-            <p>Nyisd le az orszagot a meret/anyag variaciok gyors torlesehez.</p>
+            <h2>Országok és variációk</h2>
+            <p>Nyisd le az országot a méret/anyag variációk gyors törléséhez.</p>
           </div>
 
           <div className="table-responsive">
@@ -1030,11 +905,11 @@ const AdminPanel = ({ accessToken }) => {
               <thead>
                 <tr>
                   <th style={{ width: 56 }} />
-                  <th>Kep</th>
-                  <th>Orszag</th>
+                  <th>Kép</th>
+                  <th>Ország</th>
                   <th>Kontinens</th>
-                  <th className="text-center">Variacio</th>
-                  <th className="text-end">Muvelet</th>
+                  <th className="text-center">Variáció</th>
+                  <th className="text-end">Művelet</th>
                 </tr>
               </thead>
               <tbody>
@@ -1068,7 +943,7 @@ const AdminPanel = ({ accessToken }) => {
                             handleDeleteCountry(csoport.orszagId, csoport.nev);
                           }}
                         >
-                          Orszag torlese
+                          Ország törlése
                         </button>
                       </td>
                     </tr>
@@ -1081,9 +956,9 @@ const AdminPanel = ({ accessToken }) => {
                               <thead>
                                 <tr>
                                   <th>ID</th>
-                                  <th>Meret</th>
+                                  <th>Méret</th>
                                   <th>Anyag</th>
-                                  <th className="text-end">Muvelet</th>
+                                  <th className="text-end">Művelet</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -1098,7 +973,7 @@ const AdminPanel = ({ accessToken }) => {
                                         className="btn btn-outline-danger btn-sm"
                                         onClick={() => handleDeleteVariant(item.id)}
                                       >
-                                        Torles
+                                        Törlés
                                       </button>
                                     </td>
                                   </tr>
@@ -1111,115 +986,6 @@ const AdminPanel = ({ accessToken }) => {
                     )}
                   </React.Fragment>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="admin-card mb-4">
-          <div className="admin-card-header">
-            <h2>Szamlakezeles</h2>
-            <p>Szamlak attekintese, tetelsorok megjelenitese es torles admin feluletrol.</p>
-          </div>
-
-          <div className="table-responsive">
-            <table className="table align-middle admin-flag-table mb-0">
-              <thead>
-                <tr>
-                  <th style={{ width: 56 }} />
-                  <th>Szamlaszam</th>
-                  <th>Vasarlo</th>
-                  <th>Datum</th>
-                  <th>Fizetesi mod</th>
-                  <th className="text-end">Vegosszeg</th>
-                  <th className="text-end">Muvelet</th>
-                </tr>
-              </thead>
-              <tbody>
-                {szamlak.map((szamla) => (
-                  <React.Fragment key={szamla.id}>
-                    <tr className="admin-flag-row" onClick={() => toggleSzamla(szamla.id)}>
-                      <td className="text-center">{nyitottSzamlak[szamla.id] ? "v" : ">"}</td>
-                      <td className="fw-semibold">{szamla.szamlaszam}</td>
-                      <td>
-                        <div>{szamla.vevo_nev || "-"}</div>
-                        <small className="text-muted">{szamla.vevo_email || "-"}</small>
-                      </td>
-                      <td>{formatDate(szamla.szamla_kelte)}</td>
-                      <td>{szamla.fizetesi_mod_nev || `ID: ${szamla.fizetesi_mod}`}</td>
-                      <td className="text-end">{formatCurrency(szamla.vegosszeg)}</td>
-                      <td className="text-end">
-                        <button
-                          type="button"
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteSzamla(szamla.id, szamla.szamlaszam);
-                          }}
-                        >
-                          Torles
-                        </button>
-                      </td>
-                    </tr>
-
-                    {nyitottSzamlak[szamla.id] && (
-                      <tr>
-                        <td colSpan="7" className="p-0">
-                          <div className="p-3 bg-body-tertiary">
-                            <div className="small text-muted mb-2">
-                              Vevo azonosito: #{szamla.vevo_id} | Teljesites:{" "}
-                              {formatDate(szamla.teljesites_kelte)}
-                            </div>
-                            <table className="table table-sm table-bordered mb-0 bg-white">
-                              <thead>
-                                <tr>
-                                  <th>Orszag</th>
-                                  <th>Meret</th>
-                                  <th>Anyag</th>
-                                  <th className="text-end">Db</th>
-                                  <th className="text-end">Egysegar</th>
-                                  <th className="text-end">Tetel osszeg</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(szamla.tetelek || []).map((item, index) => (
-                                  <tr
-                                    key={`${item.szamla_id}-${item.zaszlo_id}-${item.meret}-${item.anyag}-${index}`}
-                                  >
-                                    <td>{item.orszag || "-"}</td>
-                                    <td>{item.meret}</td>
-                                    <td>{item.anyag}</td>
-                                    <td className="text-end">{item.mennyiseg}</td>
-                                    <td className="text-end">
-                                      {formatCurrency(item.egyseg_ar)}
-                                    </td>
-                                    <td className="text-end">
-                                      {formatCurrency(item.tetel_osszeg)}
-                                    </td>
-                                  </tr>
-                                ))}
-                                {!szamla.tetelek?.length && (
-                                  <tr>
-                                    <td colSpan="6" className="text-center text-muted py-3">
-                                      A szamlahoz nem talalhato tetelsor.
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-                {!szamlak.length && (
-                  <tr>
-                    <td colSpan="7" className="text-center text-muted py-4">
-                      Nincs megjelenitheto szamla.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>

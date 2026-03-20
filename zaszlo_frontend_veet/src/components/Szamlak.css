@@ -1,0 +1,100 @@
+.szamlak-shell {
+  max-width: 1180px;
+}
+
+.szamlak-hero {
+  margin-bottom: 1.5rem;
+}
+
+.szamlak-eyebrow {
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.szamlak-hero h1 {
+  margin-bottom: 0.35rem;
+  font-size: clamp(1.9rem, 2vw + 1rem, 2.7rem);
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.szamlak-subtitle {
+  margin-bottom: 0;
+  max-width: 760px;
+  color: #475569;
+}
+
+.szamlak-alert {
+  border-radius: 1rem;
+}
+
+.szamlak-card {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 35%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.szamlak-card-header {
+  margin-bottom: 1rem;
+}
+
+.szamlak-card-header h2 {
+  margin-bottom: 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.szamlak-card-header p {
+  margin-bottom: 0;
+  color: #64748b;
+}
+
+.szamlak-table-wrap {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.szamlak-table thead th {
+  border-bottom-width: 1px;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.szamlak-row {
+  cursor: pointer;
+}
+
+.szamlak-empty {
+  padding: 2.5rem 1rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 1rem;
+  text-align: center;
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.szamlak-form {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.9), rgba(255, 255, 255, 0.95));
+}
+
+@media (max-width: 767px) {
+  .szamlak-card {
+    padding: 1rem;
+  }
+}

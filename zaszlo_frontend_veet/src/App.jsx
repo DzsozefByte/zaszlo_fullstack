@@ -113,7 +113,7 @@ function App() {
               />
             }
           />
-          <Route path="/szamlak" element={<Szamlak accessToken={accessToken} />} />
+          <Route path="/szamlak" element={<Szamlak accessToken={accessToken} user={user} />} />
           <Route 
               path="/admin" 
               element={
