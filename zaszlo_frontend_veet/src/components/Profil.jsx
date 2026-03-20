@@ -50,6 +50,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
         setUserData(normalized);
         setFormData(normalized);
       } catch (error) {
+        console.error("Nem sikerult betolteni a profilt.", error);
         navigate("/login");
       } finally {
         setLoading(false);

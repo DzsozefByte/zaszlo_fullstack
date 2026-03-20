@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import httpCommon from "../http-common.js";
 import "./AdminPanel.css";
 
@@ -48,25 +48,25 @@ const AdminPanel = ({ accessToken }) => {
     setUzenet({ tipus, szoveg });
   };
 
-  const initMeretDrafts = (meretek) => {
+  const initMeretDrafts = useCallback((meretek) => {
     setMeretDrafts(
       meretek.reduce((acc, meret) => {
         acc[meret.id] = { meret: meret.meret, szorzo: String(meret.szorzo ?? "1") };
         return acc;
       }, {})
     );
-  };
+  }, []);
 
-  const initAnyagDrafts = (anyagok) => {
+  const initAnyagDrafts = useCallback((anyagok) => {
     setAnyagDrafts(
       anyagok.reduce((acc, anyag) => {
         acc[anyag.id] = { anyag: anyag.anyag, szorzo: String(anyag.szorzo ?? "1") };
         return acc;
       }, {})
     );
-  };
+  }, []);
 
-  const csoportositas = (adatok) => {
+  const csoportositas = useCallback((adatok) => {
     const map = {};
     adatok.forEach((item) => {
       const key = `${item.orszag}-${item.orszagId}`;
@@ -81,14 +81,14 @@ const AdminPanel = ({ accessToken }) => {
       map[key].variaciok.push(item);
     });
     setCsoportositott(map);
-  };
+  }, []);
 
-  const fetchZaszlok = async () => {
+  const fetchZaszlok = useCallback(async () => {
     const res = await httpCommon.get("/zaszlok/admin-list", authConfig);
     csoportositas(res.data || []);
-  };
+  }, [authConfig, csoportositas]);
 
-  const fetchMeta = async () => {
+  const fetchMeta = useCallback(async () => {
     const res = await httpCommon.get("/zaszlok/admin/meta", authConfig);
     const metaData = res.data || { meretek: [], anyagok: [], kontinensek: [] };
 
@@ -107,9 +107,9 @@ const AdminPanel = ({ accessToken }) => {
       ...prev,
       kontinensId: prev.kontinensId || String(metaData.kontinensek[0]?.id || ""),
     }));
-  };
+  }, [authConfig, initAnyagDrafts, initMeretDrafts]);
 
-  const fetchFelhasznalok = async () => {
+  const fetchFelhasznalok = useCallback(async () => {
     const res = await httpCommon.get("/auth/admin/users", authConfig);
     const users = res.data?.users || [];
     setFelhasznalok(users);
@@ -119,7 +119,7 @@ const AdminPanel = ({ accessToken }) => {
         return acc;
       }, {})
     );
-  };
+  }, [authConfig]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -133,7 +133,7 @@ const AdminPanel = ({ accessToken }) => {
     if (accessToken) {
       loadData();
     }
-  }, [accessToken]);
+  }, [accessToken, fetchFelhasznalok, fetchMeta, fetchZaszlok]);
 
   const toggleRow = (orszagId) => {
     setNyitottOrszagok((prev) => ({ ...prev, [orszagId]: !prev[orszagId] }));

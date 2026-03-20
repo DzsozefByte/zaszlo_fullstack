@@ -4,16 +4,9 @@ const path = require("path");
 
 const Zaszlo = require("../models/zaszloModel");
 
-const IMAGE_UPLOAD_PATH = path.join(
-  "C:",
-  "Users",
-  "13d",
-  "Documents",
-  "zaszlo_fullstack",
-  "zaszlo_frontend_veet",
-  "public",
-  "images"
-);
+const IMAGE_UPLOAD_PATH = process.env.FLAG_IMAGE_UPLOAD_PATH
+  ? path.resolve(process.env.FLAG_IMAGE_UPLOAD_PATH)
+  : path.resolve(__dirname, "..", "..", "zaszlo_frontend_veet", "public", "images");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

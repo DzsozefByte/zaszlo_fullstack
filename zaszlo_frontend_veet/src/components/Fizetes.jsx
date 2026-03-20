@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Container, Row, Col, Card, Form, Button, ListGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { KosarContext } from "../context/KosarContext";
+import { KosarContext } from "../context/kosar-context.js";
 import { IoMdCart, IoMdCash, IoMdPin, IoMdCheckmarkCircle } from "react-icons/io";
 import httpCommon from "../http-common";
 

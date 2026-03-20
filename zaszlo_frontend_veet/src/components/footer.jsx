@@ -14,7 +14,7 @@ const Footer = () => {
                 <h4 className="m-0 fw-bold">Zászlómánia</h4>
             </div>
             <p className="text-secondary small">
-              Magyarország legnagyobb zászló webshopja. Prémium minőség, egyedi méretek és villámgyors szállítás közvetlenül a raktárról.
+              Magyarország legnagyobb zászló webshopja. Prémium minőség, egyedi méretek és villámgyors szállítás.
             </p>
           </div>
 
@@ -22,8 +22,6 @@ const Footer = () => {
             <h6 className="text-white fw-bold mb-3 text-uppercase small ls-1">Vásárlás</h6>
             <ul className="list-unstyled text-secondary small">
               <li className="mb-2"><Link to="/kereso" className="text-decoration-none text-secondary hover-white">Termékek</Link></li>
-              <li className="mb-2"><Link to="/akciok" className="text-decoration-none text-secondary hover-white">Akciók</Link></li>
-              <li className="mb-2"><Link to="/ujdonsagok" className="text-decoration-none text-secondary hover-white">Újdonságok</Link></li>
             </ul>
           </div>
 

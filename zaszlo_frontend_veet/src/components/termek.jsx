@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import httpCommon from "../http-common";
 import Button from "react-bootstrap/Button";
 import BreadcrumbNav from "./BreadcrumbNav";
-import { KosarContext } from "../context/KosarContext";
+import { KosarContext } from "../context/kosar-context.js";
 import { IoMdCart, IoMdCheckmarkCircleOutline, IoMdInformationCircleOutline } from "react-icons/io";
 
 const BASE_PRICE = 1800;
@@ -11,37 +11,80 @@ const BASE_PRICE = 1800;
 const Termek = () => {
   const { country } = useParams();
   const [variants, setVariants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedMaterial, setSelectedMaterial] = useState("");
   const { kosarbaRak, setIsMiniCartOpen } = useContext(KosarContext);
 
-  const fetchVariants = async () => {
-    try {
-      const response = await httpCommon.get(`/zaszlok/search?orszag=${encodeURIComponent(country)}`);
-      const data = Array.isArray(response.data) ? response.data : [response.data];
-      const exactMatches = data.filter(
-        (item) => item.orszag?.trim().toLowerCase() === country.trim().toLowerCase()
-      );
-      const finalData = exactMatches.length ? exactMatches : data;
-
-      setVariants(finalData);
-      if (finalData[0]) {
-        setSelectedSize(finalData[0].meret);
-        setSelectedMaterial(finalData[0].anyag);
-      }
-    } catch (error) {
-      console.error("Hiba tortent a termek valtozatok betoltese soran:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchVariants();
+    let isMounted = true;
+
+    const fetchVariants = async () => {
+      setLoading(true);
+      setLoadError("");
+
+      try {
+        const response = await httpCommon.get(`/zaszlok/search?orszag=${encodeURIComponent(country)}`);
+        const data = Array.isArray(response.data) ? response.data : [response.data];
+        const exactMatches = data.filter(
+          (item) => item.orszag?.trim().toLowerCase() === country.trim().toLowerCase()
+        );
+        const finalData = exactMatches.length ? exactMatches : data;
+
+        if (!isMounted) {
+          return;
+        }
+
+        setVariants(finalData);
+        setSelectedSize(finalData[0]?.meret || "");
+        setSelectedMaterial(finalData[0]?.anyag || "");
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Hiba tortent a termek valtozatok betoltese soran:", error);
+        setVariants([]);
+        setLoadError("A termek valtozatai jelenleg nem tolthetők be.");
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchVariants();
+
+    return () => {
+      isMounted = false;
+    };
   }, [country]);
 
-  if (!variants.length) {
+  if (loading) {
     return (
       <div className="text-center mt-5 p-5">
         <div className="spinner-border text-primary" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="container py-5">
+        <div className="alert alert-danger mb-0" role="alert">
+          {loadError}
+        </div>
+      </div>
+    );
+  }
+
+  if (!variants.length) {
+    return (
+      <div className="container py-5">
+        <div className="alert alert-warning mb-0" role="alert">
+          Ehhez az orszaghoz jelenleg nem talalhato megjelenitheto termekvariacio.
+        </div>
       </div>
     );
   }

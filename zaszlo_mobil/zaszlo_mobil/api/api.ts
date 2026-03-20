@@ -1,54 +1,59 @@
-/* api.js
- Access token memóriában → header-be teszi minden kérésnél.
- Refresh token HttpOnly cookie-ban → a @react-native-cookies/cookies könyvtár 
- vagy a withCredentials: true biztosítja, hogy a /refresh hívásoknál automatikusan elküldődjön.
- Interceptor automatikusan frissíti az access tokent, ha 401 jön.
- Logout törli az access tokent és a cookie-t a szerver oldalon.
-*/
-// npm install @react-native-cookies/cookies axios
-
 import axios from "axios";
-// csak az install kell !! az import nem
-//import { Cookies } from "@react-native-cookies/cookies";
 
-let accessToken = null;
+const buildFallbackBackendUrl = () => {
+  const configuredWebUrl = process.env.EXPO_PUBLIC_WEBAPP_URL;
 
-// ------------------- Access token kezelése -------------------
-export function setAccessToken(token) {
+  if (configuredWebUrl) {
+    try {
+      const parsedWebUrl = new URL(configuredWebUrl);
+      parsedWebUrl.port = "8080";
+      return parsedWebUrl.toString().replace(/\/$/, "");
+    } catch {
+      // Hibas URL eseten visszaesunk a lokalis backend cimre.
+    }
+  }
+
+  return "http://localhost:8080";
+};
+
+let accessToken: string | null = null;
+
+export function setAccessToken(token: string | null) {
   accessToken = token;
 }
 
-// ------------------- Axios instance -------------------
 const api = axios.create({
-  baseURL:  process.env.EXPO_PUBLIC_BACKEND_URL, //'http:10.210.71.116:8080', "http://192.168.1.65:8080/"
-  withCredentials: true, // cookie-k kezelése
-  timeout: 5000,
+  baseURL: process.env.EXPO_PUBLIC_BACKEND_URL || buildFallbackBackendUrl(),
+  withCredentials: true,
+  timeout: 10000,
 });
 
-// Request interceptor – hozzáadja az access token-t
 api.interceptors.request.use(
   async (config) => {
     if (accessToken) {
+      config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor – ha 401, próbáljuk refresh-elni
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh-token");
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isRefreshRequest) {
       originalRequest._retry = true;
+
       try {
         await refreshToken();
         return api(originalRequest);
-      } catch (err) {
-        return Promise.reject(err);
+      } catch (refreshError) {
+        return Promise.reject(refreshError);
       }
     }
 
@@ -56,21 +61,24 @@ api.interceptors.response.use(
   }
 );
 
-// ------------------- Refresh token -------------------
 async function refreshToken() {
   try {
-    // fetch vagy axios POST /refresh, a cookie automatikusan elküldődik
-    const response = await api.post("/auth/refresh", {}, { withCredentials: true });
-
-    // új access token memóriába
+    const response = await api.post("/auth/refresh-token", {}, { withCredentials: true });
     accessToken = response.data.accessToken;
-    console.log("Access token frissítve:", accessToken);
     return accessToken;
-  } catch (err) {
-    console.error("Refresh token hiba:", err.response?.data || err.message);
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error("Refresh token hiba:", err.response?.data || err.message);
+    } else {
+      console.error("Refresh token hiba:", err);
+    }
 
-    // logout a szerver oldalon, mert refresh token lejárt
-    await api.post("/auth/logout", {}, { withCredentials: true });
+    try {
+      await api.post("/auth/logout", {}, { withCredentials: true });
+    } catch {
+      // A sikertelen logout ne nyomja el az eredeti refresh hibat.
+    }
+
     accessToken = null;
     throw err;
   }

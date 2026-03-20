@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { KosarContext } from "../context/KosarContext";
+import { KosarContext } from "../context/kosar-context.js";
 import { Button, Card, Table, Container, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { IoMdTrash, IoMdAdd, IoMdRemove, IoMdCart, IoMdCloseCircle } from "react-icons/io";

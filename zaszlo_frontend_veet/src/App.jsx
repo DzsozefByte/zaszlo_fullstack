@@ -40,7 +40,8 @@ function App() {
         // FONTOS: Frissítésnél is mentsük el, hogy a Fizetes.jsx lássa!
         localStorage.setItem('token', newToken); 
       }
-      catch (err) {
+catch (error) {
+        console.warn("Nem sikerult frissiteni a munkamenetet.", error);
         setAccessToken("");
         setUser(null);
         localStorage.removeItem('token'); // Ha sikertelen, takarítsunk ki
@@ -55,6 +56,7 @@ function App() {
         const decoded = jwtDecode(accessToken);
         setUser(decoded);
       } catch (error) {
+        console.warn("A token dekodolasa sikertelen volt.", error);
         setUser(null);
       }
     } else {

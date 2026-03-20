@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Container, Spinner, Table } from "react-bootstrap";
 import httpCommon from "../http-common";
 import "./Szamlak.css";
@@ -37,20 +37,20 @@ const Szamlak = ({ accessToken, user }) => {
     setUzenet({ tipus, szoveg });
   };
 
-  const fetchSajatSzamlak = async () => {
+  const fetchSajatSzamlak = useCallback(async () => {
     const response = await httpCommon.get("/szamlak", authConfig);
     setSzamlak(Array.isArray(response.data) ? response.data : []);
-  };
+  }, [authConfig]);
 
-  const fetchAdminSzamlak = async () => {
+  const fetchAdminSzamlak = useCallback(async () => {
     const response = await httpCommon.get("/szamlak/admin", authConfig);
     setAdminSzamlak(Array.isArray(response.data) ? response.data : []);
-  };
+  }, [authConfig]);
 
-  const fetchFizetesiModok = async () => {
+  const fetchFizetesiModok = useCallback(async () => {
     const response = await httpCommon.get("/szamlak/payment-methods", authConfig);
     setFizetesiModok(Array.isArray(response.data) ? response.data : []);
-  };
+  }, [authConfig]);
 
   useEffect(() => {
     const loadSajatSzamlak = async () => {
@@ -76,7 +76,7 @@ const Szamlak = ({ accessToken, user }) => {
     };
 
     loadSajatSzamlak();
-  }, [accessToken, authConfig]);
+  }, [accessToken, fetchSajatSzamlak]);
 
   useEffect(() => {
     const loadAdminAdatok = async () => {
@@ -103,7 +103,7 @@ const Szamlak = ({ accessToken, user }) => {
     };
 
     loadAdminAdatok();
-  }, [accessToken, authConfig, isAdmin]);
+  }, [accessToken, fetchAdminSzamlak, fetchFizetesiModok, isAdmin]);
 
   const toggleSzamla = (szamlaId) => {
     setNyitottSzamlak((prev) => ({ ...prev, [szamlaId]: !prev[szamlaId] }));

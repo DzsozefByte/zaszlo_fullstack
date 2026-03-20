@@ -12,7 +12,7 @@ import {
 } from "react-icons/io";
 import { Link, useNavigate } from "react-router-dom";
 import httpCommon from "../http-common";
-import { KosarContext } from "../context/KosarContext";
+import { KosarContext } from "../context/kosar-context.js";
 
 const Header = ({ user, logout }) => {
   const [searchText, setSearchText] = useState("");

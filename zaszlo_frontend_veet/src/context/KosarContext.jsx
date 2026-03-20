@@ -1,6 +1,5 @@
-import React, { createContext, useState, useEffect } from "react";
-
-export const KosarContext = createContext();
+import React, { useEffect, useState } from "react";
+import { KosarContext } from "./kosar-context.js";
 
 export const KosarProvider = ({ children }) => {
     // 1. KOSÁR BETÖLTÉSE: Első indításkor megnézi a localStorage-ot
@@ -24,37 +23,42 @@ export const KosarProvider = ({ children }) => {
     const vegosszeg = kosar.reduce((acc, item) => acc + (item.ar * item.db), 0);
 
     const kosarbaRak = (termek) => {
-        const letezoElem = kosar.find(
-            (item) => item.id === termek.id && item.meret === termek.meret && item.anyag === termek.anyag
-        );
+        setKosar((aktualisKosar) => {
+            const letezoElem = aktualisKosar.find(
+                (item) => item.id === termek.id && item.meret === termek.meret && item.anyag === termek.anyag
+            );
 
-        if (letezoElem) {
-            setKosar(
-                kosar.map((item) =>
+            if (letezoElem) {
+                return aktualisKosar.map((item) =>
                     item.id === termek.id && item.meret === termek.meret && item.anyag === termek.anyag
                         ? { ...item, db: item.db + 1 }
                         : item
-                )
-            );
-        } else {
-            setKosar([...kosar, { ...termek, db: 1 }]);
-        }
+                );
+            }
+
+            return [...aktualisKosar, { ...termek, db: 1 }];
+        });
     };
 
     const torlesKosarbol = (id, meret, anyag) => {
-        setKosar(kosar.filter(
-            (item) => !(item.id === id && item.meret === meret && item.anyag === anyag)
-        ));
+        setKosar((aktualisKosar) =>
+            aktualisKosar.filter(
+                (item) => !(item.id === id && item.meret === meret && item.anyag === anyag)
+            )
+        );
     };
 
     const dbModositas = (id, meret, anyag, mennyiseg) => {
-        setKosar(kosar.map((item) => {
-            if (item.id === id && item.meret === meret && item.anyag === anyag) {
-                const ujDb = item.db + mennyiseg;
-                return ujDb > 0 ? { ...item, db: ujDb } : item;
-            }
-            return item;
-        }));
+        setKosar((aktualisKosar) =>
+            aktualisKosar.flatMap((item) => {
+                if (item.id === id && item.meret === meret && item.anyag === anyag) {
+                    const ujDb = item.db + mennyiseg;
+                    return ujDb > 0 ? [{ ...item, db: ujDb }] : [];
+                }
+
+                return [item];
+            })
+        );
     };
 
     return (
