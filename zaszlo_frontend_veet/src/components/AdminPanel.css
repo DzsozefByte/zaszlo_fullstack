@@ -220,19 +220,406 @@
   font-weight: 700;
 }
 
+.admin-table-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-form-actions .btn {
+  min-width: 160px;
+}
+
+.admin-inline-form .btn,
+.admin-base-table .btn,
+.admin-user-table .btn,
+.admin-variant-detail-table .btn {
+  white-space: nowrap;
+}
+
 @media (min-width: 1100px) {
   .admin-grid-two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+@media (max-width: 991.98px) {
+  .admin-shell {
+    padding: 1.35rem 0 1.75rem;
+  }
+
+  .admin-orb-one {
+    width: 180px;
+    height: 180px;
+    left: -70px;
+    top: 180px;
+  }
+
+  .admin-orb-two {
+    width: 220px;
+    height: 220px;
+    right: -95px;
+    top: 20px;
+  }
+
+  .admin-hero h1 {
+    font-size: clamp(1.9rem, 5vw, 2.7rem);
+    line-height: 1.05;
+  }
+
+  .admin-card {
+    padding: 0.95rem;
+  }
+}
+
 @media (max-width: 767.98px) {
+  .admin-shell {
+    padding: 1rem 0 1.4rem;
+  }
+
+  .admin-container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .admin-orb {
+    opacity: 0.28;
+  }
+
+  .admin-hero {
+    margin-bottom: 1rem;
+  }
+
+  .admin-hero h1 {
+    font-size: clamp(1.65rem, 8vw, 2.15rem);
+    line-height: 1.06;
+    margin-bottom: 0.4rem;
+  }
+
+  .admin-eyebrow {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+  }
+
+  .admin-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .admin-card {
+    padding: 0.85rem;
+    border-radius: 0.9rem;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .admin-card-header h2 {
+    font-size: 1.08rem;
+    line-height: 1.2;
+  }
+
+  .admin-card-header p {
+    margin-bottom: 0.85rem;
+    font-size: 0.92rem;
+  }
+
   .admin-toolbar,
   .admin-pagination {
     justify-content: stretch;
   }
 
+  .admin-toolbar {
+    align-items: stretch;
+  }
+
+  .admin-toolbar-copy {
+    width: 100%;
+  }
+
   .admin-search-wrap {
     width: 100%;
+  }
+
+  .admin-pagination {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-pagination .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-pick-box {
+    padding: 0.8rem;
+  }
+
+  .admin-pick-box > .d-flex {
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+    gap: 0.45rem;
+  }
+
+  .admin-chip-wrap {
+    gap: 0.5rem;
+  }
+
+  .admin-chip {
+    min-height: 40px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.84rem;
+  }
+
+  .admin-form-actions {
+    display: grid !important;
+    gap: 0.6rem;
+    text-align: initial !important;
+  }
+
+  .admin-form-actions .btn {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  .admin-inline-form > [class*="col-"],
+  .admin-card form > .col-3,
+  .admin-card form > .col-5,
+  .admin-card form > .col-6,
+  .admin-card form > .col-7 {
+    width: 100%;
+  }
+
+  .admin-card form .form-control,
+  .admin-card form .form-select,
+  .admin-card form .btn {
+    min-height: 46px;
+  }
+
+  .admin-table-wrap,
+  .admin-subtable {
+    overflow: visible;
+    border-radius: 0.9rem;
+  }
+
+  .admin-base-table,
+  .admin-user-table,
+  .admin-flag-table,
+  .admin-variant-detail-table {
+    margin-bottom: 0;
+  }
+
+  .admin-base-table thead,
+  .admin-user-table thead,
+  .admin-flag-table thead,
+  .admin-variant-detail-table thead {
+    display: none;
+  }
+
+  .admin-base-table,
+  .admin-base-table tbody,
+  .admin-base-table tr,
+  .admin-base-table td,
+  .admin-user-table,
+  .admin-user-table tbody,
+  .admin-user-table tr,
+  .admin-user-table td,
+  .admin-flag-table,
+  .admin-flag-table tbody,
+  .admin-flag-table tr,
+  .admin-flag-table td,
+  .admin-variant-detail-table,
+  .admin-variant-detail-table tbody,
+  .admin-variant-detail-table tr,
+  .admin-variant-detail-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-base-table tbody,
+  .admin-user-table tbody,
+  .admin-flag-table tbody,
+  .admin-variant-detail-table tbody {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.75rem;
+    background: rgba(15, 118, 110, 0.04);
+  }
+
+  .admin-base-table tr,
+  .admin-user-table tr,
+  .admin-flag-table tr,
+  .admin-variant-detail-table tr {
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    border-radius: 0.9rem;
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .admin-base-table td,
+  .admin-user-table td,
+  .admin-flag-table td,
+  .admin-variant-detail-table td {
+    padding: 0.7rem 0.85rem;
+    border: 0 !important;
+    text-align: left !important;
+  }
+
+  .admin-base-table td + td,
+  .admin-user-table td + td,
+  .admin-flag-table td + td,
+  .admin-variant-detail-table td + td {
+    border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .admin-base-table td::before,
+  .admin-user-table td::before,
+  .admin-flag-table td::before,
+  .admin-variant-detail-table td::before {
+    display: block;
+    margin-bottom: 0.28rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: var(--admin-muted);
+  }
+
+  .admin-base-table td[colspan],
+  .admin-user-table td[colspan],
+  .admin-flag-table td[colspan],
+  .admin-variant-detail-table td[colspan] {
+    padding: 1rem !important;
+    text-align: center !important;
+  }
+
+  .admin-base-table td[colspan]::before,
+  .admin-user-table td[colspan]::before,
+  .admin-flag-table td[colspan]::before,
+  .admin-variant-detail-table td[colspan]::before {
+    display: none;
+  }
+
+  .admin-flag-table td[colspan] .bg-body-tertiary {
+    margin: -1rem;
+    text-align: left;
+  }
+
+  .admin-base-table .d-flex,
+  .admin-user-table .d-flex,
+  .admin-flag-table .d-flex,
+  .admin-variant-detail-table .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .admin-base-table .d-flex .btn,
+  .admin-user-table .d-flex .btn,
+  .admin-flag-table .d-flex .btn,
+  .admin-variant-detail-table .d-flex .btn,
+  .admin-user-table td:last-child .btn,
+  .admin-flag-table td:last-child .btn,
+  .admin-variant-detail-table td:last-child .btn {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  .admin-flag-table .bg-body-tertiary {
+    padding: 0.75rem !important;
+  }
+
+  .admin-flag-thumb {
+    width: min(100%, 110px);
+    height: auto;
+    aspect-ratio: 56 / 36;
+  }
+
+  .admin-base-table-size td:nth-child(1)::before,
+  .admin-base-table-material td:nth-child(1)::before,
+  .admin-user-table td:nth-child(1)::before,
+  .admin-variant-detail-table td:nth-child(1)::before {
+    content: "ID";
+  }
+
+  .admin-base-table-size td:nth-child(2)::before {
+    content: "Meret";
+  }
+
+  .admin-base-table-material td:nth-child(2)::before {
+    content: "Anyag";
+  }
+
+  .admin-base-table-size td:nth-child(3)::before,
+  .admin-base-table-material td:nth-child(3)::before {
+    content: "Szorzo";
+  }
+
+  .admin-base-table-size td:nth-child(4)::before,
+  .admin-base-table-material td:nth-child(4)::before,
+  .admin-variant-detail-table td:nth-child(4)::before {
+    content: "Muvelet";
+  }
+
+  .admin-user-table td:nth-child(2)::before {
+    content: "Nev";
+  }
+
+  .admin-user-table td:nth-child(3)::before {
+    content: "Email";
+  }
+
+  .admin-user-table td:nth-child(4)::before {
+    content: "Jogosultsag";
+  }
+
+  .admin-user-table td:nth-child(5)::before {
+    content: "Muvelet";
+  }
+
+  .admin-flag-table td:nth-child(1)::before {
+    content: "Nyitas";
+  }
+
+  .admin-flag-table td:nth-child(2)::before {
+    content: "Kep";
+  }
+
+  .admin-flag-table td:nth-child(3)::before {
+    content: "Orszag";
+  }
+
+  .admin-flag-table td:nth-child(4)::before {
+    content: "Kontinens";
+  }
+
+  .admin-flag-table td:nth-child(5)::before {
+    content: "Variaciok";
+  }
+
+  .admin-flag-table td:nth-child(6)::before {
+    content: "Muvelet";
+  }
+
+  .admin-variant-detail-table td:nth-child(2)::before {
+    content: "Meret";
+  }
+
+  .admin-variant-detail-table td:nth-child(3)::before {
+    content: "Anyag";
+  }
+}
+
+@media (max-width: 479.98px) {
+  .admin-pagination {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-card {
+    padding: 0.8rem;
+  }
+
+  .admin-base-table tbody,
+  .admin-user-table tbody,
+  .admin-flag-table tbody,
+  .admin-variant-detail-table tbody {
+    padding: 0.55rem;
   }
 }

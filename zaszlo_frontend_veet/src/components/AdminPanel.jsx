@@ -646,7 +646,7 @@ const AdminPanel = ({ accessToken }) => {
                 </div>
               </div>
 
-              <div className="col-12 text-end">
+              <div className="col-12 text-end admin-form-actions">
                 <button type="submit" className="btn admin-btn-primary">
                   Variációk létrehozása
                 </button>
@@ -706,7 +706,7 @@ const AdminPanel = ({ accessToken }) => {
                 </select>
               </div>
 
-              <div className="col-12 d-flex justify-content-end gap-2">
+              <div className="col-12 d-flex justify-content-end gap-2 admin-form-actions">
                 <button
                   type="button"
                   className="btn btn-outline-danger"
@@ -734,7 +734,7 @@ const AdminPanel = ({ accessToken }) => {
               <div className="col-12 col-xl-6">
                 <h3 className="admin-section-title">Méretek</h3>
 
-                <form onSubmit={handleCreateMeret} className="row g-2 mb-3">
+                <form onSubmit={handleCreateMeret} className="row g-2 mb-3 admin-inline-form">
                   <div className="col-6">
                     <input
                       type="text"
@@ -765,7 +765,7 @@ const AdminPanel = ({ accessToken }) => {
                 </form>
 
                 <div className="table-responsive admin-subtable">
-                  <table className="table table-sm align-middle mb-0">
+                  <table className="table table-sm align-middle mb-0 admin-base-table admin-base-table-size">
                     <thead>
                       <tr>
                         <th>ID</th>
@@ -833,7 +833,7 @@ const AdminPanel = ({ accessToken }) => {
               <div className="col-12 col-xl-6">
                 <h3 className="admin-section-title">Anyagok</h3>
 
-                <form onSubmit={handleCreateAnyag} className="row g-2 mb-3">
+                <form onSubmit={handleCreateAnyag} className="row g-2 mb-3 admin-inline-form">
                   <div className="col-6">
                     <input
                       type="text"
@@ -864,7 +864,7 @@ const AdminPanel = ({ accessToken }) => {
                 </form>
 
                 <div className="table-responsive admin-subtable">
-                  <table className="table table-sm align-middle mb-0">
+                  <table className="table table-sm align-middle mb-0 admin-base-table admin-base-table-material">
                     <thead>
                       <tr>
                         <th>ID</th>
@@ -976,7 +976,7 @@ const AdminPanel = ({ accessToken }) => {
               </div>
             </div>
 
-            <div className="table-responsive">
+            <div className="table-responsive admin-table-wrap">
               <table className="table table-sm align-middle admin-user-table">
                 <thead>
                   <tr>
@@ -1057,7 +1057,7 @@ const AdminPanel = ({ accessToken }) => {
             </div>
           </div>
 
-          <div className="table-responsive">
+          <div className="table-responsive admin-table-wrap">
             <table className="table align-middle admin-flag-table mb-0">
               <thead>
                 <tr>
@@ -1109,7 +1109,7 @@ const AdminPanel = ({ accessToken }) => {
                       <tr>
                         <td colSpan="6" className="p-0">
                           <div className="p-3 bg-body-tertiary">
-                            <table className="table table-sm table-bordered mb-0 bg-white">
+                            <table className="table table-sm table-bordered mb-0 bg-white admin-variant-detail-table">
                               <thead>
                                 <tr>
                                   <th>ID</th>
