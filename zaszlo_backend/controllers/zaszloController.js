@@ -145,6 +145,7 @@ exports.createMeret = async (req, res) => {
     return res.status(201).json({
       message: "Uj meret sikeresen rogzitve.",
       meret: created,
+      generatedVariantCount: created.generatedVariantCount || 0,
     });
   } catch (error) {
     if (error.code === "DUPLICATE_SIZE") {
@@ -215,6 +216,7 @@ exports.createAnyag = async (req, res) => {
     return res.status(201).json({
       message: "Uj anyag sikeresen rogzitve.",
       anyag: created,
+      generatedVariantCount: created.generatedVariantCount || 0,
     });
   } catch (error) {
     if (error.code === "DUPLICATE_MATERIAL") {

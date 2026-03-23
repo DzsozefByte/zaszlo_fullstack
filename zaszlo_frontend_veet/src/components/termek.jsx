@@ -7,6 +7,13 @@ import { KosarContext } from "../context/kosar-context.js";
 import { IoMdCart, IoMdCheckmarkCircleOutline, IoMdInformationCircleOutline } from "react-icons/io";
 
 const BASE_PRICE = 1800;
+const getUniqueValues = (items) => [...new Set(items.filter(Boolean))];
+const resolveVariant = (variantList, size, material) =>
+  variantList.find((item) => item.meret === size && item.anyag === material) ||
+  variantList.find((item) => item.meret === size) ||
+  variantList.find((item) => item.anyag === material) ||
+  variantList[0] ||
+  null;
 
 const Termek = () => {
   const { country } = useParams();
@@ -61,6 +68,25 @@ const Termek = () => {
     };
   }, [country]);
 
+  useEffect(() => {
+    if (!variants.length) {
+      return;
+    }
+
+    const nextVariant = resolveVariant(variants, selectedSize, selectedMaterial);
+    if (!nextVariant) {
+      return;
+    }
+
+    if (selectedSize !== nextVariant.meret) {
+      setSelectedSize(nextVariant.meret);
+    }
+
+    if (selectedMaterial !== nextVariant.anyag) {
+      setSelectedMaterial(nextVariant.anyag);
+    }
+  }, [variants, selectedMaterial, selectedSize]);
+
   if (loading) {
     return (
       <div className="text-center mt-5 p-5">
@@ -90,12 +116,13 @@ const Termek = () => {
   }
 
   const product = variants[0];
-  const currentVariant =
-    variants.find((item) => item.meret === selectedSize && item.anyag === selectedMaterial) ||
-    product;
-
-  const availableSizes = [...new Set(variants.map((item) => item.meret))];
-  const availableMaterials = [...new Set(variants.map((item) => item.anyag))];
+  const currentVariant = resolveVariant(variants, selectedSize, selectedMaterial) || product;
+  const availableSizes = getUniqueValues(variants.map((item) => item.meret));
+  const availableMaterials = getUniqueValues(
+    variants
+      .filter((item) => item.meret === currentVariant.meret)
+      .map((item) => item.anyag)
+  );
 
   const meretSzorzo = Number(currentVariant.meret_szorzo) || 1;
   const anyagSzorzo = Number(currentVariant.anyag_szorzo) || 1;
@@ -103,6 +130,34 @@ const Termek = () => {
 
   const orszagId = Number(currentVariant.orszagId || currentVariant.id);
   const variantId = Number(currentVariant.variantId || currentVariant.id);
+  const activeSize = currentVariant.meret || "";
+  const activeMaterial = currentVariant.anyag || "";
+
+  const handleSizeChange = (nextSize) => {
+    const nextVariant =
+      variants.find((item) => item.meret === nextSize && item.anyag === activeMaterial) ||
+      variants.find((item) => item.meret === nextSize);
+
+    if (!nextVariant) {
+      return;
+    }
+
+    setSelectedSize(nextVariant.meret);
+    setSelectedMaterial(nextVariant.anyag);
+  };
+
+  const handleMaterialChange = (nextMaterial) => {
+    const nextVariant =
+      variants.find((item) => item.meret === activeSize && item.anyag === nextMaterial) ||
+      variants.find((item) => item.anyag === nextMaterial);
+
+    if (!nextVariant) {
+      return;
+    }
+
+    setSelectedSize(nextVariant.meret);
+    setSelectedMaterial(nextVariant.anyag);
+  };
 
   const handleAddToCart = () => {
     kosarbaRak({
@@ -110,8 +165,8 @@ const Termek = () => {
       variantId,
       orszagId,
       orszag: product.orszag,
-      meret: selectedSize,
-      anyag: selectedMaterial,
+      meret: activeSize,
+      anyag: activeMaterial,
       ar: vegsoAr,
       kep: `/images/${orszagId}.png`,
     });
@@ -164,8 +219,8 @@ const Termek = () => {
                   </label>
                 <select
                   className="form-select form-select-lg termek-size-select"
-                  value={selectedSize}
-                  onChange={(e) => setSelectedSize(e.target.value)}
+                  value={activeSize}
+                  onChange={(e) => handleSizeChange(e.target.value)}
                 >
                   {availableSizes.map((size) => (
                     <option key={size} value={size}>
@@ -183,10 +238,11 @@ const Termek = () => {
                   {availableMaterials.map((material) => (
                     <button
                       key={material}
+                      type="button"
                       className={`btn ${
-                        selectedMaterial === material ? "btn-primary" : "btn-outline-secondary"
+                        activeMaterial === material ? "btn-primary" : "btn-outline-secondary"
                       } termek-material-btn`}
-                      onClick={() => setSelectedMaterial(material)}
+                      onClick={() => handleMaterialChange(material)}
                     >
                       {material}
                     </button>

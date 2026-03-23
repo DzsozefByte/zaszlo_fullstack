@@ -90,6 +90,48 @@ class Zaszlok {
     return deleted.affectedRows;
   }
 
+  static async createMissingVariantsForNewSize(connection, meretId) {
+    const [result] = await connection.query(
+      `
+      INSERT INTO zaszlok (meret, anyag, orszagId)
+      SELECT ?, source.anyag, source.orszagId
+      FROM (
+        SELECT DISTINCT orszagId, anyag
+        FROM zaszlok
+      ) AS source
+      LEFT JOIN zaszlok existing
+        ON existing.orszagId = source.orszagId
+       AND existing.anyag = source.anyag
+       AND existing.meret = ?
+      WHERE existing.id IS NULL
+      `,
+      [meretId, meretId]
+    );
+
+    return result.affectedRows || 0;
+  }
+
+  static async createMissingVariantsForNewAnyag(connection, anyagId) {
+    const [result] = await connection.query(
+      `
+      INSERT INTO zaszlok (meret, anyag, orszagId)
+      SELECT source.meret, ?, source.orszagId
+      FROM (
+        SELECT DISTINCT orszagId, meret
+        FROM zaszlok
+      ) AS source
+      LEFT JOIN zaszlok existing
+        ON existing.orszagId = source.orszagId
+       AND existing.meret = source.meret
+       AND existing.anyag = ?
+      WHERE existing.id IS NULL
+      `,
+      [anyagId, anyagId]
+    );
+
+    return result.affectedRows || 0;
+  }
+
   static async getKontinensIdByName(kontinens) {
     if (!kontinens || typeof kontinens !== "string") {
       return null;
@@ -160,25 +202,44 @@ class Zaszlok {
 
   static async addMeret(data) {
     const { meret, szorzo } = data;
-    const [duplicate] = await db.query(
-      "SELECT id FROM meretek WHERE LOWER(meret) = LOWER(?) LIMIT 1",
-      [meret]
-    );
-    if (duplicate.length) {
-      const error = new Error("Ilyen meret mar letezik.");
-      error.code = "DUPLICATE_SIZE";
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [duplicate] = await connection.query(
+        "SELECT id FROM meretek WHERE LOWER(meret) = LOWER(?) LIMIT 1",
+        [meret]
+      );
+      if (duplicate.length) {
+        const error = new Error("Ilyen meret mar letezik.");
+        error.code = "DUPLICATE_SIZE";
+        throw error;
+      }
+
+      const [insertResult] = await connection.query(
+        "INSERT INTO meretek (meret, szorzo) VALUES (?, ?)",
+        [meret, szorzo]
+      );
+      const generatedVariantCount = await this.createMissingVariantsForNewSize(
+        connection,
+        insertResult.insertId
+      );
+
+      const [rows] = await connection.query("SELECT id, meret, szorzo FROM meretek WHERE id = ?", [
+        insertResult.insertId,
+      ]);
+
+      await connection.commit();
+      return {
+        ...rows[0],
+        generatedVariantCount,
+      };
+    } catch (error) {
+      await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
-
-    const [insertResult] = await db.query("INSERT INTO meretek (meret, szorzo) VALUES (?, ?)", [
-      meret,
-      szorzo,
-    ]);
-
-    const [rows] = await db.query("SELECT id, meret, szorzo FROM meretek WHERE id = ?", [
-      insertResult.insertId,
-    ]);
-    return rows[0];
   }
 
   static async updateMeret(id, data) {
@@ -243,25 +304,44 @@ class Zaszlok {
 
   static async addAnyag(data) {
     const { anyag, szorzo } = data;
-    const [duplicate] = await db.query(
-      "SELECT id FROM anyagok WHERE LOWER(anyag) = LOWER(?) LIMIT 1",
-      [anyag]
-    );
-    if (duplicate.length) {
-      const error = new Error("Ilyen anyag mar letezik.");
-      error.code = "DUPLICATE_MATERIAL";
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [duplicate] = await connection.query(
+        "SELECT id FROM anyagok WHERE LOWER(anyag) = LOWER(?) LIMIT 1",
+        [anyag]
+      );
+      if (duplicate.length) {
+        const error = new Error("Ilyen anyag mar letezik.");
+        error.code = "DUPLICATE_MATERIAL";
+        throw error;
+      }
+
+      const [insertResult] = await connection.query(
+        "INSERT INTO anyagok (anyag, szorzo) VALUES (?, ?)",
+        [anyag, szorzo]
+      );
+      const generatedVariantCount = await this.createMissingVariantsForNewAnyag(
+        connection,
+        insertResult.insertId
+      );
+
+      const [rows] = await connection.query("SELECT id, anyag, szorzo FROM anyagok WHERE id = ?", [
+        insertResult.insertId,
+      ]);
+
+      await connection.commit();
+      return {
+        ...rows[0],
+        generatedVariantCount,
+      };
+    } catch (error) {
+      await connection.rollback();
       throw error;
+    } finally {
+      connection.release();
     }
-
-    const [insertResult] = await db.query("INSERT INTO anyagok (anyag, szorzo) VALUES (?, ?)", [
-      anyag,
-      szorzo,
-    ]);
-
-    const [rows] = await db.query("SELECT id, anyag, szorzo FROM anyagok WHERE id = ?", [
-      insertResult.insertId,
-    ]);
-    return rows[0];
   }
 
   static async updateAnyag(id, data) {

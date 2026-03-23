@@ -372,13 +372,22 @@ const AdminPanel = ({ accessToken }) => {
   const handleCreateMeret = async (e) => {
     e.preventDefault();
     try {
-      await httpCommon.post(
+      const res = await httpCommon.post(
         "/zaszlok/admin/sizes",
         { meret: newMeret.meret, szorzo: Number(newMeret.szorzo) },
         authConfig
       );
       setNewMeret({ meret: "", szorzo: "1" });
-      await fetchMeta();
+      await Promise.all([fetchMeta(), fetchZaszlok()]);
+      const generatedVariantCount = Number(res.data?.generatedVariantCount) || 0;
+      if (res.data?.localizedSuccessMessage) {
+        showMessage("success", res.data.localizedSuccessMessage);
+        return;
+      }
+      if (generatedVariantCount) {
+        showMessage("success", `Uj meret letrehozva, ${generatedVariantCount} variacioval bovitve.`);
+        return;
+      }
       showMessage("success", "Új méret sikeresen létrehozva.");
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt az új méret mentése során."));
@@ -396,7 +405,7 @@ const AdminPanel = ({ accessToken }) => {
         { meret: draft.meret, szorzo: Number(draft.szorzo) },
         authConfig
       );
-      await fetchMeta();
+      await Promise.all([fetchMeta(), fetchZaszlok()]);
       showMessage("success", `Méret (#${id}) sikeresen módosítva.`);
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt a méret módosításakor."));
@@ -419,13 +428,18 @@ const AdminPanel = ({ accessToken }) => {
   const handleCreateAnyag = async (e) => {
     e.preventDefault();
     try {
-      await httpCommon.post(
+      const res = await httpCommon.post(
         "/zaszlok/admin/materials",
         { anyag: newAnyag.anyag, szorzo: Number(newAnyag.szorzo) },
         authConfig
       );
       setNewAnyag({ anyag: "", szorzo: "1" });
-      await fetchMeta();
+      await Promise.all([fetchMeta(), fetchZaszlok()]);
+      const generatedVariantCount = Number(res.data?.generatedVariantCount) || 0;
+      if (generatedVariantCount) {
+        showMessage("success", `Uj anyag letrehozva, ${generatedVariantCount} variacioval bovitve.`);
+        return;
+      }
       showMessage("success", "Új anyag sikeresen létrehozva.");
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt az új anyag mentése során."));
@@ -443,7 +457,7 @@ const AdminPanel = ({ accessToken }) => {
         { anyag: draft.anyag, szorzo: Number(draft.szorzo) },
         authConfig
       );
-      await fetchMeta();
+      await Promise.all([fetchMeta(), fetchZaszlok()]);
       showMessage("success", `Anyag (#${id}) sikeresen módosítva.`);
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt az anyag módosításakor."));
