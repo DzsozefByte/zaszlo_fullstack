@@ -6,8 +6,40 @@ body,
   overflow-x: hidden;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
+  min-height: 100vh;
   background-color: #f8f9fa;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1 0 auto;
+}
+
+.kosar-page {
+  padding-bottom: 2rem;
+}
+
+.kosar-summary-col {
+  align-self: flex-start;
+}
+
+.kosar-summary-card,
+.checkout-summary-card {
+  position: sticky;
+  top: calc(72px + 1.5rem);
+  z-index: 1;
 }
 
 .navbar .dropdown-menu {
@@ -42,6 +74,10 @@ body {
   .checkout-summary-card {
     position: static !important;
     top: auto !important;
+  }
+
+  .kosar-summary-col {
+    align-self: auto;
   }
 }
 

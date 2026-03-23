@@ -81,7 +81,9 @@ catch (error) {
   return (
     <KosarProvider>
       <Router>
+        <div className="app-shell">
         <Header user={user} logout={logout} />
+        <main className="app-main">
         
         <Routes>
           <Route path="/" element={<Fooldal />} />
@@ -125,7 +127,9 @@ catch (error) {
               } 
             />
         </Routes>
+        </main>
         <Footer />
+        </div>
       </Router>
     </KosarProvider>
   );

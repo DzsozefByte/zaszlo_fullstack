@@ -27,7 +27,7 @@ const Kosar = ({ accessToken }) => {
 
   if (kosar.length === 0) {
     return (
-      <Container className="py-5 mt-4 mt-md-5 text-center">
+      <Container className="py-5 mt-4 mt-md-5 text-center kosar-page">
         <div className="mb-4">
           <IoMdCart size={80} className="text-light bg-secondary p-3 rounded-circle opacity-50" />
         </div>
@@ -41,7 +41,7 @@ const Kosar = ({ accessToken }) => {
   }
 
   return (
-    <Container className="py-4 py-md-5">
+    <Container className="py-4 py-md-5 kosar-page">
       <div className="d-flex justify-content-between align-items-center mb-4 kosar-title-wrap">
         <h2 className="fw-bold d-flex align-items-center gap-2 m-0">
           <IoMdCart /> Kosár tartalma
@@ -166,8 +166,8 @@ const Kosar = ({ accessToken }) => {
           </div>
         </Col>
 
-        <Col lg={4}>
-          <Card className="border-0 shadow-sm rounded-4 kosar-summary-card" style={{ top: "100px" }}>
+        <Col lg={4} className="kosar-summary-col">
+          <Card className="border-0 shadow-sm rounded-4 kosar-summary-card">
             <Card.Body className="p-4">
               <h5 className="fw-bold mb-4">Összesítés</h5>
               <div className="d-flex justify-content-between mb-2">
