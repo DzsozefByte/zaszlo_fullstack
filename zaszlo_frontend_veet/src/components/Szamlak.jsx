@@ -172,8 +172,7 @@ const Szamlak = ({ accessToken, user }) => {
         <p className="szamlak-eyebrow">Számlák</p>
         <h1>Korábbi vásárlásaim és számláim</h1>
         <p className="szamlak-subtitle">
-          Itt találod a saját számláidat, adminisztrátorként pedig az összes számlát és a
-          fizetési módok kezelését is.
+          Itt találod a saját számláidat.
         </p>
       </header>
 
