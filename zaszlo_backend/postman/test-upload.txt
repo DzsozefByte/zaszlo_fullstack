@@ -1,1 +1,1 @@
-Ezt a fájlt a Postman feltöltési végpontjának tesztje használja.
+This file is used by the Postman upload endpoint test.

@@ -1,15 +1,28 @@
 # Postman collection
 
-Importald a `zaszlo_backend.postman_collection.json` fajlt Postmanbe, es a collection elejerol futtasd vegig.
+Ez a mappa a backend integracios tesztjeihez tartozik.
 
-Mire figyelj:
+Fajlok:
 
-- A `baseUrl` alapbol `http://localhost:8080`, mert a backend a `bin/www` alapjan ezen a porton indul.
-- Az `adminEmail` es `adminPassword` valtozokat toltsd ki egy valodi admin felhasznalo adataival.
-- Az `uploadFilePath` alapbol a `postman/test-upload.txt` fajlra mutat, igy az upload vegpont helyben rogton kiprobalhato.
-- A 07 Optional Dangerous Méret és Anyag Admin` mappa csak akkor fusson, ha az `allowDangerousAdminChanges` valtozot `true` ertekre allitod.
+- `zaszlo_backend.postman_collection.json`: importalhato Postman collection
+- `generate_collection.js`: a collection generator scriptje
+- `test-upload.txt`: helyi minta fajl az upload requesthez
 
-Miert kulon veszelyes ez a mappa:
+Gyors inditas:
 
-- A `POST/PUT/DELETE /zaszlok/admin/sizes*` es `POST/PUT/DELETE /zaszlok/admin/materials*` vegpontok a modellek alapjan globalis variaciokat generalnak es torolnek.
-- Ezert ezeket csak teszt adatbazison erdemes futtatni.
+1. Inditsd el a backendet.
+2. Importald a collectiont.
+3. Toltsd ki az `adminEmail` es `adminPassword` valtozokat.
+4. Ellenorizd a `baseUrl` es `uploadFilePath` valtozokat.
+5. A collectiont mindig az elejerol futtasd.
+
+Reszletes leiras:
+
+- a teljes API dokumentacio a gyoker `README.md` fajlban van
+- a Postman tesztfolyamatot ugyanott a `Postman teszteles` fejezet irja le
+- a kepfeltoltes aktualis mukodeset a `Kepfeltoltes` fejezet dokumentalja
+
+Figyelem:
+
+- a `07 Optional Dangerous Size And Material Admin` mappa csak teszt adatbazison fusson
+- ehhez az `allowDangerousAdminChanges` valtozot `true` ertekre kell allitani
