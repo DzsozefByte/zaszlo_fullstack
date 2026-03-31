@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "b13c92e3-b37d-43bb-8c4d-6c9dbce2aa1f",
+    "_postman_id": "9c21487f-8330-4d82-83ad-1a6df3640fff",
     "name": "Zaszlo Backend API",
     "description": "A teljes backendhez keszitett Postman collection. A collection elejerol futtasd, mert a loginok, tokenek es teszt adatok egymasra epulnek. Az allowDangerousAdminChanges alapbol false, mert a meret es anyag admin endpointok globalis adatokat modositanak.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1395,7 +1395,7 @@
           ]
         },
         {
-          "name": "DELETE /auth/admin/users/:id",
+          "name": "DELETE /auth/admin/users/:id (delete candidate)",
           "request": {
             "method": "DELETE",
             "header": [],
@@ -1421,6 +1421,38 @@
                   "  pm.response.to.have.status(200);",
                   "});",
                   "pm.collectionVariables.unset(\"deleteUserId\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /auth/admin/users/:id (main user)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/auth/admin/users/{{userId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.unset(\"userId\");"
                 ]
               }
             }

@@ -11,13 +11,11 @@ Igy a webes funkciok (bejelentkezes, regisztracio, kosar, fizetes, profil, admin
 npm install
 ```
 
-2. Hozz letre egy `.env` fajlt a projekt gyokerben (a `.env.example` alapjan):
+2. Hozz letre egy `.env` fajlt a projekt gyokerben:
 
 ```bash
-EXPO_PUBLIC_WEBAPP_URL=http://192.168.1.25:5173
+EXPO_PUBLIC_WEBAPP_URL=http://**A GÉP LAN IP-CíME**:5173
 ```
-
-Fizikai telefonon ne `localhost` legyen, hanem a geped LAN IP-je.
 
 ## Szerverek inditasa
 
@@ -56,4 +54,3 @@ Expo Go-ban ezutan scanneld a QR kodot.
 ## Gyors emlekezteto
 
 - Minden funkciohoz egyszerre kell futnia a backendnek ES a frontendnek.
-- Android emulatoron jo lehet a `http://10.0.2.2:5173` cim.

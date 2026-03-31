@@ -789,7 +789,7 @@ const collection = {
         ],
       }),
       request({
-        name: "DELETE /auth/admin/users/:id",
+        name: "DELETE /auth/admin/users/:id (delete candidate)",
         method: "DELETE",
         url: "{{baseUrl}}/auth/admin/users/{{deleteUserId}}",
         authVar: "adminToken",
@@ -798,6 +798,18 @@ const collection = {
           "  pm.response.to.have.status(200);",
           "});",
           'pm.collectionVariables.unset("deleteUserId");',
+        ],
+      }),
+      request({
+        name: "DELETE /auth/admin/users/:id (main user)",
+        method: "DELETE",
+        url: "{{baseUrl}}/auth/admin/users/{{userId}}",
+        authVar: "adminToken",
+        tests: [
+          'pm.test("Status 200", function () {',
+          "  pm.response.to.have.status(200);",
+          "});",
+          'pm.collectionVariables.unset("userId");',
         ],
       }),
       request({
