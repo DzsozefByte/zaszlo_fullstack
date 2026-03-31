@@ -93,8 +93,26 @@
   background: linear-gradient(180deg, rgba(239, 246, 255, 0.9), rgba(255, 255, 255, 0.95));
 }
 
+.szamlak-inline-meta {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.szamlak-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 @media (max-width: 767px) {
   .szamlak-card {
     padding: 1rem;
+  }
+
+  .szamlak-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

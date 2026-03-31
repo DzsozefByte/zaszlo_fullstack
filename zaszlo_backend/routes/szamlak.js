@@ -16,6 +16,12 @@ router.post(
   isAdmin,
   szamlaController.adminCreateFizetesiMod
 );
+router.put(
+  "/admin/payment-methods/:id",
+  verifyToken,
+  isAdmin,
+  szamlaController.adminUpdateFizetesiMod
+);
 router.delete(
   "/admin/payment-methods/:id",
   verifyToken,

@@ -14,9 +14,48 @@ class Szamla {
 
   static async listPaymentMethods(connection = db) {
     const [rows] = await connection.query(
-      "SELECT id, nev FROM fizetesi_mod ORDER BY id ASC"
+      `
+      SELECT
+        fm.id,
+        fm.nev,
+        COUNT(s.szamla_id) AS szamlaDarab
+      FROM fizetesi_mod fm
+      LEFT JOIN szamla s ON s.fizetesi_mod = fm.id
+      GROUP BY fm.id, fm.nev
+      ORDER BY fm.id ASC
+      `
     );
     return rows;
+  }
+
+  static getValidatedPaymentMethodName(rawName) {
+    const nev = typeof rawName === "string" ? rawName.trim() : "";
+    if (!nev) {
+      const error = new Error("A fizetesi mod neve kotelezo.");
+      error.code = "INVALID_INPUT";
+      throw error;
+    }
+
+    return nev;
+  }
+
+  static async getPaymentMethodById(id, connection = db) {
+    const [rows] = await connection.query(
+      `
+      SELECT
+        fm.id,
+        fm.nev,
+        COUNT(s.szamla_id) AS szamlaDarab
+      FROM fizetesi_mod fm
+      LEFT JOIN szamla s ON s.fizetesi_mod = fm.id
+      WHERE fm.id = ?
+      GROUP BY fm.id, fm.nev
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    return rows[0] || null;
   }
 
   static isCashLike(value) {
@@ -341,12 +380,7 @@ class Szamla {
   }
 
   static async createPaymentMethod(rawName) {
-    const nev = typeof rawName === "string" ? rawName.trim() : "";
-    if (!nev) {
-      const error = new Error("A fizetesi mod neve kotelezo.");
-      error.code = "INVALID_INPUT";
-      throw error;
-    }
+    const nev = this.getValidatedPaymentMethodName(rawName);
 
     const [duplicate] = await db.query(
       "SELECT id FROM fizetesi_mod WHERE LOWER(nev) = LOWER(?) LIMIT 1",
@@ -359,10 +393,29 @@ class Szamla {
     }
 
     const [result] = await db.query("INSERT INTO fizetesi_mod (nev) VALUES (?)", [nev]);
-    const [rows] = await db.query("SELECT id, nev FROM fizetesi_mod WHERE id = ?", [
-      result.insertId,
-    ]);
-    return rows[0];
+    return this.getPaymentMethodById(result.insertId);
+  }
+
+  static async updatePaymentMethod(id, rawName) {
+    const nev = this.getValidatedPaymentMethodName(rawName);
+
+    const target = await this.getPaymentMethodById(id);
+    if (!target) {
+      return null;
+    }
+
+    const [duplicate] = await db.query(
+      "SELECT id FROM fizetesi_mod WHERE LOWER(nev) = LOWER(?) AND id <> ? LIMIT 1",
+      [nev, id]
+    );
+    if (duplicate.length) {
+      const error = new Error("Ilyen fizetesi mod mar letezik.");
+      error.code = "DUPLICATE_PAYMENT_METHOD";
+      throw error;
+    }
+
+    await db.query("UPDATE fizetesi_mod SET nev = ? WHERE id = ?", [nev, id]);
+    return this.getPaymentMethodById(id);
   }
 
   static async deletePaymentMethod(id) {

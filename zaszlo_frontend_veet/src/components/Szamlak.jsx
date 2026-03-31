@@ -16,6 +16,10 @@ const Szamlak = ({ accessToken, user }) => {
 
   const [fizetesiModok, setFizetesiModok] = useState([]);
   const [ujFizetesiModNev, setUjFizetesiModNev] = useState("");
+  const [ujFizetesiModMentese, setUjFizetesiModMentese] = useState(false);
+  const [szerkesztettFizetesiModId, setSzerkesztettFizetesiModId] = useState(null);
+  const [szerkesztettFizetesiModNev, setSzerkesztettFizetesiModNev] = useState("");
+  const [fizetesiModMuvelet, setFizetesiModMuvelet] = useState({ id: null, tipus: "" });
   const [uzenet, setUzenet] = useState({ tipus: "", szoveg: "" });
 
   const isAdmin = user?.szerep === "admin" || user?.jogosultsag === "admin";
@@ -32,6 +36,12 @@ const Szamlak = ({ accessToken, user }) => {
   const extractError = (err, fallback) => err?.response?.data?.message || fallback;
   const formatDate = (value) => (value ? new Date(value).toLocaleDateString("hu-HU") : "-");
   const formatCurrency = (value) => `${Number(value || 0).toLocaleString("hu-HU")} Ft`;
+  const getSzamlaDarab = (item) => Number(item?.szamlaDarab || 0);
+
+  const resetFizetesiModSzerkesztes = () => {
+    setSzerkesztettFizetesiModId(null);
+    setSzerkesztettFizetesiModNev("");
+  };
 
   const showMessage = (tipus, szoveg) => {
     setUzenet({ tipus, szoveg });
@@ -84,6 +94,7 @@ const Szamlak = ({ accessToken, user }) => {
         setAdminSzamlak([]);
         setFizetesiModok([]);
         setNyitottAdminSzamlak({});
+        resetFizetesiModSzerkesztes();
         setAdminLoading(false);
         setAdminError(null);
         return;
@@ -115,11 +126,18 @@ const Szamlak = ({ accessToken, user }) => {
 
   const handleCreateFizetesiMod = async (e) => {
     e.preventDefault();
+    const trimmedName = ujFizetesiModNev.trim();
+
+    if (!trimmedName) {
+      showMessage("warning", "Adj meg egy fizetési mód nevet.");
+      return;
+    }
 
     try {
+      setUjFizetesiModMentese(true);
       await httpCommon.post(
         "/szamlak/admin/payment-methods",
-        { nev: ujFizetesiModNev.trim() },
+        { nev: trimmedName },
         authConfig
       );
       setUjFizetesiModNev("");
@@ -127,20 +145,66 @@ const Szamlak = ({ accessToken, user }) => {
       showMessage("success", "Új fizetési mód sikeresen létrehozva.");
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt a fizetési mód mentése során."));
+    } finally {
+      setUjFizetesiModMentese(false);
     }
   };
 
-  const handleDeleteFizetesiMod = async (id, nev) => {
-    if (!window.confirm(`Biztosan törölni szeretnéd a(z) ${nev} fizetési módot?`)) {
+  const handleStartFizetesiModEdit = (item) => {
+    setSzerkesztettFizetesiModId(item.id);
+    setSzerkesztettFizetesiModNev(item.nev);
+  };
+
+  const handleUpdateFizetesiMod = async (id) => {
+    const trimmedName = szerkesztettFizetesiModNev.trim();
+
+    if (!trimmedName) {
+      showMessage("warning", "A fizetési mód neve nem lehet üres.");
       return;
     }
 
     try {
-      await httpCommon.delete(`/szamlak/admin/payment-methods/${id}`, authConfig);
+      setFizetesiModMuvelet({ id, tipus: "update" });
+      await httpCommon.put(
+        `/szamlak/admin/payment-methods/${id}`,
+        { nev: trimmedName },
+        authConfig
+      );
       await fetchFizetesiModok();
-      showMessage("success", `Fizetési mód törölve: ${nev}.`);
+      resetFizetesiModSzerkesztes();
+      showMessage("success", "Fizetési mód sikeresen frissítve.");
+    } catch (err) {
+      showMessage("danger", extractError(err, "Hiba történt a fizetési mód frissítésekor."));
+    } finally {
+      setFizetesiModMuvelet({ id: null, tipus: "" });
+    }
+  };
+
+  const handleDeleteFizetesiMod = async (item) => {
+    if (getSzamlaDarab(item) > 0) {
+      showMessage(
+        "warning",
+        `A(z) ${item.nev} fizetési mód ${getSzamlaDarab(item)} számlán már szerepel, ezért nem törölhető.`
+      );
+      return;
+    }
+
+    if (!window.confirm(`Biztosan törölni szeretnéd a(z) ${item.nev} fizetési módot?`)) {
+      return;
+    }
+
+    try {
+      setFizetesiModMuvelet({ id: item.id, tipus: "delete" });
+      await httpCommon.delete(`/szamlak/admin/payment-methods/${item.id}`, authConfig);
+      await fetchFizetesiModok();
+      if (szerkesztettFizetesiModId === item.id) {
+        resetFizetesiModSzerkesztes();
+      }
+      showMessage("success", `Fizetési mód törölve: ${item.nev}.`);
     } catch (err) {
       showMessage("danger", extractError(err, "Hiba történt a fizetési mód törlésekor."));
+    } finally {
+      setFizetesiModMuvelet({ id: null, tipus: "" });
     }
   };
 
@@ -407,7 +471,10 @@ const Szamlak = ({ accessToken, user }) => {
           <section className="szamlak-card">
             <div className="szamlak-card-header">
               <h2>Fizetési módok kezelése</h2>
-              <p>Új fizetési mód felvétele és a már meglévők törlése admin jogosultsággal.</p>
+              <p>
+                Új fizetési mód felvétele, meglévők átnevezése, és a még nem használt módok
+                törlése admin jogosultsággal.
+              </p>
             </div>
 
             <div className="row g-4 align-items-start">
@@ -422,9 +489,13 @@ const Szamlak = ({ accessToken, user }) => {
                     placeholder="pl. Bankkártya"
                     required
                   />
-                  <button type="submit" className="btn btn-primary">
-                    Új mód létrehozása
+                  <button type="submit" className="btn btn-primary" disabled={ujFizetesiModMentese}>
+                    {ujFizetesiModMentese ? "Mentés..." : "Új mód létrehozása"}
                   </button>
+                  <div className="small text-muted">
+                    A számlákban már használt fizetési módok átnevezhetők, de a történeti adatok
+                    védelme miatt nem törölhetők.
+                  </div>
                 </form>
               </div>
 
@@ -435,6 +506,7 @@ const Szamlak = ({ accessToken, user }) => {
                       <tr>
                         <th>ID</th>
                         <th>Megnevezés</th>
+                        <th>Használat</th>
                         <th className="text-end">Művelet</th>
                       </tr>
                     </thead>
@@ -442,21 +514,90 @@ const Szamlak = ({ accessToken, user }) => {
                       {fizetesiModok.map((item) => (
                         <tr key={item.id}>
                           <td>{item.id}</td>
-                          <td>{item.nev}</td>
+                          <td>
+                            {szerkesztettFizetesiModId === item.id ? (
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={szerkesztettFizetesiModNev}
+                                onChange={(e) => setSzerkesztettFizetesiModNev(e.target.value)}
+                                disabled={fizetesiModMuvelet.id === item.id}
+                              />
+                            ) : (
+                              <div className="fw-semibold">{item.nev}</div>
+                            )}
+                          </td>
+                          <td>
+                            {getSzamlaDarab(item) > 0 ? (
+                              <div className="szamlak-inline-meta">
+                                <Badge bg="secondary">{getSzamlaDarab(item)} számla</Badge>
+                                <span className="text-muted small">Törlés helyett szerkeszthető.</span>
+                              </div>
+                            ) : (
+                              <div className="szamlak-inline-meta">
+                                <Badge bg="success">Szabad</Badge>
+                                <span className="text-muted small">Törölhető.</span>
+                              </div>
+                            )}
+                          </td>
                           <td className="text-end">
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() => handleDeleteFizetesiMod(item.id, item.nev)}
-                            >
-                              Törlés
-                            </button>
+                            <div className="szamlak-actions">
+                              {szerkesztettFizetesiModId === item.id ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    disabled={fizetesiModMuvelet.id === item.id}
+                                    onClick={() => handleUpdateFizetesiMod(item.id)}
+                                  >
+                                    {fizetesiModMuvelet.id === item.id &&
+                                    fizetesiModMuvelet.tipus === "update"
+                                      ? "Mentés..."
+                                      : "Mentés"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    disabled={fizetesiModMuvelet.id === item.id}
+                                    onClick={resetFizetesiModSzerkesztes}
+                                  >
+                                    Mégse
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-primary btn-sm"
+                                  disabled={fizetesiModMuvelet.id === item.id}
+                                  onClick={() => handleStartFizetesiModEdit(item)}
+                                >
+                                  Szerkesztés
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                className="btn btn-outline-danger btn-sm"
+                                disabled={getSzamlaDarab(item) > 0 || fizetesiModMuvelet.id === item.id}
+                                title={
+                                  getSzamlaDarab(item) > 0
+                                    ? "A már számlákban használt fizetési mód nem törölhető."
+                                    : "Fizetési mód törlése"
+                                }
+                                onClick={() => handleDeleteFizetesiMod(item)}
+                              >
+                                {fizetesiModMuvelet.id === item.id &&
+                                fizetesiModMuvelet.tipus === "delete"
+                                  ? "Törlés..."
+                                  : "Törlés"}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
                       {!fizetesiModok.length && (
                         <tr>
-                          <td colSpan="3" className="text-center text-muted py-3">
+                          <td colSpan="4" className="text-center text-muted py-3">
                             Nincs megjeleníthető fizetési mód.
                           </td>
                         </tr>

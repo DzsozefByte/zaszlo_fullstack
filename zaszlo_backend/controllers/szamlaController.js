@@ -109,6 +109,33 @@ exports.adminCreateFizetesiMod = async (req, res) => {
   }
 };
 
+exports.adminUpdateFizetesiMod = async (req, res) => {
+  try {
+    const id = toInt(req.params.id);
+    if (!id) {
+      return res.status(400).json({ message: "Ervenytelen fizetesi mod azonosito." });
+    }
+
+    const updated = await Szamla.updatePaymentMethod(id, req.body.nev);
+    if (!updated) {
+      return res.status(404).json({ message: "A fizetesi mod nem talalhato." });
+    }
+
+    return res.json({
+      message: "Fizetesi mod sikeresen frissitve.",
+      fizetesiMod: updated,
+    });
+  } catch (error) {
+    if (error.code === "INVALID_INPUT") {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.code === "DUPLICATE_PAYMENT_METHOD") {
+      return res.status(409).json({ message: error.message });
+    }
+    return res.status(500).json({ message: "Hiba tortent a fizetesi mod frissitese kozben." });
+  }
+};
+
 exports.adminDeleteFizetesiMod = async (req, res) => {
   try {
     const id = toInt(req.params.id);
