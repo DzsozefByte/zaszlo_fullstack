@@ -51,9 +51,9 @@ const Termek = () => {
           return;
         }
 
-        console.error("Hiba tortent a termek valtozatok betoltese soran:", error);
+        console.error("Hiba történt a termékváltozatok betöltése során:", error);
         setVariants([]);
-        setLoadError("A termek valtozatai jelenleg nem tolthetők be.");
+        setLoadError("A termékváltozatok jelenleg nem tölthetők be.");
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -109,7 +109,7 @@ const Termek = () => {
     return (
       <div className="container py-5">
         <div className="alert alert-warning mb-0" role="alert">
-          Ehhez az orszaghoz jelenleg nem talalhato megjelenitheto termekvariacio.
+          Ehhez az országhoz jelenleg nem található megjeleníthető termékvariáció.
         </div>
       </div>
     );

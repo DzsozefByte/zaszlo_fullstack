@@ -202,7 +202,7 @@ const Kereso = () => {
         setCurrentPage(1);
       } catch (error) {
         if (isMounted) {
-          console.error("Hiba az adatok lekerese soran:", error);
+          console.error("Hiba az adatok lekérése során:", error);
         }
       }
     };
@@ -278,12 +278,12 @@ const Kereso = () => {
             >
               <div className="d-flex align-items-center mb-4 text-primary">
                 <IoMdFunnel size={24} className="me-2" />
-                <h4 className="m-0 fw-bold">Szures</h4>
+                <h4 className="m-0 fw-bold">Szűrés</h4>
               </div>
 
               <Form.Group className="mb-4">
                 <Form.Label className="fw-semibold text-muted small text-uppercase">
-                  Kereses
+                  Keresés
                 </Form.Label>
                 <div className="input-group">
                   <span className="input-group-text bg-light border-end-0">
@@ -292,7 +292,7 @@ const Kereso = () => {
                   <Form.Control
                     type="text"
                     name="search"
-                    placeholder="Orszag neve..."
+                    placeholder="Ország neve..."
                     value={baseFilters.search}
                     onChange={handleFilterChange}
                     className="border-start-0 bg-light"
@@ -321,12 +321,12 @@ const Kereso = () => {
 
               <Form.Group className="mb-4">
                 <Form.Label className="fw-semibold text-muted small text-uppercase">
-                  Nemzetkozi tagsag
+                  Nemzetközi tagság
                 </Form.Label>
 
                 <Form.Check
                   type="checkbox"
-                  label="EU tagallam"
+                  label="EU-tagállam"
                   name="eu"
                   checked={membershipFilters.eu}
                   onChange={handleFilterChange}
@@ -352,7 +352,7 @@ const Kereso = () => {
               </Form.Group>
 
               <div className="text-muted small mt-4">
-                Talalatok szama: <strong>{uniqueCountries.length}</strong> db
+                Találatok száma: <strong>{uniqueCountries.length}</strong> db
               </div>
 
               <Button
@@ -360,7 +360,7 @@ const Kereso = () => {
                 className="w-100 mt-3"
                 onClick={resetFilters}
               >
-                Szurok torlese
+                Szűrők törlése
               </Button>
             </div>
           </div>
@@ -369,7 +369,7 @@ const Kereso = () => {
             {currentItems.length === 0 ? (
               <div className="text-center py-5">
                 <h3 className="text-muted">
-                  Nincs talalat a keresesi feltetelekre.
+                  Nincs találat a keresési feltételekre.
                 </h3>
               </div>
             ) : (
@@ -413,7 +413,7 @@ const Kereso = () => {
                           variant="outline-primary"
                           className="w-100 rounded-pill fw-semibold"
                         >
-                          Reszletek
+                          Részletek
                         </Button>
                       </Card.Body>
                     </Card>

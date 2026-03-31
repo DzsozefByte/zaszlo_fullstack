@@ -540,7 +540,7 @@
   }
 
   .admin-base-table-size td:nth-child(2)::before {
-    content: "Meret";
+    content: "Méret";
   }
 
   .admin-base-table-material td:nth-child(2)::before {
@@ -549,17 +549,17 @@
 
   .admin-base-table-size td:nth-child(3)::before,
   .admin-base-table-material td:nth-child(3)::before {
-    content: "Szorzo";
+    content: "Szorzó";
   }
 
   .admin-base-table-size td:nth-child(4)::before,
   .admin-base-table-material td:nth-child(4)::before,
   .admin-variant-detail-table td:nth-child(4)::before {
-    content: "Muvelet";
+    content: "Művelet";
   }
 
   .admin-user-table td:nth-child(2)::before {
-    content: "Nev";
+    content: "Név";
   }
 
   .admin-user-table td:nth-child(3)::before {
@@ -567,23 +567,23 @@
   }
 
   .admin-user-table td:nth-child(4)::before {
-    content: "Jogosultsag";
+    content: "Jogosultság";
   }
 
   .admin-user-table td:nth-child(5)::before {
-    content: "Muvelet";
+    content: "Művelet";
   }
 
   .admin-flag-table td:nth-child(1)::before {
-    content: "Nyitas";
+    content: "Nyitás";
   }
 
   .admin-flag-table td:nth-child(2)::before {
-    content: "Kep";
+    content: "Kép";
   }
 
   .admin-flag-table td:nth-child(3)::before {
-    content: "Orszag";
+    content: "Ország";
   }
 
   .admin-flag-table td:nth-child(4)::before {
@@ -591,15 +591,15 @@
   }
 
   .admin-flag-table td:nth-child(5)::before {
-    content: "Variaciok";
+    content: "Variációk";
   }
 
   .admin-flag-table td:nth-child(6)::before {
-    content: "Muvelet";
+    content: "Művelet";
   }
 
   .admin-variant-detail-table td:nth-child(2)::before {
-    content: "Meret";
+    content: "Méret";
   }
 
   .admin-variant-detail-table td:nth-child(3)::before {

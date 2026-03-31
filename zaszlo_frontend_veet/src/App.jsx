@@ -40,7 +40,7 @@ function App() {
         localStorage.setItem('token', newToken); 
       }
 catch (error) {
-        console.warn("Nem sikerult frissiteni a munkamenetet.", error);
+        console.warn("Nem sikerült frissíteni a munkamenetet.", error);
         setAccessToken("");
         setUser(null);
         localStorage.removeItem('token'); // Ha sikertelen, takarítsunk ki

@@ -10,7 +10,7 @@ const Kosar = ({ accessToken }) => {
   const isLoggedIn = Boolean(accessToken || localStorage.getItem("token"));
 
   const handleKosarUrites = () => {
-    if (window.confirm("Biztosan ki szeretnéd üríteni a teljes kosarát?")) {
+    if (window.confirm("Biztosan ki szeretnéd üríteni a teljes kosarat?")) {
       setKosar([]);
     }
   };

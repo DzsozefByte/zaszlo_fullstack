@@ -385,7 +385,7 @@ const AdminPanel = ({ accessToken }) => {
         return;
       }
       if (generatedVariantCount) {
-        showMessage("success", `Uj meret letrehozva, ${generatedVariantCount} variacioval bovitve.`);
+        showMessage("success", `Új méret létrehozva, ${generatedVariantCount} variációval bővítve.`);
         return;
       }
       showMessage("success", "Új méret sikeresen létrehozva.");
@@ -437,7 +437,7 @@ const AdminPanel = ({ accessToken }) => {
       await Promise.all([fetchMeta(), fetchZaszlok()]);
       const generatedVariantCount = Number(res.data?.generatedVariantCount) || 0;
       if (generatedVariantCount) {
-        showMessage("success", `Uj anyag letrehozva, ${generatedVariantCount} variacioval bovitve.`);
+        showMessage("success", `Új anyag létrehozva, ${generatedVariantCount} variációval bővítve.`);
         return;
       }
       showMessage("success", "Új anyag sikeresen létrehozva.");

@@ -50,7 +50,7 @@ const Profil = ({ accessToken, onUserUpdate }) => {
         setUserData(normalized);
         setFormData(normalized);
       } catch (error) {
-        console.error("Nem sikerult betolteni a profilt.", error);
+        console.error("Nem sikerült betölteni a profilt.", error);
         navigate("/login");
       } finally {
         setLoading(false);
@@ -95,8 +95,8 @@ const Profil = ({ accessToken, onUserUpdate }) => {
 
       alert("Adatok sikeresen mentve!");
     } catch (error) {
-      console.error("Hiba a menteskor:", error);
-      alert("Nem sikerult a mentes.");
+      console.error("Hiba mentéskor:", error);
+      alert("Nem sikerült a mentés.");
     }
   };
 

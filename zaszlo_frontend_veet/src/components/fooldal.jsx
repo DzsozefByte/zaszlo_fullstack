@@ -153,7 +153,9 @@ const Fooldal = () => {
           {[
             { img: '/images/stock1.jpg', title: 'Fedezd fel a világ színeit', text: 'Prémium minőségű zászlók minden nemzet számára.' },
             { img: '/images/stock2.jpeg', title: 'Mutasd meg hovatartozásod', text: 'Legyen szó sporteseményről vagy ünnepről.' },
-            { img: '/images/stock3.jpg', title: 'A zászlók szakértője', text: 'Több mint 10 éve a gyűjtők és rajongók szolgálatában.' }
+            { img: '/images/stock3.jpg', title: 'A zászlók szakértője', text: 'Több mint 10 éve a gyűjtők és rajongók szolgálatában.' },
+            { img: '/images/stock4.jpg', title: 'Világ minden tájáról', text: 'Több száz ország zászlói egy helyen.' },
+            { img: '/images/stock5.jpg', title: 'Minőség, amit látsz és érzel', text: 'Élénk színek, tartós anyagok, kiváló kidolgozás.' },
           ].map((item, index) => (
             <Carousel.Item key={index} className="hero-carousel-item">
               <div className="hero-bg-image" style={{ backgroundImage: `url(${item.img})` }}></div>

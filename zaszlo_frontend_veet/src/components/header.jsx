@@ -13,6 +13,11 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import httpCommon from "../http-common";
 import { KosarContext } from "../context/kosar-context.js";
+import euFlag from "flag-icons/flags/4x3/eu.svg";
+import usFlag from "flag-icons/flags/4x3/us.svg";
+import jpFlag from "flag-icons/flags/4x3/jp.svg";
+import zaFlag from "flag-icons/flags/4x3/za.svg";
+import auFlag from "flag-icons/flags/4x3/au.svg";
 
 const Header = ({ user, logout }) => {
   const [searchText, setSearchText] = useState("");
@@ -25,11 +30,11 @@ const Header = ({ user, logout }) => {
   const osszesDb = kosar.reduce((acc, item) => acc + item.db, 0);
 
   const kontinensek = [
-    { nev: "Europa", emoji: "EU" },
-    { nev: "Amerika", emoji: "AM" },
-    { nev: "Azsia", emoji: "AS" },
-    { nev: "Afrika", emoji: "AF" },
-    { nev: "Oceania", emoji: "OC" },
+    { nev: "Európa", flagSrc: euFlag },
+    { nev: "Amerika", flagSrc: usFlag },
+    { nev: "Ázsia", flagSrc: jpFlag },
+    { nev: "Afrika", flagSrc: zaFlag },
+    { nev: "Óceánia", flagSrc: auFlag },
   ];
 
   useEffect(() => {
@@ -108,7 +113,8 @@ const Header = ({ user, logout }) => {
                 {kontinensek.map((k) => (
                   <li key={k.nev}>
                     <Link className="dropdown-item py-2 d-flex align-items-center" to={`/kereso?continent=${k.nev}`}>
-                      <span className="me-2 fw-bold text-primary">{k.emoji}</span> {k.nev}
+                      <img src={k.flagSrc} alt="" aria-hidden="true" className="me-2 shadow-sm continent-flag" />
+                      {k.nev}
                     </Link>
                   </li>
                 ))}
@@ -125,7 +131,7 @@ const Header = ({ user, logout }) => {
                 <input
                   className="form-control bg-light border-0 rounded-end-pill py-2"
                   type="search"
-                placeholder="Keresés országra..."
+                  placeholder="Keresés országra..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                 />
@@ -159,7 +165,7 @@ const Header = ({ user, logout }) => {
                 <input
                   className="form-control bg-light border-0 rounded-end-pill py-2"
                   type="search"
-                placeholder="Keresés..."
+                  placeholder="Keresés..."
                   style={{ width: "200px" }}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -332,7 +338,7 @@ const Header = ({ user, logout }) => {
                           navigate("/kosar");
                         }}
                       >
-                      Pénztárhoz
+                        Pénztárhoz
                       </Button>
                     </div>
                   )}
@@ -352,6 +358,14 @@ const Header = ({ user, logout }) => {
         .nav-link:hover { color: #0d6efd !important; }
         .dropdown-item:active { background-color: #0d6efd; }
         .profile-dropdown { min-width: 240px; border-radius: 16px; }
+        .continent-flag {
+          width: 1.2rem;
+          height: 0.9rem;
+          display: inline-block;
+          flex-shrink: 0;
+          object-fit: cover;
+          border-radius: 0.15rem;
+        }
 
         .animate-slide-up {
           animation: slideUp 0.3s ease-out;
